@@ -93,6 +93,7 @@ ssd.obj
 .ropeproject/config.py
 
 # Vemmis data
+scenario/LVNL/Data/*
 /scenario/vemmis2019-08-0506/
 /scenario/vemmis2020-07-2122/
 /scenario/vemmis2021-09-12/
