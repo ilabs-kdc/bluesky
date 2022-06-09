@@ -1,0 +1,1 @@
+In this folder you can add the VEMMIS data folder containing the csv files you would like to load into BlueSky.

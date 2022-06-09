@@ -24,7 +24,7 @@ class VEMMISRead:
     """
     Class definition: Read and prepare the VEMMIS data
     Methods:
-            read_data():        Read vemmis csv files
+            read_data():        Read VEMMIS csv files
             delete_nan():       Delete data points with NaN in the relevant columns
             convert_data():     Convert data to correct data types and determine the actual time
             get_credeltime():   Get the create and delete time (first and last data point)
@@ -32,19 +32,20 @@ class VEMMISRead:
             get_coordinates():  Calculate coordinates from x and y position
             get_altitude():     Determine altitude from MODE_C
             get_cas():          Determine the calibrated airspeed
-            merge_data():       Merge flights data into the other data, to get e.g. callsign
+            merge_data():       Merge flight data
+            add_callsign():     Add the callsign based on the Flight ID
             sort_data():        Sort the data by time
             get_simtime():      Determine the simulation time and optionally apply the fixed update rate
-            get_datetime():     Get the date and time for the simulation
-            get_initial():      Get the initial commands
             get_trackdata():    Get the track data for the simulation
+            select_flights():   Select the desired flights
+            get_initial():      Get the desired initial commands
 
     Created by: Bob van Dillen
     Date: 22-11-2021
     """
 
     def __init__(self, data_path, date0=None, time0=None, deltat=None):
-        self.data_path = data_path
+        self.data_path = data_path.replace("\\scenario\\", "\\scenario\\LVNL\\Data\\")
 
         self.date0 = date0
         self.time0 = time0
@@ -74,6 +75,8 @@ class VEMMISRead:
         self.get_altitude()
         self.get_cas()
         self.merge_data()
+        self.select_flights()
+        self.add_callsign()
         self.sort_data()
         self.get_simtime()
 
@@ -156,7 +159,7 @@ class VEMMISRead:
         self.tracks['ACTUAL_TIME'] = self.tracks['T_START'] + self.tracks['TIME']
 
         # Route data
-        self.flighttimes['TIME'] = pd.to_datetime(self.flighttimes['TIME'], format="%d-%m-%Y %H:%M")
+        self.flighttimes['TIME'] = pd.to_datetime(self.flighttimes['TIME'])
 
     def get_credeltime(self):
         """
@@ -198,10 +201,6 @@ class VEMMISRead:
         # Drop duplicates
         self.flights.drop_duplicates(subset='FLIGHT_ID', keep='first', inplace=True)
 
-        # Waypoints
-        # self.flighttimes = self.flighttimes.loc[self.flighttimes['TIME_TYPE'] == 'ACTUAL']
-        # self.flighttimes = self.flighttimes.loc[self.flighttimes['LOCATION_TYPE'] == 'RP']
-
         # Start time
         if self.date0 and self.time0:
             # Convert to datetime
@@ -213,6 +212,10 @@ class VEMMISRead:
 
             # Apply start time
             self.tracks = self.tracks.loc[self.tracks['ACTUAL_TIME'] >= self.time0]
+
+            self.datetime0 = self.time0
+        else:
+            self.datetime0 = min(self.flights['TIME_START'])
 
     def get_coordinates(self):
         """
@@ -264,12 +267,12 @@ class VEMMISRead:
 
     def merge_data(self):
         """
-        Function: Merge flights data into the other data, to get e.g. callsign
+        Function: Merge flight data
         Args: -
         Returns: -
 
         Created by: Bob van Dillen
-        Date = 22-11-2021
+        Date: 22-11-2021
         """
 
         # Add first data point to flight data
@@ -277,14 +280,26 @@ class VEMMISRead:
                                                               'HEADING', 'ALTITUDE', 'CAS']], on='FLIGHT_ID')
         self.flightdata.sort_values(by=['ACTUAL_TIME'], inplace=True)
         self.flightdata.drop_duplicates(subset='FLIGHT_ID', keep='first', inplace=True)
+
         # Add SID to flight data
         self.flightdata = pd.merge(self.flightdata, self.takeoffs[['FLIGHT_ID', 'SID', 'RUNWAY']],
                                    on='FLIGHT_ID', how='left')
         self.flightdata.rename(columns={'RUNWAY': 'RUNWAY_OUT'}, inplace=True)
+
         # Add ARR to flight data
         self.flightdata = pd.merge(self.flightdata, self.landings[['FLIGHT_ID', 'RUNWAY', 'STACK']],
                                    on='FLIGHT_ID', how='left')
         self.flightdata.rename(columns={'RUNWAY': 'RUNWAY_IN'}, inplace=True)
+
+    def add_callsign(self):
+        """
+        Function: Add the callsign based on the Flight ID
+        Args: -
+        Returns: -
+
+        Created by: Bob van Dillen
+        Date: 24-5-2022
+        """
 
         # Add callsign to route data
         self.routedata = pd.merge(self.flighttimes, self.flights[['FLIGHT_ID', 'CALLSIGN']], on='FLIGHT_ID')
@@ -329,9 +344,6 @@ class VEMMISRead:
         Date = 22-11-2021
         """
 
-        # Get initial date and time
-        self.datetime0 = min(self.trackdata['ACTUAL_TIME'])
-
         # Compute simulation time
         self.flightdata['SIM_START'] = (self.flightdata['TIME_START'] - self.datetime0).dt.total_seconds()
         self.flightdata['SIM_START'][self.flightdata['SIM_START'] < 0] = 0
@@ -345,66 +357,82 @@ class VEMMISRead:
             self.trackdata['SIM_TIME'] = (self.trackdata['SIM_TIME'] / self.deltat).apply(np.ceil) * self.deltat
             self.trackdata.drop_duplicates(subset=['SIM_TIME', 'CALLSIGN'], keep='last', inplace=True)
 
-    # def get_wpts(self, callsign, time_create, orig, dest):
-    #     """
-    #     Function: Get the commands string for adding the waypoints
-    #     Args:
-    #         callsign:       callsign [str]
-    #         time_create:    simulation time of aircraft create [float]
-    #         orig:           origin [str]
-    #         dest:           destination [str]
-    #     Returns:
-    #         strlst:         list with strings for adding waypoints
-    #
-    #     Created: Bob van Dillen
-    #     Date: 1-12-2021
-    #     """
-    #
-    #     route = self.routedata.loc[self.routedata['CALLSIGN'] == callsign]
-    #
-    #     strlst = []
-    #     tlst = []
-    #     wptstr = ""
-    #     for wpt in range(len(route)):
-    #         wptname = route['LOCATION_NAME'].iloc[wpt]
-    #         wpttime = route['SIM_TIME'].iloc[wpt]
-    #         if wpttime > time_create and wptname != orig and wptname != dest:
-    #             if len(strlst) == 0:
-    #                 strlst.append("ADDWPT "+callsign+", "+wptname)
-    #                 tlst.append(time_create+0.01)  # Add 0.01 to ensure the right order
-    #                 wptstr = callsign+" AFTER "+wptname+" ADDWPT "
-    #             else:
-    #                 strlst.append(wptstr+wptname)
-    #                 tlst.append(tlst[-1]+0.01)  # Add 0.01 to ensure the right order
-    #                 wptstr = callsign+" AFTER "+wptname+" ADDWPT "
-    #
-    #     return strlst, tlst
-
-    def get_datetime(self):
+    def get_trackdata(self):
         """
-        Function: Get the date and time for the simulation
+        Function: Get the track data for the simulation
         Args: -
         Returns:
-            day:    day of the simulation [int]
-            month:  month of the simulation [int]
-            year:   year of the simulation [int]
-            time:   time of the simulation [str]
+            simt:       simulation time [array(float)]
+            simt_i:     indices with the same simulation time [lst(lst(int))]
+            flightid:   flight id [array(int/float)]
+            id:         callsign [lst(str)]
+            actype:     aircraft type [lst(str)]
+            lat:        latitude [array(float)]
+            lon:        longitude [array(float)]
+            hdg:        heading [array(float)]
+            alt:        altitude [array(float)]
+            spd:        ground speed [array(float)]
 
         Created by: Bob van Dillen
-        Date = 25-11-2021
+        Date: 22-11-2021
         """
 
-        datetime_start = self.datetime0
-        day = datetime_start.day
-        month = datetime_start.month
-        year = datetime_start.year
-        time = datetime_start.strftime("%H:%M:%S")
+        simt = np.array(self.trackdata['SIM_TIME'])
+        # Get the number of data points with the same time stamp
+        unique, count = np.unique(simt, return_counts=True)
+        simt_count = np.repeat(count, count)
 
-        return day, month, year, time
+        acid = list(self.trackdata['CALLSIGN'])
+        lat = np.array(self.trackdata['LATITUDE'])
+        lon = np.array(self.trackdata['LONGITUDE'])
+        hdg = np.array(self.trackdata['HEADING'])
+        alt = np.array(self.trackdata['ALTITUDE'])*aero.ft
+        spd = np.array(self.trackdata['SPEED'])*aero.kts
+        return simt, simt_count, acid, lat, lon, hdg, alt, spd
 
-    def get_initial(self, swdatafeed, typesim=[]):
+    def select_flights(self):
         """
-        Function: Get the initial commands
+        Function: Select the desired flights
+        Args: -
+        Returns: -
+
+        Created by: Bob van Dillen
+        Date: 24-5-2022
+        """
+
+        # ---------- T-Bar ----------
+        # self.flightdata = self.flightdata.loc[self.flightdata['RUNWAY_OUT'] != '36L']  # No 36L departure
+
+        # ---------- Scenario ----------
+        # self.flightdata = self.flightdata.loc[self.flightdata['DEST'] == 'EHAM']  # Only inbound EHAM
+        # self.flightdata = self.flightdata.loc[(self.flightdata['RUNWAY_IN'] == '18R') |
+        #                                       (self.flightdata['RUNWAY_IN'] == '18C')]
+
+        return
+
+    def get_initial(self, swdatafeed):
+        """
+        Function: Get the desired initial commands
+        Args:
+            swdatafeed: add aircraft to datafeed [bool]
+        Returns:
+            cmds:           initial commands [list]
+            cmdst:          simulation time of the initial commands [list]
+
+        Created by: Bob van Dillen
+        Date: 24-5-2022
+        """
+
+        # Select the right initial commands method
+        cmds, cmdst = self.initial(swdatafeed)
+        # cmds, cmdst = self.initial_tbar()
+        # cmds, cmdst = self.initial_scenario('C')
+
+        return cmds, cmdst
+
+    def initial(self, swdatafeed, typesim=[]):
+        """
+        Function: Create the initial commands for the standard case
         Args:
             swdatafeed:     add aircraft to datafeed [bool]
             typesim:        flighttypes that need to be simulated (no data feed) [list]
@@ -416,10 +444,8 @@ class VEMMISRead:
         Date: 20-1-2022
         """
 
-        simday, simmonth, simyear, simtime = self.get_datetime()
-
         # Initial commands
-        cmds = ["DATE "+str(simday)+", "+str(simmonth)+", "+str(simyear)+", "+simtime]
+        cmds = ["DATE "+self.datetime0.strftime('%d %m %Y %H:%M:%S')]
         cmdst = [0.]
 
         # Flight data
@@ -504,9 +530,9 @@ class VEMMISRead:
 
         return cmds, cmdst
 
-    def get_initial_tbar(self):
+    def initial_tbar(self):
         """
-        Function: Get the initial commands for the T-Bar simulation
+        Function: Create the initial commands for the T-Bar simulation
         Args: -
         Returns:
             cmds:   initial commands [list]
@@ -516,14 +542,11 @@ class VEMMISRead:
         Date: 20-1-2022
         """
 
-        simday, simmonth, simyear, simtime = self.get_datetime()
-
         # Initial commands
-        cmds = ["DATE "+str(simday)+", "+str(simmonth)+", "+str(simyear)+", "+simtime]
+        cmds = ["DATE "+self.datetime0.strftime('%d %m %Y %H:%M:%S')]
         cmdst = [0.]
 
         # Flight data
-        self.flightdata = self.flightdata.loc[self.flightdata['RUNWAY_OUT'] != '36L']  # No 36L departure
         acid         = self.flightdata['CALLSIGN']
         actype       = self.flightdata['ICAO_ACTYPE']
         aclat        = self.flightdata['LATITUDE'].astype(str)
@@ -630,9 +653,9 @@ class VEMMISRead:
 
         return cmds, cmdst
 
-    def get_initial_scenario(self, runway):
+    def initial_scenario(self, runway):
         """
-        Function: Get the initial commands for a specific scenario (current case landing on 18R or 18C)
+        Function: Create the initial commands for a specific scenario (current case landing on 18R or 18C)
         Args:
             runway: specific runway selected for simulated arrival (current case 'R' or 'C')
         Returns:
@@ -643,25 +666,22 @@ class VEMMISRead:
         Date: 12-5-2022
         """
 
-        simday, simmonth, simyear, simtime = self.get_datetime()
-
-        # Initial commands
-        cmds = ["DATE "+str(simday)+", "+str(simmonth)+", "+str(simyear)+", "+simtime]
-        cmdst = [0.]
-
-        # Flight data
-        self.flightdata = self.flightdata.loc[self.flightdata['DEST'] == 'EHAM']  # Only inbound EHAM
-        self.flightdata = self.flightdata.loc[(self.flightdata['RUNWAY_IN'] == '18R') | (self.flightdata['RUNWAY_IN'] == '18C')]
-
+        # TMA entry
         tma_entry = self.routedata.loc[self.routedata['EVENT'] == 'ENTRY']
         tma_entry = tma_entry.loc[tma_entry['LOCATION_TYPE'] == 'TMA']
         tma_entry = tma_entry.loc[tma_entry['TIME_TYPE'] == 'ACTUAL']
         tma_entry.rename(columns={'TIME': 'TMA_ENTRY_TIME'}, inplace=True)
-        tma_entry['TMA_ENTRY_SIMTIME'] = (tma_entry['TMA_ENTRY_TIME'] - self.datetime0).dt.total_seconds()
+        tma_entry['TMA_ENTRY_SIMTIME'] = (tma_entry['TMA_ENTRY_TIME'] -
+                                          min(self.flightdata['TIME_START'])).dt.total_seconds()
 
         self.flightdata = pd.merge(self.flightdata, tma_entry[['FLIGHT_ID', 'TMA_ENTRY_SIMTIME']], on='FLIGHT_ID')
         self.flightdata.drop(self.flightdata[self.flightdata['TMA_ENTRY_SIMTIME'] < 0.].index, inplace=True)
 
+        # Initial commands
+        cmds = ["DATE "+self.datetime0.strftime('%d %m %Y %H:%M:%S')]
+        cmdst = [0.]
+
+        # Flight data
         acid         = self.flightdata['CALLSIGN']
         actype       = self.flightdata['ICAO_ACTYPE']
         aclat        = self.flightdata['LATITUDE'].astype(str)
@@ -764,39 +784,6 @@ class VEMMISRead:
 
         return cmds, cmdst
 
-    def get_trackdata(self):
-        """
-        Function: Get the track data for the simulation
-        Args: -
-        Returns:
-            simt:       simulation time [array(float)]
-            simt_i:     indices with the same simulation time [lst(lst(int))]
-            flightid:   flight id [array(int/float)]
-            id:         callsign [lst(str)]
-            actype:     aircraft type [lst(str)]
-            lat:        latitude [array(float)]
-            lon:        longitude [array(float)]
-            hdg:        heading [array(float)]
-            alt:        altitude [array(float)]
-            spd:        ground speed [array(float)]
-
-        Created by: Bob van Dillen
-        Date = 22-11-2021
-        """
-
-        simt = np.array(self.trackdata['SIM_TIME'])
-        # Get the number of data points with the same time stamp
-        unique, count = np.unique(simt, return_counts=True)
-        simt_count = np.repeat(count, count)
-
-        acid = list(self.trackdata['CALLSIGN'])
-        lat = np.array(self.trackdata['LATITUDE'])
-        lon = np.array(self.trackdata['LONGITUDE'])
-        hdg = np.array(self.trackdata['HEADING'])
-        alt = np.array(self.trackdata['ALTITUDE'])*aero.ft
-        spd = np.array(self.trackdata['SPEED'])*aero.kts
-        return simt, simt_count, acid, lat, lon, hdg, alt, spd
-
 
 class VEMMISSource:
     """
@@ -873,19 +860,7 @@ class VEMMISSource:
         vemmisdata = VEMMISRead(datapath, date0, time0, deltat=0.5)
         # Load flight data
         bs.scr.echo('Loading flight data ...')
-
-        # ----------- Type of replay/playback ---------------
-        # NORMAL:
-        # commands, commandstime = vemmisdata.get_initial(swdatafeed=True)
-
-        # T-BAR:
-        # commands, commandstime = vemmisdata.get_initial_tbar()
-
-        # SCENARIO (current case arrival 18R and 18C):
-        runway = 'C'  # 'R', 'C', or 'both'
-        commands, commandstime = vemmisdata.get_initial_scenario(runway)
-
-        # --------------------------------------------------
+        commands, commandstime = vemmisdata.get_initial(swdatafeed=True)
 
         # Load track data
         bs.scr.echo('Loading track data ...')
