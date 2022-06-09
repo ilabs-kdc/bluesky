@@ -159,7 +159,7 @@ class VEMMISRead:
         self.tracks['ACTUAL_TIME'] = self.tracks['T_START'] + self.tracks['TIME']
 
         # Route data
-        self.flighttimes['TIME'] = pd.to_datetime(self.flighttimes['TIME'])
+        self.flighttimes['TIME'] = pd.to_datetime(self.flighttimes['TIME'], dayfirst=True)
 
     def get_credeltime(self):
         """
@@ -401,7 +401,7 @@ class VEMMISRead:
         """
 
         # ---------- T-Bar ----------
-        # self.flightdata = self.flightdata.loc[self.flightdata['RUNWAY_OUT'] != '36L']  # No 36L departure
+        # self.flightdata = self.flightdata.loc[self.flightdata['FLIGHT_TYPE'] == 'INBOUND']  # Only inbounds
 
         # ---------- Scenario ----------
         # self.flightdata = self.flightdata.loc[self.flightdata['DEST'] == 'EHAM']  # Only inbound EHAM
@@ -414,7 +414,7 @@ class VEMMISRead:
         """
         Function: Get the desired initial commands
         Args:
-            swdatafeed: add aircraft to datafeed [bool]
+            swdatafeed:     add aircraft to datafeed [bool]
         Returns:
             cmds:           initial commands [list]
             cmdst:          simulation time of the initial commands [list]
@@ -423,10 +423,17 @@ class VEMMISRead:
         Date: 24-5-2022
         """
 
-        # Select the right initial commands method
+        # ---------- Select the right initial commands method ----------
         cmds, cmdst = self.initial(swdatafeed)
         # cmds, cmdst = self.initial_tbar()
         # cmds, cmdst = self.initial_scenario('C')
+
+        # ---------- Sort and process ----------
+        command_df = pd.DataFrame({'COMMAND': cmds, 'TIME': cmdst})
+        command_df.dropna(inplace=True)
+        command_df = command_df.sort_values(by=['TIME'])
+        cmds = list(command_df['COMMAND'])
+        cmdst = list(command_df['TIME'])
 
         return cmds, cmdst
 
@@ -521,12 +528,6 @@ class VEMMISRead:
             # Delete
             cmds   += list("DEL "+datafeed['CALLSIGN'])
             cmdst  += list(datafeed['SIM_END'])
-
-        # Sort
-        command_df = pd.DataFrame({'COMMAND': cmds, 'TIME': cmdst})
-        command_df = command_df.sort_values(by=['TIME'])
-        cmds = list(command_df['COMMAND'])
-        cmdst = list(command_df['TIME'])
 
         return cmds, cmdst
 
@@ -645,12 +646,6 @@ class VEMMISRead:
         cmds  += list("DEL "+other['CALLSIGN'])
         cmdst += list(other['SIM_END'])
 
-        # Sort
-        command_df = pd.DataFrame({'COMMAND': cmds, 'TIME': cmdst})
-        command_df = command_df.sort_values(by=['TIME'])
-        cmds = list(command_df['COMMAND'])
-        cmdst = list(command_df['TIME'])
-
         return cmds, cmdst
 
     def initial_scenario(self, runway):
@@ -672,7 +667,7 @@ class VEMMISRead:
         tma_entry = tma_entry.loc[tma_entry['TIME_TYPE'] == 'ACTUAL']
         tma_entry.rename(columns={'TIME': 'TMA_ENTRY_TIME'}, inplace=True)
         tma_entry['TMA_ENTRY_SIMTIME'] = (tma_entry['TMA_ENTRY_TIME'] -
-                                          min(self.flightdata['TIME_START'])).dt.total_seconds()
+                                          self.datetime0).dt.total_seconds()
 
         self.flightdata = pd.merge(self.flightdata, tma_entry[['FLIGHT_ID', 'TMA_ENTRY_SIMTIME']], on='FLIGHT_ID')
         self.flightdata.drop(self.flightdata[self.flightdata['TMA_ENTRY_SIMTIME'] < 0.].index, inplace=True)
@@ -775,12 +770,6 @@ class VEMMISRead:
             delete = self.flightdata.loc[self.flightdata['RUNWAY_IN'] == '18R']
             cmds += list("DEL " + delete['CALLSIGN'])
             cmdst += list(delete['SIM_END'])
-
-        # Sort
-        command_df = pd.DataFrame({'COMMAND': cmds, 'TIME': cmdst})
-        command_df = command_df.sort_values(by=['TIME'])
-        cmds = list(command_df['COMMAND'])
-        cmdst = list(command_df['TIME'])
 
         return cmds, cmdst
 
