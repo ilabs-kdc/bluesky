@@ -170,6 +170,20 @@ class Traffic(glh.RenderObject, layer=100):
         self.ac_symbol.set_attribs(lat=self.lat, lon=self.lon, color=self.color, orientation=self.hdg,
                                    instance_divisor=1)
 
+        # acverticeslvnl = np.array([(-0.5 * ac_size, -0.5 * ac_size),
+        #                            (0.5 * ac_size, -0.5 * ac_size),
+        #                            (0.5 * ac_size, 0.5 * ac_size),
+        #                            (-0.5 * ac_size, 0.5 * ac_size)],
+        #                           dtype=np.float32)  # a square
+
+        # acverticeslvnl = np.array([(0 * ac_size, 0 * ac_size),
+        #                            (0.5 * ac_size, 0.5 * ac_size),
+        #                            (-0.5 * ac_size, -0.5 * ac_size),
+        #                            (0 * ac_size, 0 * ac_size),
+        #                            (-0.5 * ac_size, 0.5 * ac_size),
+        #                            (0.5 * ac_size, -0.5 * ac_size)],
+        #                           dtype=np.float32)  # a cross
+
         acverticeslvnl = np.array([(-0.5 * ac_size, -0.5 * ac_size),
                                    (0.5 * ac_size, 0.5 * ac_size),
                                    (0.5 * ac_size, -0.5 * ac_size),
@@ -178,7 +192,19 @@ class Traffic(glh.RenderObject, layer=100):
                                    (0.5 * ac_size, -0.5 * ac_size),
                                    (0.5 * ac_size, 0.5 * ac_size),
                                    (-0.5 * ac_size, 0.5 * ac_size)],
-                                  dtype=np.float32)  # a square
+                                  dtype=np.float32)  # a square with cross
+
+        # acverticeslvnl = np.array([(-0.5 * ac_size, 0.5 * ac_size),
+        #                            (-0.5 * ac_size, -0.375 * ac_size),
+        #                            (-0.375 * ac_size, -0.5 * ac_size),
+        #                            (0.375 * ac_size, -0.5 * ac_size),
+        #                            (0.5 * ac_size, -0.375 * ac_size),
+        #                            (0.5 * ac_size, 0.5 * ac_size),
+        #                            (0.5 * ac_size, -0.375 * ac_size),
+        #                            (0.375 * ac_size, -0.5 * ac_size),
+        #                            (-0.375 * ac_size, -0.5 * ac_size),
+        #                            (-0.5 * ac_size, -0.375 * ac_size)],
+        #                           dtype=np.float32)  # a U
 
         # acverticeslvnl = np.array([(0 * ac_size, 0.5 * ac_size),
         #                           (-0.5 * ac_size, 0 * ac_size),
@@ -192,7 +218,7 @@ class Traffic(glh.RenderObject, layer=100):
         #                           (0 * ac_size, 0 * ac_size),
         #                           (0 * ac_size, -0.5 * ac_size),
         #                           (0 * ac_size, 0.5 * ac_size),
-        #                           (0 * ac_size, 0 * ac_size),],
+        #                           (0 * ac_size, 0 * ac_size)],
         #                          dtype=np.float32)  # a plus
 
         # acverticeslvnl = np.array([(0.5 * ac_size, 0.433 * ac_size),
@@ -215,7 +241,7 @@ class Traffic(glh.RenderObject, layer=100):
         #                            (-0.5 * ac_size, 0 * ac_size),
         #                            (-0.375 * ac_size, 0.330 * ac_size),
         #                            (-0.25 * ac_size, 0.433 * ac_size),
-        #                            (-0.125 * ac_size, 0.484 * ac_size),],
+        #                            (-0.125 * ac_size, 0.484 * ac_size)],
         #                           dtype=np.float32)  # a circle
 
         # acverticeslvnl = np.array([(0 * ac_size, 0.5 * ac_size),
@@ -242,23 +268,54 @@ class Traffic(glh.RenderObject, layer=100):
         #                            (0 * ac_size, 0 * ac_size)],
         #                           dtype=np.float32)  # a circle with plus
 
-        # acverticeslvnl = np.array([(0 * ac_size, 0.5 * ac_size),
-        #                           (-0.5 * ac_size, 0.5 * ac_size),
-        #                            (0.5 * ac_size, 0.5 * ac_size),
+        # acverticeslvnl = np.array([(0.375 * ac_size, 0.33 * ac_size),
+        #                            (0.5 * ac_size, 0 * ac_size),
+        #                            (0.375 * ac_size, -0.330 * ac_size),
+        #                            (0.25 * ac_size, -0.433 * ac_size),
+        #                            (0.125 * ac_size, -0.484 * ac_size),
+        #                            (0 * ac_size, -0.5 * ac_size),
+        #                            (-0.125 * ac_size, -0.484 * ac_size),
+        #                            (-0.25 * ac_size, -0.443 * ac_size),
+        #                            (-0.375 * ac_size, -0.330 * ac_size),
+        #                            (-0.5 * ac_size, 0 * ac_size),
+        #                            (-0.375 * ac_size, 0.330 * ac_size),
+        #                            (-0.25 * ac_size, 0.433 * ac_size),
+        #                            (-0.125 * ac_size, 0.484 * ac_size),
         #                            (0 * ac_size, 0.5 * ac_size),
-        #                            (0 * ac_size, -0.5 * ac_size),],
-        #                          dtype=np.float32)  # a T
+        #                            (0.125 * ac_size, 0.484 * ac_size),
+        #                            (0.25 * ac_size, 0.433 * ac_size),
+        #                            (0.375 * ac_size, 0.33 * ac_size),
+        #                            (-0.375 * ac_size, -0.330 * ac_size),],
+        #                           dtype=np.float32)  # a circle with diagonal
 
-        # acverticeslvnl = np.array([(-0.5 * ac_size, 0 * ac_size),
-        #                           (0.125 * ac_size, 0 * ac_size),
-        #                           (-0.5 * ac_size, 0 * ac_size),
-        #                           (-0.5 * ac_size, -0.5 * ac_size),
-        #                           (0.25 * ac_size, -0.5 * ac_size),
-        #                           (-0.5 * ac_size, -0.5 * ac_size),
-        #                           (-0.5 * ac_size, 0.5 * ac_size),
-        #                           (0.25 * ac_size, 0.5 * ac_size),
-        #                           (-0.5 * ac_size, 0.5 * ac_size),],
-        #                          dtype=np.float32)  # an E
+        # acverticeslvnl = np.array([(0 * ac_size, 0.5 * ac_size),
+        #                            (0 * ac_size, 0.17 * ac_size),
+        #                            (0.06 * ac_size, 0.159 * ac_size),
+        #                            (0.12 * ac_size, 0.12 * ac_size),
+        #                            (0.17 * ac_size, 0 * ac_size),
+        #                            (0.12 * ac_size, -0.12 * ac_size),
+        #                            (0.06 * ac_size, -0.159 * ac_size),
+        #                            (0 * ac_size, -0.17 * ac_size),
+        #                            (0 * ac_size, -0.5 * ac_size),
+        #                            (0 * ac_size, -0.17 * ac_size),
+        #                            (-0.06 * ac_size, -0.159 * ac_size),
+        #                            (-0.12 * ac_size, -0.12 * ac_size),
+        #                            (-0.17 * ac_size, 0 * ac_size),
+        #                            (-0.12 * ac_size, 0.12 * ac_size),
+        #                            (-0.06 * ac_size, 0.159 * ac_size),
+        #                            (0 * ac_size, 0.17 * ac_size)],
+        #                           dtype=np.float32)  # a small circle with line??
+
+        # acverticeslvnl = np.array([(0 * ac_size, 0 * ac_size),
+        #                           (0 * ac_size, 0.5 * ac_size),
+        #                           (0 * ac_size, -0.5 * ac_size),
+        #                           (0 * ac_size, 0 * ac_size),
+        #                           (0.433 * ac_size, 0.25 * ac_size),
+        #                           (-0.433 * ac_size, -0.25 * ac_size),
+        #                           (0 * ac_size, 0 * ac_size),
+        #                           (0.433 * ac_size, -0.25 * ac_size),
+        #                            (-0.433 * ac_size, 0.25 * ac_size)],
+        #                          dtype=np.float32)  # an asterisk
 
         # acverticeslvnl = np.array([(-0.375 * ac_size, 0 * ac_size),
         #                            (-0.375 * ac_size, -0.5 * ac_size),
@@ -269,8 +326,57 @@ class Traffic(glh.RenderObject, layer=100):
         #                            (0.125 * ac_size, 0.5 * ac_size),
         #                            (-0.125 * ac_size, 0.5 * ac_size),
         #                            (-0.375 * ac_size, 0 * ac_size),
-        #                            (0.375 * ac_size, 0 * ac_size),],
+        #                            (0.375 * ac_size, 0 * ac_size)],
         #                           dtype=np.float32)  # an A
+
+        # acverticeslvnl = np.array([(0 * ac_size, -0.5 * ac_size),
+        #                            (0.5 * ac_size, 0.5 * ac_size),
+        #                            (0.5 * ac_size, -0.5 * ac_size),
+        #                            (0.5 * ac_size, 0.5 * ac_size),
+        #                            (0 * ac_size, -0.5 * ac_size),
+        #                            (-0.5 * ac_size, 0.5 * ac_size),
+        #                            (-0.5 * ac_size, -0.5 * ac_size),
+        #                            (-0.5 * ac_size, 0.5 * ac_size)],
+        #                           dtype=np.float32)  # a M
+
+        # acverticeslvnl = np.array([(0 * ac_size, 0.5 * ac_size),
+        #                           (-0.5 * ac_size, 0.5 * ac_size),
+        #                            (0.5 * ac_size, 0.5 * ac_size),
+        #                            (0 * ac_size, 0.5 * ac_size),
+        #                            (0 * ac_size, -0.5 * ac_size)],
+        #                          dtype=np.float32)  # a T
+
+        # acverticeslvnl = np.array([(-0.375 * ac_size, 0 * ac_size),
+        #                           (0.25 * ac_size, 0 * ac_size),
+        #                           (-0.375 * ac_size, 0 * ac_size),
+        #                           (-0.375 * ac_size, -0.5 * ac_size),
+        #                           (0.375 * ac_size, -0.5 * ac_size),
+        #                           (-0.375 * ac_size, -0.5 * ac_size),
+        #                           (-0.375 * ac_size, 0.5 * ac_size),
+        #                           (0.375 * ac_size, 0.5 * ac_size),
+        #                           (-0.375 * ac_size, 0.5 * ac_size)],
+        #                          dtype=np.float32)  # an E
+
+        # acverticeslvnl = np.array([(-0.375 * ac_size, 0 * ac_size),
+        #                            (0.375 * ac_size, 0 * ac_size),
+        #                            (-0.375 * ac_size, 0 * ac_size),
+        #                            (-0.375 * ac_size, 0.5 * ac_size),
+        #                            (0.375 * ac_size, 0.5 * ac_size),
+        #                            (-0.375 * ac_size, 0.5 * ac_size),
+        #                            (-0.375 * ac_size, -0.5 * ac_size)],
+        #                           dtype=np.float32)  # a F
+
+        # acverticeslvnl = np.array([(-0.375 * ac_size, 0 * ac_size),
+        #                            (-0.375 * ac_size, -0.5 * ac_size),
+        #                            (-0.375 * ac_size, 0.5 * ac_size),
+        #                            (0.125 * ac_size, 0.5 * ac_size),
+        #                            (0.25 * ac_size, 0.4665 * ac_size),
+        #                            (0.375 * ac_size, 0.25 * ac_size),
+        #                            (0.25 * ac_size, 0.0335 * ac_size),
+        #                            (0.125 * ac_size, 0 * ac_size),
+        #                            (0.375 * ac_size, -0.5 * ac_size),
+        #                            (0.125 * ac_size, 0 * ac_size)],
+        #                             dtype=np.float32)  # a R
 
         self.ac_symbollvnl.create(vertex=acverticeslvnl)
         self.ac_symbollvnl.set_attribs(lat=self.lat, lon=self.lon, color=self.color, instance_divisor=1)

@@ -89,12 +89,20 @@ def all_manual():
 
 
 def stack(*cmdlines, sender_id=None):
-    """ Stack one or more commands separated by ";" """
+    """ Stack one or more commands separated by ";"
+
+        Convert to string added on 24-05-22 by Jan Post as a float was parsed
+    """
+
     for cmdline in cmdlines:
-        cmdline = cmdline.strip()
-        if cmdline:
-            for line in cmdline.split(";"):
-                Stack.cmdstack.append((line, sender_id))
+        try:
+            cmdline = cmdline.strip()
+            if cmdline:
+                for line in cmdline.split(";"):
+                    Stack.cmdstack.append((line, sender_id))
+        except:
+            print(cmdline)
+
 
 
 def forward(cmd=None, *args):
