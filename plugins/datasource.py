@@ -102,7 +102,7 @@ class DataSource(core.Entity):
         # Convert inputs
         datatype = datatype.upper()
         folder = folder.lower()
-        datapath = os.getcwd() + "\\scenario\\" + folder
+        datapath = os.getcwd() + "/scenario/" + folder
 
         # --------------- Check inputs ---------------
         # Data type
@@ -143,7 +143,7 @@ class DataSource(core.Entity):
         # Convert inputs
         datatype = datatype.upper()
         folder = folder.lower()
-        datapath = os.getcwd() + "\\scenario\\" + folder
+        datapath = os.getcwd() + "/scenario/" + folder
 
         # --------------- Check inputs ---------------
         # Data type
@@ -278,7 +278,7 @@ def check_inputs(path=None, files=None, date=None, time=None):
     # Check folder input
     if path:
         if not os.path.isdir(path):
-            path = path.replace("\\scenario\\", "\\scenario\\LVNL\\Data\\")
+            path = path.replace("/scenario/", "/scenario/LVNL/Data/")
             if not os.path.isdir(path):
                 return False, 'Folder does not exist'
 

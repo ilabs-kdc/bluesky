@@ -45,7 +45,7 @@ class VEMMISRead:
     """
 
     def __init__(self, data_path, date0=None, time0=None, deltat=None):
-        self.data_path = data_path.replace("\\scenario\\", "\\scenario\\LVNL\\Data\\")
+        self.data_path = data_path.replace("/scenario/", "/scenario/LVNL/Data/")
 
         self.date0 = date0
         self.time0 = time0
@@ -95,19 +95,19 @@ class VEMMISRead:
             for file in files:
                 if file.upper().startswith('FLIGHTS'):
                     # Read flight data
-                    self.flights = pd.read_csv(self.data_path+'\\'+file, sep=';')
+                    self.flights = pd.read_csv(self.data_path+'/'+file, sep=';')
                 elif file.upper().startswith('FLIGHTTIMES'):
                     # Read flight times data
-                    self.flighttimes = pd.read_csv(self.data_path+'\\'+file, sep=';')
+                    self.flighttimes = pd.read_csv(self.data_path+'/'+file, sep=';')
                 elif file.upper().startswith('TRACK'):
                     # Read track data
-                    self.tracks = pd.read_csv(self.data_path+'\\'+file, sep=';')
+                    self.tracks = pd.read_csv(self.data_path+'/'+file, sep=';')
                 elif file.upper().startswith('TAKEOFFS'):
                     # Read take-off data
-                    self.takeoffs = pd.read_csv(self.data_path+'\\'+file, sep=';')
+                    self.takeoffs = pd.read_csv(self.data_path+'/'+file, sep=';')
                 elif file.upper().startswith('LANDINGS'):
                     # Read landing data
-                    self.landings = pd.read_csv(self.data_path+'\\'+file, sep=';')
+                    self.landings = pd.read_csv(self.data_path+'/'+file, sep=';')
 
     def delete_nan(self):
         """
