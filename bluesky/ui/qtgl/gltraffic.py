@@ -193,6 +193,7 @@ class Traffic(glh.RenderObject, layer=100):
                                    (0.5 * ac_size, 0.5 * ac_size),
                                    (-0.5 * ac_size, 0.5 * ac_size)],
                                   dtype=np.float32)  # a square with cross
+        #checking push and pull
 
         # acverticeslvnl = np.array([(-0.5 * ac_size, 0.5 * ac_size),
         #                            (-0.5 * ac_size, -0.375 * ac_size),
