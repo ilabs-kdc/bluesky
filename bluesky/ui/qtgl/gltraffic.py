@@ -177,12 +177,12 @@ class Traffic(glh.RenderObject, layer=100):
         #                           dtype=np.float32)  # a square
 
         # acverticeslvnl = np.array([(0 * ac_size, 0 * ac_size),
-        #                            (0.5 * ac_size, 0.5 * ac_size),
-        #                            (-0.5 * ac_size, -0.5 * ac_size),
-        #                            (0 * ac_size, 0 * ac_size),
-        #                            (-0.5 * ac_size, 0.5 * ac_size),
-        #                            (0.5 * ac_size, -0.5 * ac_size)],
-        #                           dtype=np.float32)  # a cross
+        #                                (0.5 * ac_size, 0.5 * ac_size),
+        #                                (-0.5 * ac_size, -0.5 * ac_size),
+        #                                (0 * ac_size, 0 * ac_size),
+        #                                (-0.5 * ac_size, 0.5 * ac_size),
+        #                                (0.5 * ac_size, -0.5 * ac_size)],
+        #                               dtype=np.float32)  # a cross
 
         acverticeslvnl = np.array([(-0.5 * ac_size, -0.5 * ac_size),
                                    (0.5 * ac_size, 0.5 * ac_size),
@@ -193,8 +193,7 @@ class Traffic(glh.RenderObject, layer=100):
                                    (0.5 * ac_size, 0.5 * ac_size),
                                    (-0.5 * ac_size, 0.5 * ac_size)],
                                   dtype=np.float32)  # a square with cross
-        #checking push and pull
-
+        #push from pc
         # acverticeslvnl = np.array([(-0.5 * ac_size, 0.5 * ac_size),
         #                            (-0.5 * ac_size, -0.375 * ac_size),
         #                            (-0.375 * ac_size, -0.5 * ac_size),
