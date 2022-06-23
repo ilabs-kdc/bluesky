@@ -184,27 +184,27 @@ class Traffic(glh.RenderObject, layer=100):
         #                                (0.5 * ac_size, -0.5 * ac_size)],
         #                               dtype=np.float32)  # a cross
 
-        acverticeslvnl = np.array([(-0.5 * ac_size, -0.5 * ac_size),
-                                   (0.5 * ac_size, 0.5 * ac_size),
-                                   (0.5 * ac_size, -0.5 * ac_size),
-                                   (-0.5 * ac_size, 0.5 * ac_size),
-                                   (-0.5 * ac_size, -0.5 * ac_size),
-                                   (0.5 * ac_size, -0.5 * ac_size),
-                                   (0.5 * ac_size, 0.5 * ac_size),
-                                   (-0.5 * ac_size, 0.5 * ac_size)],
-                                  dtype=np.float32)  # a square with cross
-        #push from pc
-        # acverticeslvnl = np.array([(-0.5 * ac_size, 0.5 * ac_size),
-        #                            (-0.5 * ac_size, -0.375 * ac_size),
-        #                            (-0.375 * ac_size, -0.5 * ac_size),
-        #                            (0.375 * ac_size, -0.5 * ac_size),
-        #                            (0.5 * ac_size, -0.375 * ac_size),
+        # acverticeslvnl = np.array([(-0.5 * ac_size, -0.5 * ac_size),
         #                            (0.5 * ac_size, 0.5 * ac_size),
-        #                            (0.5 * ac_size, -0.375 * ac_size),
-        #                            (0.375 * ac_size, -0.5 * ac_size),
-        #                            (-0.375 * ac_size, -0.5 * ac_size),
-        #                            (-0.5 * ac_size, -0.375 * ac_size)],
-        #                           dtype=np.float32)  # a U
+        #                            (0.5 * ac_size, -0.5 * ac_size),
+        #                            (-0.5 * ac_size, 0.5 * ac_size),
+        #                            (-0.5 * ac_size, -0.5 * ac_size),
+        #                            (0.5 * ac_size, -0.5 * ac_size),
+        #                            (0.5 * ac_size, 0.5 * ac_size),
+        #                            (-0.5 * ac_size, 0.5 * ac_size)],
+        #                           dtype=np.float32)  # a square with cross
+        #push from pc
+        acverticeslvnl = np.array([(-0.5 * ac_size, 0.5 * ac_size),
+                                   (-0.5 * ac_size, -0.375 * ac_size),
+                                   (-0.375 * ac_size, -0.5 * ac_size),
+                                   (0.375 * ac_size, -0.5 * ac_size),
+                                   (0.5 * ac_size, -0.375 * ac_size),
+                                   (0.5 * ac_size, 0.5 * ac_size),
+                                   (0.5 * ac_size, -0.375 * ac_size),
+                                   (0.375 * ac_size, -0.5 * ac_size),
+                                   (-0.375 * ac_size, -0.5 * ac_size),
+                                   (-0.5 * ac_size, -0.375 * ac_size)],
+                                  dtype=np.float32)  # a U
 
         # acverticeslvnl = np.array([(0 * ac_size, 0.5 * ac_size),
         #                           (-0.5 * ac_size, 0 * ac_size),
