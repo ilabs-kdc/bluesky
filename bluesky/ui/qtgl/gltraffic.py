@@ -3,14 +3,13 @@ import socket
 
 import numpy as np
 import itertools
-from bluesky.ui.qtgl import glhelpers as glh
-from bluesky.ui.qtgl import console
-
 import bluesky as bs
-from bluesky.tools import geo, misc
 from bluesky import settings
-from bluesky.ui import palette
+from bluesky.tools import geo, misc
 from bluesky.tools.aero import ft, nm, kts
+from bluesky.ui import palette
+from bluesky.ui.qtgl import console
+from bluesky.ui.qtgl import glhelpers as glh
 
 # Register settings defaults
 settings.set_variable_defaults(
@@ -75,6 +74,8 @@ class Traffic(glh.RenderObject, layer=100):
         self.lbloffset  = glh.GLBuffer()
 
         # --------------- Aircraft objects ---------------
+
+        self.acvertices = glh.GLBuffer()
 
         self.ssd            = glh.VertexArrayObject(glh.gl.GL_POINTS, shader_type='ssd')
         self.protectedzone  = glh.Circle()
@@ -170,11 +171,14 @@ class Traffic(glh.RenderObject, layer=100):
         self.ac_symbol.set_attribs(lat=self.lat, lon=self.lon, color=self.color, orientation=self.hdg,
                                    instance_divisor=1)
 
-        # acverticeslvnl = np.array([(-0.5 * ac_size, -0.5 * ac_size),
-        #                            (0.5 * ac_size, -0.5 * ac_size),
-        #                            (0.5 * ac_size, 0.5 * ac_size),
-        #                            (-0.5 * ac_size, 0.5 * ac_size)],
-        #                           dtype=np.float32)  # a square
+        # self.acvertices.create(MAX_NAIRCRAFT * 24, glh.GLBuffer.StreamDraw) #new method
+
+
+        acverticeslvnl = np.array([(-0.5 * ac_size, -0.5 * ac_size),
+                                       (0.5 * ac_size, -0.5 * ac_size),
+                                       (0.5 * ac_size, 0.5 * ac_size),
+                                       (-0.5 * ac_size, 0.5 * ac_size)],
+                                      dtype=np.float32)  # a square
 
         acverticeslvnl = np.array([(0 * ac_size, 0 * ac_size),
                                        (0.5 * ac_size, 0.5 * ac_size),
@@ -378,6 +382,7 @@ class Traffic(glh.RenderObject, layer=100):
         #                            (0.125 * ac_size, 0 * ac_size)],
         #                             dtype=np.float32)  # a R
 
+        # self.ac_symbollvnl = glh.VertexArrayObject(glh.gl.GL_TRIANGLE_FAN) #ONLY FOR SQUAWK IDENTITY
         self.ac_symbollvnl.create(vertex=acverticeslvnl)
         self.ac_symbollvnl.set_attribs(lat=self.lat, lon=self.lon, color=self.color, instance_divisor=1)
 
@@ -658,6 +663,8 @@ class Traffic(glh.RenderObject, layer=100):
                 if i >= MAX_NAIRCRAFT:
                     break
 
+
+
                 # Labels
                 if actdata.atcmode == 'BLUESKY':
                     rawlabel += baselabel(actdata, data, i)
@@ -917,6 +924,15 @@ class Traffic(glh.RenderObject, layer=100):
 """
 Static functions
 """
+
+"add new function to get vertices separately"
+
+def get_vertices(actdata, data, i):
+    if data.alt <= 2000:
+        vertices = []
+    else:
+        vertices = []
+    return vertices
 
 
 def baselabel(actdata, data, i):
