@@ -402,13 +402,13 @@ class VEMMISRead:
 
         # ---------- T-Bar ----------
         # self.flightdata = self.flightdata.loc[self.flightdata['FLIGHT_TYPE'] == 'INBOUND']  # Only inbounds
-
-        # ---------- Scenario ----------
+        #
+        # # ---------- Scenario ----------
         # self.flightdata = self.flightdata.loc[self.flightdata['DEST'] == 'EHAM']  # Only inbound EHAM
         # self.flightdata = self.flightdata.loc[(self.flightdata['RUNWAY_IN'] == '18R') |
         #                                       (self.flightdata['RUNWAY_IN'] == '18C')]
-
-        return
+        #
+        # return
 
     def get_initial(self, swdatafeed):
         """
