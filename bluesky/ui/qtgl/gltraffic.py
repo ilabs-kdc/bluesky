@@ -63,7 +63,8 @@ class Traffic(glh.RenderObject, layer=100):
         self.asase          = glh.GLBuffer()
         self.histsymblat    = glh.GLBuffer()
         self.histsymblon    = glh.GLBuffer()
-        # self.acvertices = glh.GLBuffer()
+        self.acvertices = glh.GLBuffer()
+        self.acverticeslvnl = glh.GLBuffer() #new method try
 
         # --------------- Label data ---------------
 
@@ -75,8 +76,6 @@ class Traffic(glh.RenderObject, layer=100):
         self.lbloffset  = glh.GLBuffer()
 
         # --------------- Aircraft objects ---------------
-
-        self.acvertices = glh.GLBuffer()
 
         self.ssd            = glh.VertexArrayObject(glh.gl.GL_POINTS, shader_type='ssd')
         self.protectedzone  = glh.Circle()
@@ -138,7 +137,8 @@ class Traffic(glh.RenderObject, layer=100):
         self.rpz.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw)
         self.histsymblat.create(MAX_NAIRCRAFT * 16, glh.GLBuffer.StreamDraw)
         self.histsymblon.create(MAX_NAIRCRAFT * 16, glh.GLBuffer.StreamDraw)
-        #self.acsymbolcreate
+        self.acvertices.create(MAX_NAIRCRAFT * 24, glh.GLBuffer.StreamDraw) #giving a try - new method - bs
+        self.acverticeslvnl.create(MAX_NAIRCRAFT * 24, glh.GLBuffer.StreamDraw) #giving a try - new method - app
 
         # --------------- Label data ---------------
 
@@ -166,12 +166,17 @@ class Traffic(glh.RenderObject, layer=100):
 
         # --------------- Aircraft symbols ---------------
 
-        acvertices = np.array([(0.0, 0.5 * ac_size), (-0.5 * ac_size, -0.5 * ac_size),
+        self.acvertices = np.array([(0.0, 0.5 * ac_size), (-0.5 * ac_size, -0.5 * ac_size),
                                (0.0, -0.25 * ac_size), (0.5 * ac_size, -0.5 * ac_size)],
                               dtype=np.float32)
-        self.ac_symbol.create(vertex=acvertices)
+        self.ac_symbol.create(vertex=self.acvertices)
         self.ac_symbol.set_attribs(lat=self.lat, lon=self.lon, color=self.color, orientation=self.hdg,
-                                   instance_divisor=1)
+                                   instance_divisor=1)  #default_ac_shape
+
+        self.acverticeslvnl = get_vertices()  # arguments?
+        self.ac_symbollvnl.create(vertex=self.acverticeslvnl)  # call function to get vertices
+        self.ac_symbollvnl.set_attribs(lat=self.lat, lon=self.lon, color=self.color,
+                                       instance_divisor=1)  # called later - not here
 
         # --------------- History symbols ---------------
 
@@ -257,8 +262,6 @@ class Traffic(glh.RenderObject, layer=100):
         if actdata.atcmode == 'BLUESKY':
             self.ac_symbol.draw(n_instances=actdata.naircraft)
         else:
-            self.ac_symbollvnl.create(vertex=get_vertices(actdata,nodedata.acdata,i))  #call function to get vertices
-            self.ac_symbollvnl.set_attribs(lat=self.lat, lon=self.lon, color=self.color, instance_divisor=1) #called later - not here
             self.ac_symbollvnl.draw(n_instances=actdata.naircraft)
             if self.tbar_ac is not None and self.show_tbar_ac:
                 self.tbar_ac.draw(n_instances=actdata.naircraft)
@@ -717,29 +720,26 @@ Static functions
 
 "add new function to get vertices separately"
 
-def get_vertices(actdata, data, i):
+def get_vertices(): #arguments - same as APP ?
     ac_size = settings.ac_size
-    if data.id <= 'AC001':
-        vertices = np.array([(-0.5 * ac_size, -0.5 * ac_size),
-                                   (0.5 * ac_size, 0.5 * ac_size),
-                                   (0.5 * ac_size, -0.5 * ac_size),
-                                   (-0.5 * ac_size, 0.5 * ac_size),
-                                   (-0.5 * ac_size, -0.5 * ac_size),
+    # if data.id <= 'AC001':
+
+    acverticeslvnl = np.array([(-0.5 * ac_size, -0.5 * ac_size),
                                    (0.5 * ac_size, -0.5 * ac_size),
                                    (0.5 * ac_size, 0.5 * ac_size),
                                    (-0.5 * ac_size, 0.5 * ac_size)],
-                                  dtype=np.float32)  # a square
-    else:
-        vertices = np.array([(-0.375 * ac_size, 0 * ac_size),
-                                   (0.375 * ac_size, 0 * ac_size),
-                                   (-0.375 * ac_size, 0 * ac_size),
-                                   (-0.375 * ac_size, 0.5 * ac_size),
-                                   (0.375 * ac_size, 0.5 * ac_size),
-                                   (-0.375 * ac_size, 0.5 * ac_size),
-                                   (-0.375 * ac_size, -0.5 * ac_size)],
-                                  dtype=np.float32)  # a F
+                                  dtype=np.float32)
+    # else:
+    #     vertices = np.array([(-0.375 * ac_size, 0 * ac_size),
+    #                                (0.375 * ac_size, 0 * ac_size),
+    #                                (-0.375 * ac_size, 0 * ac_size),
+    #                                (-0.375 * ac_size, 0.5 * ac_size),
+    #                                (0.375 * ac_size, 0.5 * ac_size),
+    #                                (-0.375 * ac_size, 0.5 * ac_size),
+    #                                (-0.375 * ac_size, -0.5 * ac_size)],
+    #                               dtype=np.float32)  # a F
 
-    return vertices
+    return acverticeslvnl
 
 
 def baselabel(actdata, data, i):
