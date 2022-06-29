@@ -868,7 +868,7 @@ def applabel(actdata, data, i):
     if 'ACID' in ssrlbl:
         ssrlabel += '%-7s' % data.id[i][:7]
     else:
-        ssrlabel += 7*'A'
+        ssrlabel += 7*''
 
     return label, mlabel, ssrlabel
 
