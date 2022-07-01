@@ -80,7 +80,7 @@ class Traffic(glh.RenderObject, layer=100):
         self.ssd            = glh.VertexArrayObject(glh.gl.GL_POINTS, shader_type='ssd')
         self.protectedzone  = glh.Circle()
         self.ac_symbol      = glh.VertexArrayObject(glh.gl.GL_TRIANGLE_FAN)
-        self.ac_symbollvnl  = glh.VertexArrayObject(glh.gl.GL_LINE_LOOP)
+        self.ac_symbollvnl  = glh.VertexArrayObject(glh.gl.GL_LINE_LOOP)    #aircraft symbol initialisation
         self.hist_symbol    = glh.VertexArrayObject(glh.gl.GL_TRIANGLE_FAN)
         self.cpalines       = glh.VertexArrayObject(glh.gl.GL_LINES)
         self.route          = glh.VertexArrayObject(glh.gl.GL_LINES)
@@ -160,7 +160,7 @@ class Traffic(glh.RenderObject, layer=100):
                              trk0=self.hdg, asasn=self.asasn,
                              asase=self.asase, instance_divisor=1)
 
-        self.protectedzone.create(radius=1.0)
+        self.   protectedzone.create(radius=1.0)
         self.protectedzone.set_attribs(lat=self.lat, lon=self.lon, scale=self.rpz,
                                        color=self.color, instance_divisor=1)
 
@@ -173,10 +173,27 @@ class Traffic(glh.RenderObject, layer=100):
         self.ac_symbol.set_attribs(lat=self.lat, lon=self.lon, color=self.color, orientation=self.hdg,
                                    instance_divisor=1)  #default_ac_shape
 
-        self.acverticeslvnl = get_vertices()  # arguments?
+        self.acverticeslvnl = np.array([(0 * ac_size, 0.5 * ac_size),
+                                   (0.125 * ac_size, 0.484 * ac_size),
+                                   (0.25 * ac_size, 0.433 * ac_size),
+                                   (0.375 * ac_size, 0.33 * ac_size),
+                                   (0.5 * ac_size, 0 * ac_size),
+                                   (0.375 * ac_size, -0.330 * ac_size),
+                                   (0.25 * ac_size, -0.433 * ac_size),
+                                   (0.125 * ac_size, -0.484 * ac_size),
+                                   (0 * ac_size, -0.5 * ac_size),
+                                   (-0.125 * ac_size, -0.484 * ac_size),
+                                   (-0.25 * ac_size, -0.443 * ac_size),
+                                   (-0.375 * ac_size, -0.330 * ac_size),
+                                   (-0.5 * ac_size, 0 * ac_size),
+                                   (-0.375 * ac_size, 0.330 * ac_size),
+                                   (-0.25 * ac_size, 0.433 * ac_size),
+                                   (-0.125 * ac_size, 0.484 * ac_size)],
+                                  dtype=np.float32)  # a circle # before version
+
         self.ac_symbollvnl.create(vertex=self.acverticeslvnl)  # call function to get vertices
         self.ac_symbollvnl.set_attribs(lat=self.lat, lon=self.lon, color=self.color,
-                                       instance_divisor=1)  # called later - not here
+                                               instance_divisor=1)  # called later - not here
 
         # --------------- History symbols ---------------
 
@@ -418,6 +435,7 @@ class Traffic(glh.RenderObject, layer=100):
             self.rpz.update(np.array(data.rpz, dtype=np.float32))
             self.histsymblat.update(np.array(data.histsymblat, dtype=np.float32))
             self.histsymblon.update(np.array(data.histsymblon, dtype=np.float32))
+            # self.acverticeslvnl.update(np.array(data.acverticeslvnl), dtype=np.float32)
             if hasattr(data, 'asasn') and hasattr(data, 'asase'):
                 self.asasn.update(np.array(data.asasn, dtype=np.float32))
                 self.asase.update(np.array(data.asase, dtype=np.float32))
@@ -432,6 +450,7 @@ class Traffic(glh.RenderObject, layer=100):
             rawlabel_lvnl = ''
             rawmlabel   = ''
             rawssrlabel = ''
+            # rvertices = np.array([])
 
             # Label position
             if data.id != self.id_prev:
@@ -477,6 +496,9 @@ class Traffic(glh.RenderObject, layer=100):
                         rawlabel_lvnl += label
                         rawmlabel     += mlabel
                         rawssrlabel   += ssrlabel
+
+                    #aircraft symbol
+                    # rvertices += get_vertices(data,i)  # TRY GET THE VERTICES HERE
 
                     # Label position
                     if idchange:
@@ -545,6 +567,7 @@ class Traffic(glh.RenderObject, layer=100):
                 self.ssrlbl.update(np.array(rawssrlabel.encode('utf8'), dtype=np.string_))
                 # Update micro label
                 self.mlbl.update(np.array(rawmlabel.encode('utf8'), dtype=np.string_))
+                # self.ac_symbollvnl.update(rvertices.encode('utf8'), dtype=np.float_)
                 # Label position
                 self.labelpos = labelpos
                 self.id_prev = data.id
@@ -678,7 +701,7 @@ class Traffic(glh.RenderObject, layer=100):
                                    (0.5 * ac_size, -0.5 * ac_size),
                                    (0.5 * ac_size, 0.5 * ac_size),
                                    (-0.5 * ac_size, 0.5 * ac_size)],
-                                  dtype=np.float32)  # a square
+                                  dtype=np.float32)  # a square with diagonal
 
         # Initialize t-bar ac
         self.tbar_ac = glh.VertexArrayObject(glh.gl.GL_LINE_LOOP)
@@ -720,24 +743,25 @@ Static functions
 
 "add new function to get vertices separately"
 
-def get_vertices(): #arguments - same as APP ?
+def get_vertices(data, i): #arguments - same as APP ?
     ac_size = settings.ac_size
-    # if data.id <= 'AC001':
-
-    acverticeslvnl = np.array([(-0.5 * ac_size, -0.5 * ac_size),
-                                   (0.5 * ac_size, -0.5 * ac_size),
+    if data.id[i] == 'AC001':
+        acverticeslvnl = np.array([(0 * ac_size, 0 * ac_size),
                                    (0.5 * ac_size, 0.5 * ac_size),
-                                   (-0.5 * ac_size, 0.5 * ac_size)],
-                                  dtype=np.float32)
-    # else:
-    #     vertices = np.array([(-0.375 * ac_size, 0 * ac_size),
-    #                                (0.375 * ac_size, 0 * ac_size),
-    #                                (-0.375 * ac_size, 0 * ac_size),
-    #                                (-0.375 * ac_size, 0.5 * ac_size),
-    #                                (0.375 * ac_size, 0.5 * ac_size),
-    #                                (-0.375 * ac_size, 0.5 * ac_size),
-    #                                (-0.375 * ac_size, -0.5 * ac_size)],
-    #                               dtype=np.float32)  # a F
+                                   (-0.5 * ac_size, -0.5 * ac_size),
+                                   (0 * ac_size, 0 * ac_size),
+                                   (-0.5 * ac_size, 0.5 * ac_size),
+                                   (0.5 * ac_size, -0.5 * ac_size)],
+                                  dtype=np.float32)  # a cross
+    else:
+        acverticeslvnl = np.array([(-0.375 * ac_size, 0 * ac_size),
+                                   (0.375 * ac_size, 0 * ac_size),
+                                   (-0.375 * ac_size, 0 * ac_size),
+                                   (-0.375 * ac_size, 0.5 * ac_size),
+                                   (0.375 * ac_size, 0.5 * ac_size),
+                                   (-0.375 * ac_size, 0.5 * ac_size),
+                                   (-0.375 * ac_size, -0.5 * ac_size)],
+                                  dtype=np.float32)  # a F
 
     return acverticeslvnl
 
@@ -824,6 +848,7 @@ def applabel(actdata, data, i):
         else:
             label += '%-3s' % '   '
         label += '%-1s' % ' '
+
 
         # Line 4
         label += '%-3s' % leading_zeros(data.gs[i]/kts)[:3]
