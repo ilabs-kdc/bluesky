@@ -423,7 +423,7 @@ class Traffic(glh.RenderObject, layer=100):
             self.rpz.update(np.array(data.rpz, dtype=np.float32))
             self.histsymblat.update(np.array(data.histsymblat, dtype=np.float32))
             self.histsymblon.update(np.array(data.histsymblon, dtype=np.float32))
-            # self.acverticeslvnl.update(np.array(data.acverticeslvnl, dtype=np.float32))
+            # self.acverticeslvnl.update(data.acverticeslvnl, dtype=np.float32)
 
             if hasattr(data, 'asasn') and hasattr(data, 'asase'):
                 self.asasn.update(np.array(data.asasn, dtype=np.float32))
@@ -509,6 +509,10 @@ class Traffic(glh.RenderObject, layer=100):
                         else:
                             leaderlinepos[i] = [0, 0, 0, 0]
 
+
+                # GET AC SYMBOL VERTICES HERE?
+                rvertices = get_vertices(actdata, i)
+
                 # Colours
                 if inconf:
                     if actdata.ssd_conflicts:
@@ -555,9 +559,9 @@ class Traffic(glh.RenderObject, layer=100):
                 # Update micro label
                 self.mlbl.update(np.array(rawmlabel.encode('utf8'), dtype=np.string_))
                 #update acveritces
-                # self.acverticeslvnl = rvertices
-                # self.ac_symbollvnl.create(vertex=self.acverticeslvnl)
-                # self.ac_symbollvnl.update(lat=self.lat, lon=self.lon, color=self.color)
+                self.acverticeslvnl = rvertices
+                self.ac_symbollvnl.create(vertex=self.acverticeslvnl)
+                self.ac_symbollvnl.update(lat=self.lat, lon=self.lon, color=self.color)
                 #Label position
                 self.labelpos = labelpos
                 self.id_prev = data.id
