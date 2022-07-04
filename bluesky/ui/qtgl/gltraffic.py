@@ -63,7 +63,7 @@ class Traffic(glh.RenderObject, layer=100):
         self.asase          = glh.GLBuffer()
         self.histsymblat    = glh.GLBuffer()
         self.histsymblon    = glh.GLBuffer()
-        self.acvertices = glh.GLBuffer()
+        self.acvertices     = glh.GLBuffer()
         self.acverticeslvnl = glh.GLBuffer() #new method try
 
         # --------------- Label data ---------------
@@ -173,23 +173,11 @@ class Traffic(glh.RenderObject, layer=100):
         self.ac_symbol.set_attribs(lat=self.lat, lon=self.lon, color=self.color, orientation=self.hdg,
                                    instance_divisor=1)  #default_ac_shape
 
-        self.acverticeslvnl = np.array([(0 * ac_size, 0.5 * ac_size),
-                                   (0.125 * ac_size, 0.484 * ac_size),
-                                   (0.25 * ac_size, 0.433 * ac_size),
-                                   (0.375 * ac_size, 0.33 * ac_size),
-                                   (0.5 * ac_size, 0 * ac_size),
-                                   (0.375 * ac_size, -0.330 * ac_size),
-                                   (0.25 * ac_size, -0.433 * ac_size),
-                                   (0.125 * ac_size, -0.484 * ac_size),
-                                   (0 * ac_size, -0.5 * ac_size),
-                                   (-0.125 * ac_size, -0.484 * ac_size),
-                                   (-0.25 * ac_size, -0.443 * ac_size),
-                                   (-0.375 * ac_size, -0.330 * ac_size),
-                                   (-0.5 * ac_size, 0 * ac_size),
-                                   (-0.375 * ac_size, 0.330 * ac_size),
-                                   (-0.25 * ac_size, 0.433 * ac_size),
-                                   (-0.125 * ac_size, 0.484 * ac_size)],
-                                  dtype=np.float32)  # a circle # before version
+        self.acverticeslvnl = np.array([(-0.5 * ac_size, -0.5 * ac_size),
+                                       (0.5 * ac_size, -0.5 * ac_size),
+                                       (0.5 * ac_size, 0.5 * ac_size),
+                                       (-0.5 * ac_size, 0.5 * ac_size)],
+                                      dtype=np.float32)  # a square before version #arguments
 
         self.ac_symbollvnl.create(vertex=self.acverticeslvnl)  # call function to get vertices
         self.ac_symbollvnl.set_attribs(lat=self.lat, lon=self.lon, color=self.color,
@@ -435,7 +423,8 @@ class Traffic(glh.RenderObject, layer=100):
             self.rpz.update(np.array(data.rpz, dtype=np.float32))
             self.histsymblat.update(np.array(data.histsymblat, dtype=np.float32))
             self.histsymblon.update(np.array(data.histsymblon, dtype=np.float32))
-            # self.acverticeslvnl.update(np.array(data.acverticeslvnl), dtype=np.float32)
+            # self.acverticeslvnl.update(np.array(data.acverticeslvnl, dtype=np.float32))
+
             if hasattr(data, 'asasn') and hasattr(data, 'asase'):
                 self.asasn.update(np.array(data.asasn, dtype=np.float32))
                 self.asase.update(np.array(data.asase, dtype=np.float32))
@@ -450,7 +439,7 @@ class Traffic(glh.RenderObject, layer=100):
             rawlabel_lvnl = ''
             rawmlabel   = ''
             rawssrlabel = ''
-            # rvertices = np.array([])
+            rvertices = np.array([])
 
             # Label position
             if data.id != self.id_prev:
@@ -475,8 +464,6 @@ class Traffic(glh.RenderObject, layer=100):
                 if i >= MAX_NAIRCRAFT:
                     break
 
-
-
                 # Labels
                 if actdata.atcmode == 'BLUESKY':
                     rawlabel += baselabel(actdata, data, i)
@@ -497,8 +484,8 @@ class Traffic(glh.RenderObject, layer=100):
                         rawmlabel     += mlabel
                         rawssrlabel   += ssrlabel
 
-                    #aircraft symbol
-                    # rvertices += get_vertices(data,i)  # TRY GET THE VERTICES HERE
+                    # aircraft symbol
+                    # rvertices = get_vertices(actdata, i)  # TRY GET THE VERTICES HERE
 
                     # Label position
                     if idchange:
@@ -567,8 +554,11 @@ class Traffic(glh.RenderObject, layer=100):
                 self.ssrlbl.update(np.array(rawssrlabel.encode('utf8'), dtype=np.string_))
                 # Update micro label
                 self.mlbl.update(np.array(rawmlabel.encode('utf8'), dtype=np.string_))
-                # self.ac_symbollvnl.update(rvertices.encode('utf8'), dtype=np.float_)
-                # Label position
+                #update acveritces
+                # self.acverticeslvnl = rvertices
+                # self.ac_symbollvnl.create(vertex=self.acverticeslvnl)
+                # self.ac_symbollvnl.update(lat=self.lat, lon=self.lon, color=self.color)
+                #Label position
                 self.labelpos = labelpos
                 self.id_prev = data.id
                 self.lbloffset.update(np.array(self.labelpos, dtype=np.float32))
@@ -743,18 +733,19 @@ Static functions
 
 "add new function to get vertices separately"
 
-def get_vertices(data, i): #arguments - same as APP ?
+def get_vertices(actdata,i): #arguments - same as APP ?
     ac_size = settings.ac_size
-    if data.id[i] == 'AC001':
-        acverticeslvnl = np.array([(0 * ac_size, 0 * ac_size),
+    for ele in actdata.acdata.id:
+        if ele == 'AC001':
+            acverticeslvnl = np.array([(0 * ac_size, 0 * ac_size),
                                    (0.5 * ac_size, 0.5 * ac_size),
                                    (-0.5 * ac_size, -0.5 * ac_size),
                                    (0 * ac_size, 0 * ac_size),
                                    (-0.5 * ac_size, 0.5 * ac_size),
                                    (0.5 * ac_size, -0.5 * ac_size)],
                                   dtype=np.float32)  # a cross
-    else:
-        acverticeslvnl = np.array([(-0.375 * ac_size, 0 * ac_size),
+        else:
+            acverticeslvnl = np.array([(-0.375 * ac_size, 0 * ac_size),
                                    (0.375 * ac_size, 0 * ac_size),
                                    (-0.375 * ac_size, 0 * ac_size),
                                    (-0.375 * ac_size, 0.5 * ac_size),
@@ -889,11 +880,12 @@ def applabel(actdata, data, i):
             ssrlabel += '%-4s' % '    '
     else:
         ssrlabel += 7*' '
+
     # ACID
     if 'ACID' in ssrlbl:
         ssrlabel += '%-7s' % data.id[i][:7]
     else:
-        ssrlabel += 7*''
+        ssrlabel += 7 * ' '
 
     return label, mlabel, ssrlabel
 
