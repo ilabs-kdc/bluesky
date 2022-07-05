@@ -160,7 +160,7 @@ class Traffic(glh.RenderObject, layer=100):
                              trk0=self.hdg, asasn=self.asasn,
                              asase=self.asase, instance_divisor=1)
 
-        self.   protectedzone.create(radius=1.0)
+        self.protectedzone.create(radius=1.0)
         self.protectedzone.set_attribs(lat=self.lat, lon=self.lon, scale=self.rpz,
                                        color=self.color, instance_divisor=1)
 
@@ -423,7 +423,7 @@ class Traffic(glh.RenderObject, layer=100):
             self.rpz.update(np.array(data.rpz, dtype=np.float32))
             self.histsymblat.update(np.array(data.histsymblat, dtype=np.float32))
             self.histsymblon.update(np.array(data.histsymblon, dtype=np.float32))
-            # self.acverticeslvnl.update(data.acverticeslvnl, dtype=np.float32)
+            # self.acverticeslvnl.update(np.array(data.acverticeslvnl, dtype=np.float32))
 
             if hasattr(data, 'asasn') and hasattr(data, 'asase'):
                 self.asasn.update(np.array(data.asasn, dtype=np.float32))
@@ -485,7 +485,7 @@ class Traffic(glh.RenderObject, layer=100):
                         rawssrlabel   += ssrlabel
 
                     # aircraft symbol
-                    # rvertices = get_vertices(actdata, i)  # TRY GET THE VERTICES HERE
+                    rvertices = get_vertices(actdata)  # TRY GET THE VERTICES HERE
 
                     # Label position
                     if idchange:
@@ -511,7 +511,7 @@ class Traffic(glh.RenderObject, layer=100):
 
 
                 # GET AC SYMBOL VERTICES HERE?
-                rvertices = get_vertices(actdata, i)
+                # rvertices = get_vertices(actdata, i)
 
                 # Colours
                 if inconf:
@@ -737,7 +737,7 @@ Static functions
 
 "add new function to get vertices separately"
 
-def get_vertices(actdata,i): #arguments - same as APP ?
+def get_vertices(actdata): #arguments - same as APP ?
     ac_size = settings.ac_size
     for ele in actdata.acdata.id:
         if ele == 'AC001':
@@ -860,7 +860,7 @@ def applabel(actdata, data, i):
         label += 8*4*' '
 
     # Micro label
-    if data.mlbl[i]:
+    if data.mlbl[i]:   #NEVER EXECUTED
         if data.flighttype[i].upper() == 'OUTBOUND':
             mlabel += '  '+chr(30)
         else:
