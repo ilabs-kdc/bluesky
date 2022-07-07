@@ -423,7 +423,6 @@ class Traffic(glh.RenderObject, layer=100):
             self.rpz.update(np.array(data.rpz, dtype=np.float32))
             self.histsymblat.update(np.array(data.histsymblat, dtype=np.float32))
             self.histsymblon.update(np.array(data.histsymblon, dtype=np.float32))
-            # self.acverticeslvnl.update(np.array(data.acverticeslvnl, dtype=np.float32))
 
             if hasattr(data, 'asasn') and hasattr(data, 'asase'):
                 self.asasn.update(np.array(data.asasn, dtype=np.float32))
@@ -485,7 +484,7 @@ class Traffic(glh.RenderObject, layer=100):
                         rawssrlabel   += ssrlabel
 
                     # aircraft symbol
-                    rvertices = get_vertices(actdata)  # TRY GET THE VERTICES HERE
+                    rvertices = get_vertices(acid)  # TRY GET THE VERTICES HERE
 
                     # Label position
                     if idchange:
@@ -508,10 +507,6 @@ class Traffic(glh.RenderObject, layer=100):
                             leaderlinepos[i] = leaderline_vertices(actdata, labelpos[i][0], labelpos[i][1])
                         else:
                             leaderlinepos[i] = [0, 0, 0, 0]
-
-
-                # GET AC SYMBOL VERTICES HERE?
-                # rvertices = get_vertices(actdata, i)
 
                 # Colours
                 if inconf:
@@ -625,6 +620,14 @@ class Traffic(glh.RenderObject, layer=100):
 
             self.leaderlines.update(vertex=self.leaderlinepos)
 
+    # def update_tracksymbol(self):  #arguments?
+    #     actdata = bs.net.get_nodedata
+    #     idx = misc.get_indices(actdata.acdata.id, console.Console._instance.id_select)
+    #
+    #     if len(idx) != 0 and actdata.acdata.tracklbl[idx]:
+
+
+
     def plugin_init(self, blocksize=None, position=None):
         """
         Function: Initialize and create plugin buffers and attributes
@@ -737,19 +740,18 @@ Static functions
 
 "add new function to get vertices separately"
 
-def get_vertices(actdata): #arguments - same as APP ?
+def get_vertices(acid): #arguments - same as APP ?
     ac_size = settings.ac_size
-    for ele in actdata.acdata.id:
-        if ele == 'AC001':
-            acverticeslvnl = np.array([(0 * ac_size, 0 * ac_size),
+    if acid == 'AC001':
+        acverticeslvnl = np.array([(0 * ac_size, 0 * ac_size),
                                    (0.5 * ac_size, 0.5 * ac_size),
                                    (-0.5 * ac_size, -0.5 * ac_size),
                                    (0 * ac_size, 0 * ac_size),
                                    (-0.5 * ac_size, 0.5 * ac_size),
                                    (0.5 * ac_size, -0.5 * ac_size)],
                                   dtype=np.float32)  # a cross
-        else:
-            acverticeslvnl = np.array([(-0.375 * ac_size, 0 * ac_size),
+    else:
+        acverticeslvnl = np.array([(-0.375 * ac_size, 0 * ac_size),
                                    (0.375 * ac_size, 0 * ac_size),
                                    (-0.375 * ac_size, 0 * ac_size),
                                    (-0.375 * ac_size, 0.5 * ac_size),
