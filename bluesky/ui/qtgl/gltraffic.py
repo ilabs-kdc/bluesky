@@ -50,11 +50,15 @@ class Traffic(glh.RenderObject, layer=100):
         self.leaderlinepos  = np.array([], dtype=np.float32)
         bs.Signal('labelpos').connect(self.update_labelpos)
 
+        self.acverticeslvnl = np.array([], dtype=np.float32)
+        bs.Signal('acverticeslvnl').connect(self.update_tracksymbol)
+
         # --------------- Aircraft data ---------------
 
         self.hdg            = glh.GLBuffer()
         self.rpz            = glh.GLBuffer()
         self.lat            = glh.GLBuffer()
+        self.latapp         = glh.GLBuffer()
         self.lon            = glh.GLBuffer()
         self.alt            = glh.GLBuffer()
         self.tas            = glh.GLBuffer()
@@ -63,8 +67,6 @@ class Traffic(glh.RenderObject, layer=100):
         self.asase          = glh.GLBuffer()
         self.histsymblat    = glh.GLBuffer()
         self.histsymblon    = glh.GLBuffer()
-        self.acvertices     = glh.GLBuffer()
-        self.acverticeslvnl = glh.GLBuffer() #new method try
 
         # --------------- Label data ---------------
 
@@ -137,8 +139,8 @@ class Traffic(glh.RenderObject, layer=100):
         self.rpz.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw)
         self.histsymblat.create(MAX_NAIRCRAFT * 16, glh.GLBuffer.StreamDraw)
         self.histsymblon.create(MAX_NAIRCRAFT * 16, glh.GLBuffer.StreamDraw)
-        self.acvertices.create(MAX_NAIRCRAFT * 24, glh.GLBuffer.StreamDraw) #giving a try - new method - bs
-        self.acverticeslvnl.create(MAX_NAIRCRAFT * 24, glh.GLBuffer.StreamDraw) #giving a try - new method - app
+        # self.acvertices.create(MAX_NAIRCRAFT * 24, glh.GLBuffer.StreamDraw) #giving a try - new method - bs
+        # self.acverticeslvnl.create(MAX_NAIRCRAFT * 24, glh.GLBuffer.StreamDraw) #giving a try - new method - app
 
         # --------------- Label data ---------------
 
@@ -166,22 +168,30 @@ class Traffic(glh.RenderObject, layer=100):
 
         # --------------- Aircraft symbols ---------------
 
-        self.acvertices = np.array([(0.0, 0.5 * ac_size), (-0.5 * ac_size, -0.5 * ac_size),
+        acvertices = np.array([(0.0, 0.5 * ac_size), (-0.5 * ac_size, -0.5 * ac_size),
                                (0.0, -0.25 * ac_size), (0.5 * ac_size, -0.5 * ac_size)],
                               dtype=np.float32)
-        self.ac_symbol.create(vertex=self.acvertices)
+        self.ac_symbol.create(vertex=acvertices)
         self.ac_symbol.set_attribs(lat=self.lat, lon=self.lon, color=self.color, orientation=self.hdg,
                                    instance_divisor=1)  #default_ac_shape
 
-        self.acverticeslvnl = np.array([(-0.5 * ac_size, -0.5 * ac_size),
-                                       (0.5 * ac_size, -0.5 * ac_size),
-                                       (0.5 * ac_size, 0.5 * ac_size),
-                                       (-0.5 * ac_size, 0.5 * ac_size)],
-                                      dtype=np.float32)  # a square before version #arguments
+        self.acverticeslvnl = np.array([(-0.375 * ac_size, 0 * ac_size),
+                                   (-0.375 * ac_size, -0.5 * ac_size),
+                                   (-0.375 * ac_size, 0 * ac_size),
+                                   (0.375 * ac_size, 0 * ac_size),
+                                   (0.375 * ac_size, -0.5 * ac_size),
+                                   (0.375 * ac_size, 0 * ac_size),
+                                   (0.125 * ac_size, 0.5 * ac_size),
+                                   (-0.125 * ac_size, 0.5 * ac_size),
+                                   (-0.375 * ac_size, 0 * ac_size),
+                                   (0.375 * ac_size, 0 * ac_size)],
+                                  dtype=np.float32)  # an A
 
         self.ac_symbollvnl.create(vertex=self.acverticeslvnl)  # call function to get vertices
+        # self.ac_lvnlapp.create(vertex=self.acverticeslvnlapp)
+        # self.ac_lvnlapp.set_attribs(lat=self.latapp)
         self.ac_symbollvnl.set_attribs(lat=self.lat, lon=self.lon, color=self.color,
-                                               instance_divisor=1)  # called later - not here
+                                       instance_divisor=1)  # called later - not here
 
         # --------------- History symbols ---------------
 
@@ -417,6 +427,10 @@ class Traffic(glh.RenderObject, layer=100):
             # Update data in GPU buffers
             self.lat.update(np.array(data.lat, dtype=np.float32))
             self.lon.update(np.array(data.lon, dtype=np.float32))
+            # iapp = misc.get_indices(data.uco, 'APP')
+            # iacc = misc.get_indices(data.uco, 'ACC')
+            # iother = misc.get_indices(data.uco, ' ')
+            # self.latapp.update(np.array(data.lat[iapp]))
             self.hdg.update(np.array(data.trk, dtype=np.float32))
             self.alt.update(np.array(data.alt, dtype=np.float32))
             self.tas.update(np.array(data.tas, dtype=np.float32))
@@ -438,7 +452,7 @@ class Traffic(glh.RenderObject, layer=100):
             rawlabel_lvnl = ''
             rawmlabel   = ''
             rawssrlabel = ''
-            rvertices = np.array([])
+            # rvertices = np.array([])
 
             # Label position
             if data.id != self.id_prev:
@@ -449,6 +463,7 @@ class Traffic(glh.RenderObject, layer=100):
                 idcreate = []
             labelpos      = np.empty((min(naircraft, MAX_NAIRCRAFT), 2), dtype=np.float32)
             leaderlinepos = np.empty((min(naircraft, MAX_NAIRCRAFT), 4), dtype=np.float32)
+            acverticeslvnl = np.empty((min(naircraft, MAX_NAIRCRAFT), 12), dtype=np.float32)
 
             # Colors
             color       = np.empty((min(naircraft, MAX_NAIRCRAFT), 4), dtype=np.uint8)
@@ -484,7 +499,7 @@ class Traffic(glh.RenderObject, layer=100):
                         rawssrlabel   += ssrlabel
 
                     # aircraft symbol
-                    rvertices = get_vertices(acid)  # TRY GET THE VERTICES HERE
+                    # rvertices = get_vertices(actdata.acdata.id)  # TRY GET THE VERTICES HERE
 
                     # Label position
                     if idchange:
@@ -505,6 +520,7 @@ class Traffic(glh.RenderObject, layer=100):
 
                         if data.tracklbl[i]:
                             leaderlinepos[i] = leaderline_vertices(actdata, labelpos[i][0], labelpos[i][1])
+
                         else:
                             leaderlinepos[i] = [0, 0, 0, 0]
 
@@ -553,17 +569,20 @@ class Traffic(glh.RenderObject, layer=100):
                 self.ssrlbl.update(np.array(rawssrlabel.encode('utf8'), dtype=np.string_))
                 # Update micro label
                 self.mlbl.update(np.array(rawmlabel.encode('utf8'), dtype=np.string_))
-                #update acveritces
-                self.acverticeslvnl = rvertices
-                self.ac_symbollvnl.create(vertex=self.acverticeslvnl)
-                self.ac_symbollvnl.update(lat=self.lat, lon=self.lon, color=self.color)
+
                 #Label position
                 self.labelpos = labelpos
                 self.id_prev = data.id
                 self.lbloffset.update(np.array(self.labelpos, dtype=np.float32))
 
+                # update acveritces
+                # self.acverticeslvnl = rvertices
+                # self.ac_symbollvnl.create(vertex=self.acverticeslvnl)
+                # self.ac_symbollvnl.update(lat=self.lat, lon=self.lon, color=self.color)
+
                 if self.pluginlbloffset is not None:
                     self.pluginlbloffset.update(np.array(self.labelpos+self.pluginlabelpos, dtype=np.float32))
+
                 # Leader line update
                 self.leaderlinepos = leaderlinepos
                 self.leaderlines.update(vertex=self.leaderlinepos, lat=data.lat, lon=data.lon, color=color)
@@ -620,11 +639,17 @@ class Traffic(glh.RenderObject, layer=100):
 
             self.leaderlines.update(vertex=self.leaderlinepos)
 
-    # def update_tracksymbol(self):  #arguments?
-    #     actdata = bs.net.get_nodedata
-    #     idx = misc.get_indices(actdata.acdata.id, console.Console._instance.id_select)
-    #
-    #     if len(idx) != 0 and actdata.acdata.tracklbl[idx]:
+    def update_tracksymbol(self):  #arguments?
+        actdata = bs.net.get_nodedata()
+        idx = misc.get_indices(actdata.acdata.id, console.Console._instance.id_select)
+
+        if len(idx) != 0 and actdata.acdata.tracklbl[idx]:
+            # idx=idx[0]
+
+            self.acverticeslvnl = get_vertices(actdata.acdata.id)  #acid?  #shape mismatch error
+
+            self.ac_symbollvnl.create(vertex=self.acverticeslvnl)
+            self.ac_symbollvnl.update(lat=self.lat, lon=self.lon, color=self.color)  #update requied - not in leaderlines
 
 
 
@@ -742,23 +767,25 @@ Static functions
 
 def get_vertices(acid): #arguments - same as APP ?
     ac_size = settings.ac_size
-    if acid == 'AC001':
-        acverticeslvnl = np.array([(0 * ac_size, 0 * ac_size),
+
+    for ele in acid:
+        if ele == 'AC001':
+            acverticeslvnl = np.array([(0 * ac_size, 0 * ac_size),
+                              (0.5 * ac_size, 0 * ac_size),
+                              (-0.5 * ac_size, 0 * ac_size),
+                              (0 * ac_size, 0 * ac_size),
+                              (0 * ac_size, -0.5 * ac_size),
+                              (0 * ac_size, 0.5 * ac_size),
+                              (0 * ac_size, 0 * ac_size)],
+                             dtype=np.float32)  #a plus
+        else:
+            acverticeslvnl = np.array([(0 * ac_size, 0 * ac_size),
                                    (0.5 * ac_size, 0.5 * ac_size),
                                    (-0.5 * ac_size, -0.5 * ac_size),
                                    (0 * ac_size, 0 * ac_size),
                                    (-0.5 * ac_size, 0.5 * ac_size),
                                    (0.5 * ac_size, -0.5 * ac_size)],
                                   dtype=np.float32)  # a cross
-    else:
-        acverticeslvnl = np.array([(-0.375 * ac_size, 0 * ac_size),
-                                   (0.375 * ac_size, 0 * ac_size),
-                                   (-0.375 * ac_size, 0 * ac_size),
-                                   (-0.375 * ac_size, 0.5 * ac_size),
-                                   (0.375 * ac_size, 0.5 * ac_size),
-                                   (-0.375 * ac_size, 0.5 * ac_size),
-                                   (-0.375 * ac_size, -0.5 * ac_size)],
-                                  dtype=np.float32)  # a F
 
     return acverticeslvnl
 
