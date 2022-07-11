@@ -50,16 +50,20 @@ class Traffic(glh.RenderObject, layer=100):
         self.leaderlinepos  = np.array([], dtype=np.float32)
         bs.Signal('labelpos').connect(self.update_labelpos)
 
-        self.acverticeslvnl = np.array([], dtype=np.float32)
-        bs.Signal('acverticeslvnl').connect(self.update_tracksymbol)
+        self.acv_lvnlapp = np.array([], dtype=np.float32)
+        self.acv_lvnlacc = np.array([], dtype=np.float32)
+        # bs.Signal('acverticeslvnl').connect(self.update_tracksymbol)
 
         # --------------- Aircraft data ---------------
 
         self.hdg            = glh.GLBuffer()
         self.rpz            = glh.GLBuffer()
         self.lat            = glh.GLBuffer()
+        self.latacc         = glh.GLBuffer()  # initialise attributes
         self.latapp         = glh.GLBuffer()
         self.lon            = glh.GLBuffer()
+        self.lonacc         = glh.GLBuffer()
+        self.lonapp         = glh.GLBuffer()
         self.alt            = glh.GLBuffer()
         self.tas            = glh.GLBuffer()
         self.color          = glh.GLBuffer()
@@ -67,6 +71,8 @@ class Traffic(glh.RenderObject, layer=100):
         self.asase          = glh.GLBuffer()
         self.histsymblat    = glh.GLBuffer()
         self.histsymblon    = glh.GLBuffer()
+        self.acv_lvnlapp    = glh.GLBuffer()
+        self.acv_lvnlacc    = glh.GLBuffer()
 
         # --------------- Label data ---------------
 
@@ -82,7 +88,8 @@ class Traffic(glh.RenderObject, layer=100):
         self.ssd            = glh.VertexArrayObject(glh.gl.GL_POINTS, shader_type='ssd')
         self.protectedzone  = glh.Circle()
         self.ac_symbol      = glh.VertexArrayObject(glh.gl.GL_TRIANGLE_FAN)
-        self.ac_symbollvnl  = glh.VertexArrayObject(glh.gl.GL_LINE_LOOP)    #aircraft symbol initialisation
+        self.acs_lvnlacc    = glh.VertexArrayObject(glh.gl.GL_LINE_LOOP)    # initialise LVNL symbols VAO
+        self.acs_lvnlapp    = glh.VertexArrayObject(glh.gl.GL_LINE_LOOP)
         self.hist_symbol    = glh.VertexArrayObject(glh.gl.GL_TRIANGLE_FAN)
         self.cpalines       = glh.VertexArrayObject(glh.gl.GL_LINES)
         self.route          = glh.VertexArrayObject(glh.gl.GL_LINES)
@@ -92,8 +99,8 @@ class Traffic(glh.RenderObject, layer=100):
 
         # --------------- Label objects ---------------
 
-        self.aclabels       = glh.Text(settings.text_size, (8, 3))  # BlueSky default (ATC mode BLUESKY)
-        self.aclabels_lvnl  = glh.Text(settings.text_size, (8, 4))
+        self.aclabels       = glh.Text(settings.text_size, (8, 3))  # Default label BlueSky
+        self.aclabels_lvnl  = glh.Text(settings.text_size, (8, 4))  # LVNL label
         self.ssrlabels      = glh.Text(0.95*settings.text_size, (7, 3))
         self.microlabels    = glh.Text(0.95*settings.text_size, (3, 1))
 
@@ -130,7 +137,11 @@ class Traffic(glh.RenderObject, layer=100):
 
         self.hdg.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw)
         self.lat.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw)
+        self.latacc.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw) # create attributes
+        self.latapp.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw)
         self.lon.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw)
+        self.lonapp.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw)
+        self.lonacc.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw)
         self.alt.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw)
         self.tas.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw)
         self.color.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw)
@@ -139,8 +150,8 @@ class Traffic(glh.RenderObject, layer=100):
         self.rpz.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw)
         self.histsymblat.create(MAX_NAIRCRAFT * 16, glh.GLBuffer.StreamDraw)
         self.histsymblon.create(MAX_NAIRCRAFT * 16, glh.GLBuffer.StreamDraw)
-        # self.acvertices.create(MAX_NAIRCRAFT * 24, glh.GLBuffer.StreamDraw) #giving a try - new method - bs
-        # self.acverticeslvnl.create(MAX_NAIRCRAFT * 24, glh.GLBuffer.StreamDraw) #giving a try - new method - app
+        self.acv_lvnlapp.create(MAX_NAIRCRAFT * 24, glh.GLBuffer.StreamDraw) #giving a try - new method - APP
+        self.acv_lvnlacc.create(MAX_NAIRCRAFT * 24, glh.GLBuffer.StreamDraw) #giving a try - new method - ACC
 
         # --------------- Label data ---------------
 
@@ -173,9 +184,9 @@ class Traffic(glh.RenderObject, layer=100):
                               dtype=np.float32)
         self.ac_symbol.create(vertex=acvertices)
         self.ac_symbol.set_attribs(lat=self.lat, lon=self.lon, color=self.color, orientation=self.hdg,
-                                   instance_divisor=1)  #default_ac_shape
+                                   instance_divisor=1)  #default - BlueSky
 
-        self.acverticeslvnl = np.array([(-0.375 * ac_size, 0 * ac_size),
+        self.acv_lvnlacc = np.array([(-0.375 * ac_size, 0 * ac_size),
                                    (-0.375 * ac_size, -0.5 * ac_size),
                                    (-0.375 * ac_size, 0 * ac_size),
                                    (0.375 * ac_size, 0 * ac_size),
@@ -185,13 +196,20 @@ class Traffic(glh.RenderObject, layer=100):
                                    (-0.125 * ac_size, 0.5 * ac_size),
                                    (-0.375 * ac_size, 0 * ac_size),
                                    (0.375 * ac_size, 0 * ac_size)],
-                                  dtype=np.float32)  # an A
+                                  dtype=np.float32)  # A - UCO at ACC
 
-        self.ac_symbollvnl.create(vertex=self.acverticeslvnl)  # call function to get vertices
-        # self.ac_lvnlapp.create(vertex=self.acverticeslvnlapp)
-        # self.ac_lvnlapp.set_attribs(lat=self.latapp)
-        self.ac_symbollvnl.set_attribs(lat=self.lat, lon=self.lon, color=self.color,
-                                       instance_divisor=1)  # called later - not here
+        self.acs_lvnlacc.create(vertex=self.acv_lvnlacc)  # create LVNL ACC symbol
+        self.acs_lvnlacc.set_attribs(lat=self.latacc, lon=self.lonacc, color=self.color,
+                                       instance_divisor=1)
+
+        self.acv_lvnlapp = np.array([(0.5 * ac_size, 0.433 * ac_size),
+                                  (-0.5 * ac_size, 0.433 * ac_size),
+                                  (0 * ac_size, -0.433 * ac_size)],
+                                 dtype=np.float32) # triangle - UCO at APP
+
+        self.acs_lvnlapp.create(vertex=self.acv_lvnlapp)  # create LVNL APP symbol
+        self.acs_lvnlapp.set_attribs(lat=self.latapp, lon=self.lonapp, color=self.color,
+                                     instance_divisor=1)
 
         # --------------- History symbols ---------------
 
@@ -277,7 +295,9 @@ class Traffic(glh.RenderObject, layer=100):
         if actdata.atcmode == 'BLUESKY':
             self.ac_symbol.draw(n_instances=actdata.naircraft)
         else:
-            self.ac_symbollvnl.draw(n_instances=actdata.naircraft)
+            # self.acs_lvnlapp.draw(n_instances=1)
+            # self.acs_lvnlapp.draw()
+            self.acs_lvnlacc.draw(n_instances=actdata.naircraft)
             if self.tbar_ac is not None and self.show_tbar_ac:
                 self.tbar_ac.draw(n_instances=actdata.naircraft)
 
@@ -427,16 +447,19 @@ class Traffic(glh.RenderObject, layer=100):
             # Update data in GPU buffers
             self.lat.update(np.array(data.lat, dtype=np.float32))
             self.lon.update(np.array(data.lon, dtype=np.float32))
-            # iapp = misc.get_indices(data.uco, 'APP')
-            # iacc = misc.get_indices(data.uco, 'ACC')
-            # iother = misc.get_indices(data.uco, ' ')
-            # self.latapp.update(np.array(data.lat[iapp]))
+            iapp = misc.get_indices(actdata.acdata.id, 'APP')
+            iacc = misc.get_indices(data.uco, 'ACC')
+            self.latapp.update(np.array(data.lat[iapp], dtype=np.float32)) # Update attributes
+            self.latacc.update(np.array(data.lat[iacc], dtype=np.float32))
+            self.lonapp.update(np.array(data.lon[iapp], dtype=np.float32))
+            self.lonacc.update(np.array(data.lon[iacc], dtype=np.float32))
             self.hdg.update(np.array(data.trk, dtype=np.float32))
             self.alt.update(np.array(data.alt, dtype=np.float32))
             self.tas.update(np.array(data.tas, dtype=np.float32))
             self.rpz.update(np.array(data.rpz, dtype=np.float32))
             self.histsymblat.update(np.array(data.histsymblat, dtype=np.float32))
             self.histsymblon.update(np.array(data.histsymblon, dtype=np.float32))
+
 
             if hasattr(data, 'asasn') and hasattr(data, 'asase'):
                 self.asasn.update(np.array(data.asasn, dtype=np.float32))
@@ -463,7 +486,7 @@ class Traffic(glh.RenderObject, layer=100):
                 idcreate = []
             labelpos      = np.empty((min(naircraft, MAX_NAIRCRAFT), 2), dtype=np.float32)
             leaderlinepos = np.empty((min(naircraft, MAX_NAIRCRAFT), 4), dtype=np.float32)
-            acverticeslvnl = np.empty((min(naircraft, MAX_NAIRCRAFT), 12), dtype=np.float32)
+            # acverticeslvnl = np.empty((min(naircraft, MAX_NAIRCRAFT), 12), dtype=np.float32)
 
             # Colors
             color       = np.empty((min(naircraft, MAX_NAIRCRAFT), 4), dtype=np.uint8)
@@ -579,6 +602,14 @@ class Traffic(glh.RenderObject, layer=100):
                 # self.acverticeslvnl = rvertices
                 # self.ac_symbollvnl.create(vertex=self.acverticeslvnl)
                 # self.ac_symbollvnl.update(lat=self.lat, lon=self.lon, color=self.color)
+                #
+                # ac_size = settings.ac_size
+                # self.acv_lvnlapp = np.array([(0.5 * ac_size, 0.433 * ac_size),
+                #                              (-0.5 * ac_size, 0.433 * ac_size),
+                #                              (0 * ac_size, -0.433 * ac_size)],
+                #                             dtype=np.float32)
+                # self.acs_lvnlapp.create(vertex=self.acv_lvnlapp)
+                # self.acs_lvnlapp.update(lat=self.lat, lon=self.lon, color=self.color)
 
                 if self.pluginlbloffset is not None:
                     self.pluginlbloffset.update(np.array(self.labelpos+self.pluginlabelpos, dtype=np.float32))
@@ -639,17 +670,17 @@ class Traffic(glh.RenderObject, layer=100):
 
             self.leaderlines.update(vertex=self.leaderlinepos)
 
-    def update_tracksymbol(self):  #arguments?
-        actdata = bs.net.get_nodedata()
-        idx = misc.get_indices(actdata.acdata.id, console.Console._instance.id_select)
-
-        if len(idx) != 0 and actdata.acdata.tracklbl[idx]:
-            # idx=idx[0]
-
-            self.acverticeslvnl = get_vertices(actdata.acdata.id)  #acid?  #shape mismatch error
-
-            self.ac_symbollvnl.create(vertex=self.acverticeslvnl)
-            self.ac_symbollvnl.update(lat=self.lat, lon=self.lon, color=self.color)  #update requied - not in leaderlines
+    # def update_tracksymbol(self):  #arguments?
+    #     actdata = bs.net.get_nodedata()
+    #     idx = misc.get_indices(actdata.acdata.id, console.Console._instance.id_select)
+    #
+    #     if len(idx) != 0 and actdata.acdata.tracklbl[idx]:
+    #         # idx=idx[0]
+    #
+    #         self.acverticeslvnl = get_vertices(actdata.acdata.id)  #acid?  #shape mismatch error
+    #
+    #         self.ac_symbollvnl.create(vertex=self.acverticeslvnl)
+    #         self.ac_symbollvnl.update(lat=self.lat, lon=self.lon, color=self.color)  #update requied - not in leaderlines
 
 
 
@@ -765,29 +796,29 @@ Static functions
 
 "add new function to get vertices separately"
 
-def get_vertices(acid): #arguments - same as APP ?
-    ac_size = settings.ac_size
-
-    for ele in acid:
-        if ele == 'AC001':
-            acverticeslvnl = np.array([(0 * ac_size, 0 * ac_size),
-                              (0.5 * ac_size, 0 * ac_size),
-                              (-0.5 * ac_size, 0 * ac_size),
-                              (0 * ac_size, 0 * ac_size),
-                              (0 * ac_size, -0.5 * ac_size),
-                              (0 * ac_size, 0.5 * ac_size),
-                              (0 * ac_size, 0 * ac_size)],
-                             dtype=np.float32)  #a plus
-        else:
-            acverticeslvnl = np.array([(0 * ac_size, 0 * ac_size),
-                                   (0.5 * ac_size, 0.5 * ac_size),
-                                   (-0.5 * ac_size, -0.5 * ac_size),
-                                   (0 * ac_size, 0 * ac_size),
-                                   (-0.5 * ac_size, 0.5 * ac_size),
-                                   (0.5 * ac_size, -0.5 * ac_size)],
-                                  dtype=np.float32)  # a cross
-
-    return acverticeslvnl
+# def get_vertices(acid): #arguments - same as APP ?
+#     ac_size = settings.ac_size
+#
+#     for ele in acid:
+#         if ele == 'AC001':
+#             acverticeslvnl = np.array([(0 * ac_size, 0 * ac_size),
+#                               (0.5 * ac_size, 0 * ac_size),
+#                               (-0.5 * ac_size, 0 * ac_size),
+#                               (0 * ac_size, 0 * ac_size),
+#                               (0 * ac_size, -0.5 * ac_size),
+#                               (0 * ac_size, 0.5 * ac_size),
+#                               (0 * ac_size, 0 * ac_size)],
+#                              dtype=np.float32)  #a plus
+#         else:
+#             acverticeslvnl = np.array([(0 * ac_size, 0 * ac_size),
+#                                    (0.5 * ac_size, 0.5 * ac_size),
+#                                    (-0.5 * ac_size, -0.5 * ac_size),
+#                                    (0 * ac_size, 0 * ac_size),
+#                                    (-0.5 * ac_size, 0.5 * ac_size),
+#                                    (0.5 * ac_size, -0.5 * ac_size)],
+#                                   dtype=np.float32)  # a cross
+#
+#     return acverticeslvnl
 
 
 def baselabel(actdata, data, i):
