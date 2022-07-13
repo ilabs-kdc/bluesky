@@ -11,7 +11,11 @@ Created by  : Jacco M. Hoekstra
 """
 from time import strftime, gmtime
 import numpy as np
-
+try:
+    from collections.abc import Sized
+except ImportError:
+    # In python <3.3 collections.abc doesn't exist
+    from collections import Sized
 from .aero import cas2tas, mach2tas, kts, fpm, ft
 from .geo import magdec, latlondist
 import bluesky as bs
@@ -450,7 +454,7 @@ def get_indices(arr, items):
     Date: 1-12-2021
     """
 
-    if len(items) == 0 or len(arr) == 0:
+    if isinstance(items, Sized) and (len(items) == 0 or len(arr) == 0):
         i = np.array([]).astype(int)
     elif isinstance(items, (str, int, float)):
         i = np.nonzero(np.array([items])[:, None] == arr)[1].astype(int)
