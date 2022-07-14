@@ -293,18 +293,15 @@ class Traffic(glh.RenderObject, layer=100):
 
         # Draw traffic symbols
         if actdata.atcmode == 'BLUESKY':
-            self.ac_symbol.draw(n_instances=actdata.naircraft)
+            self.ac_symbol.draw(n_instances=actdata.naircraft-len(draw_uco(actdata.acdata.uco)))
         else:
-            # self.acs_lvnlapp.draw(n_instances=1)
-            # self.acs_lvnlapp.draw()
-            # self.acs_lvnlapp.draw(n_instances=actdata.acdata.histsymblat)
             self.acs_lvnlacc.draw(n_instances=actdata.naircraft)  #all a/c ip address are in uco like lat  #-len(actdata.acdata.uco)
             if self.tbar_ac is not None and self.show_tbar_ac:
                 self.tbar_ac.draw(n_instances=actdata.naircraft)
 
         # Draw UCO symbols
         if check_uco():
-            self.acs_lvnluco.draw(n_instances=len(actdata.acdata.uco))
+            self.acs_lvnluco.draw(n_instances=len(draw_uco(actdata.acdata.uco)))
 
         # Draw history symbols
         if actdata.show_histsymb and len(actdata.acdata.histsymblat) != 0:
@@ -427,6 +424,7 @@ class Traffic(glh.RenderObject, layer=100):
 
         self.glsurface.makeCurrent()
         actdata = bs.net.get_nodedata()
+        IP = socket.gethostbyname(socket.gethostname())
 
         # Filer on altitude
         if actdata.filteralt:
@@ -453,9 +451,9 @@ class Traffic(glh.RenderObject, layer=100):
             # Update data in GPU buffers
             self.lat.update(np.array(data.lat, dtype=np.float32))  #minus of selected
             self.lon.update(np.array(data.lon, dtype=np.float32))
-            # iuco = misc.get_indices(actdata.acdata.uco, 1234567)  #ip address
-            self.latuco.update(np.array(data.lat, dtype=np.float32))
-            self.lonuco.update(np.array(data.lon, dtype=np.float32))
+            iuco = misc.get_indices(actdata.acdata.uco, IP[-11:])  #ip address
+            self.latuco.update(np.array(data.lat[iuco], dtype=np.float32)) #attributes
+            self.lonuco.update(np.array(data.lon[iuco], dtype=np.float32))
             self.hdg.update(np.array(data.trk, dtype=np.float32))
             self.alt.update(np.array(data.alt, dtype=np.float32))
             self.tas.update(np.array(data.tas, dtype=np.float32))
@@ -888,9 +886,9 @@ def applabel(actdata, data, i):
 
         # Line 3
         label += '%-4s' % str(data.type[i])[:4]
-        if data.uco[i] == IP[-11:] and data.selhdg[i] != 0:
-            label += '%-3s' % leading_zeros(data.selhdg[i])[:3]
-        elif data.flighttype[i] == 'INBOUND':
+        # if data.uco[i] == IP[-11:] and data.selhdg[i] != 0:
+        #     label += '%-3s' % leading_zeros(data.selhdg[i])[:3]
+        if data.flighttype[i] == 'INBOUND':
             label += '%-3s' % data.arr[i].replace('ARTIP', 'ATP')[:3]
         elif data.flighttype[i] == 'OUTBOUND':
             label += '%-3s' % data.sid[i][:3]
@@ -1161,4 +1159,8 @@ def leaderline_vertices(actdata, offsetx, offsety):
     return vertices
 
 def check_uco():
-    return False
+    return True
+
+def draw_uco(uco):
+    uco = [i for i in uco if i != 0]
+    return uco
