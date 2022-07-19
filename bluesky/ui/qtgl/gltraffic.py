@@ -208,7 +208,7 @@ class Traffic(glh.RenderObject, layer=100):
         self.ac_symbol.set_attribs(lat=self.lat, lon=self.lon, color=self.color, orientation=self.hdg,
                                    instance_divisor=1)  #default - BlueSky
 
-        self.acv_lvnlacc = np.array([(-0.375 * ac_size, 0 * ac_size),
+        acv_lvnlacc = np.array([(-0.375 * ac_size, 0 * ac_size),
                                    (-0.375 * ac_size, -0.5 * ac_size),
                                    (-0.375 * ac_size, 0 * ac_size),
                                    (0.375 * ac_size, 0 * ac_size),
@@ -218,18 +218,18 @@ class Traffic(glh.RenderObject, layer=100):
                                    (-0.125 * ac_size, 0.5 * ac_size),
                                    (-0.375 * ac_size, 0 * ac_size),
                                    (0.375 * ac_size, 0 * ac_size)],
-                                  dtype=np.float32)  # A - UCO at ACC
+                                    dtype=np.float32)  # A - UCO at ACC
 
-        self.acs_lvnlacc.create(vertex=self.acv_lvnlacc)  # create LVNL ACC symbol
+        self.acs_lvnlacc.create(vertex=acv_lvnlacc)  # create LVNL ACC symbol - self required for vertices?
         self.acs_lvnlacc.set_attribs(lat=self.latacc, lon=self.lonacc, color=self.coloracc,
                                        instance_divisor=1)
 
-        self.acv_lvnluco = np.array([(0.5 * ac_size, 0.433 * ac_size),
+        acv_lvnluco = np.array([(0.5 * ac_size, 0.433 * ac_size),
                                     (-0.5 * ac_size, 0.433 * ac_size),
                                     (0 * ac_size, -0.433 * ac_size)],
                                     dtype=np.float32) # triangle - UCO at APP
 
-        self.acs_lvnluco.create(vertex=self.acv_lvnluco)  # create LVNL APP symbol
+        self.acs_lvnluco.create(vertex=acv_lvnluco)  # create LVNL APP symbol - self required for vertices?
         self.acs_lvnluco.set_attribs(lat=self.latuco, lon=self.lonuco, color=self.coloruco,
                                      instance_divisor=1)
 
@@ -316,7 +316,6 @@ class Traffic(glh.RenderObject, layer=100):
         # Draw UCO symbols
         # if check_uco():
         self.acs_lvnluco.draw(n_instances=len(draw_uco(actdata.acdata.uco)))
-            # print(draw_uco(actdata.acdata.uco))
 
         # Draw traffic symbols
         if actdata.atcmode == 'BLUESKY':
@@ -364,6 +363,8 @@ class Traffic(glh.RenderObject, layer=100):
         ''' Process incoming traffic data. '''
         if 'ACDATA' in changed_elems:
             self.update_aircraft_data(nodedata.acdata)
+            # self.acs_lvnluco.set_attribs(color=self.color)
+            # self.acs_lvnlacc.set_attribs(color=self.color)
         if 'ROUTEDATA' in changed_elems:
             self.update_route_data(nodedata.routedata)
         if 'TRAILS' in changed_elems:
@@ -374,6 +375,7 @@ class Traffic(glh.RenderObject, layer=100):
         if 'ATCMODE' in changed_elems:
             self.hist_symbol.set_attribs(color=palette.aircraft)
             # self.acs_lvnluco.set_attribs(color=self.color)
+            # self.acs_lvnlacc.set_attribs(color=self.color)
 
 
     def update_trails_data(self, lat0, lon0, lat1, lon1):
@@ -472,12 +474,12 @@ class Traffic(glh.RenderObject, layer=100):
             self.cpalines.set_vertex_count(0)
         else:
             iuco = misc.get_indices(actdata.acdata.uco, IP[-11:])  #ip address
-            self.lat.update(np.array(data.lat, dtype=np.float32))  # minus of selected
-            self.lon.update(np.array(data.lon, dtype=np.float32))
             self.latacc.update(np.array(remove_data(data.lat, iuco), dtype=np.float32))  # minus of selected
             self.lonacc.update(np.array(remove_data(data.lon, iuco), dtype=np.float32))
-            self.latuco.update(np.array(data.lat[iuco], dtype=np.float32)) #attributes
+            self.latuco.update(np.array(data.lat[iuco], dtype=np.float32))  # attributes
             self.lonuco.update(np.array(data.lon[iuco], dtype=np.float32))
+            self.lat.update(np.array(data.lat, dtype=np.float32))  # minus of selected
+            self.lon.update(np.array(data.lon, dtype=np.float32))
             self.hdg.update(np.array(data.trk, dtype=np.float32))
             self.alt.update(np.array(data.alt, dtype=np.float32))
             self.tas.update(np.array(data.tas, dtype=np.float32))
@@ -500,7 +502,6 @@ class Traffic(glh.RenderObject, layer=100):
             rawlabel_lvnl = ''
             rawmlabel   = ''
             rawssrlabel = ''
-            # rvertices = np.array([])
 
             # Label position
             if data.id != self.id_prev:
@@ -577,7 +578,7 @@ class Traffic(glh.RenderObject, layer=100):
                     cpalines[4 * confidx: 4 * confidx +
                              4] = [lat, lon, lat1, lon1]
                     confidx += 1
-                # Selected aircraft
+                # Selected aircraft  #additional - not in bluesky - elif statement
                 elif actdata.atcmode != 'BLUESKY' and acid == console.Console._instance.id_select:
                     rgb = (218, 218, 0) + (255,)
                     color[i, :] = rgb
@@ -601,9 +602,11 @@ class Traffic(glh.RenderObject, layer=100):
 
             self.cpalines.update(vertex=cpalines)
 
-            self.color.update(color)
+            self.color.update(np.array(color))   #no array initially - added
             self.coloruco.update(color[iuco])
-            self.coloracc.update(remove_data(color,iuco))
+            self.coloracc.update(remove_data(color, iuco))   #and also vertices??
+            # self.acs_lvnluco.set_attribs(color=self.color[iuco])  #glbuffer object not subscriptable
+            # self.acs_lvnlacc.set_attribs(color=self.color[remove_data(color, iuco)])
 
             # BlueSky default label (ATC mode BLUESKY)
             if actdata.atcmode == 'BLUESKY':

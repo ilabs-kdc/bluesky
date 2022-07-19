@@ -729,7 +729,7 @@ class VEMMISRead:
             setsim = self.flightdata.loc[self.flightdata['RUNWAY_IN'] == '18C']
         if runway == 'both':
             setsim = self.flightdata
-        cmds += list("SETSIM "+setsim['CALLSIGN'])
+        cmds += list("SETSIM"+setsim['CALLSIGN'])
         cmdst += list(setsim['TMA_ENTRY_SIMTIME'] + 0.01)
 
         # Routes
