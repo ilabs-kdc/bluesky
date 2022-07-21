@@ -57,18 +57,8 @@ class Traffic(glh.RenderObject, layer=100):
         self.lat            = glh.GLBuffer()
         self.lon            = glh.GLBuffer()
 
-        self.latacc         = glh.GLBuffer()
-        self.lonacc         = glh.GLBuffer()
-
-        # self.latapp         = glh.GLBuffer()
-        # self.lonapp         = glh.GLBuffer()
-        #
-        # self.lattwr         = glh.GLBuffer()
-        # self.lontwr         = glh.GLBuffer()
-        #
-        # self.latoth         = glh.GLBuffer()
-        # self.lonoth         = glh.GLBuffer()
-
+        self.latapp         = glh.GLBuffer()
+        self.lonapp         = glh.GLBuffer()
         self.latuco         = glh.GLBuffer()  # initialise attributes
         self.lonuco         = glh.GLBuffer()
 
@@ -76,7 +66,7 @@ class Traffic(glh.RenderObject, layer=100):
         self.tas            = glh.GLBuffer()
         self.color          = glh.GLBuffer()
 
-        self.coloracc       = glh.GLBuffer()
+        self.colorapp       = glh.GLBuffer()
         self.coloruco       = glh.GLBuffer()
 
         self.asasn          = glh.GLBuffer()
@@ -99,12 +89,9 @@ class Traffic(glh.RenderObject, layer=100):
         self.protectedzone  = glh.Circle()
 
         self.ac_symbol      = glh.VertexArrayObject(glh.gl.GL_TRIANGLE_FAN)
-        # self.ac_lvnlacc     = glh.VertexArrayObject(glh.gl.GL_LINE_LOOP)
-        # self.ac_lvnlapp     = glh.VertexArrayObject(glh.gl.GL_LINE_LOOP)
-        # self.ac_lvnltwr     = glh.VertexArrayObject(glh.gl.GL_LINE_LOOP)
-        # self.ac_lvnloth     = glh.VertexArrayObject(glh.gl.GL_LINE_LOOP)
 
-        self.acs_lvnlacc    = glh.VertexArrayObject(glh.gl.GL_LINE_LOOP)    # initialise LVNL symbols VAO
+        self.acs_lvnlacc    = glh.VertexArrayObject(glh.gl.GL_LINE_LOOP)
+        self.acs_lvnlapp    = glh.VertexArrayObject(glh.gl.GL_LINE_LOOP)    # initialise LVNL symbols VAO
         self.acs_lvnluco    = glh.VertexArrayObject(glh.gl.GL_LINE_LOOP)
 
         self.hist_symbol    = glh.VertexArrayObject(glh.gl.GL_TRIANGLE_FAN)
@@ -158,22 +145,21 @@ class Traffic(glh.RenderObject, layer=100):
 
         self.latuco.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw) # create attributes
         self.lonuco.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw)
-
-        self.latacc.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw)
-        self.lonacc.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw)
+        self.latapp.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw)
+        self.lonapp.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw)
 
         self.alt.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw)
         self.tas.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw)
         self.color.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw)
-        self.coloracc.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw)
+
+        self.colorapp.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw)
         self.coloruco.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw)
+
         self.asasn.create(MAX_NAIRCRAFT * 24, glh.GLBuffer.StreamDraw)
         self.asase.create(MAX_NAIRCRAFT * 24, glh.GLBuffer.StreamDraw)
         self.rpz.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw)
         self.histsymblat.create(MAX_NAIRCRAFT * 16, glh.GLBuffer.StreamDraw)
         self.histsymblon.create(MAX_NAIRCRAFT * 16, glh.GLBuffer.StreamDraw)
-        # self.acv_lvnlacc.create(MAX_NAIRCRAFT * 24, glh.GLBuffer.StreamDraw) #giving a try - new method - APP
-        # self.acv_lvnluco.create(MAX_NAIRCRAFT * 24, glh.GLBuffer.StreamDraw) #giving a try - new method - ACC
 
         # --------------- Label data ---------------
 
@@ -208,7 +194,20 @@ class Traffic(glh.RenderObject, layer=100):
         self.ac_symbol.set_attribs(lat=self.lat, lon=self.lon, color=self.color, orientation=self.hdg,
                                    instance_divisor=1)  #default - BlueSky
 
-        acv_lvnlacc = np.array([(-0.375 * ac_size, 0 * ac_size),
+        acv_lvnlacc = np.array([(-0.5 * ac_size, -0.5 * ac_size),
+                                   (0.5 * ac_size, 0.5 * ac_size),
+                                   (0.5 * ac_size, -0.5 * ac_size),
+                                   (-0.5 * ac_size, 0.5 * ac_size),
+                                   (-0.5 * ac_size, -0.5 * ac_size),
+                                   (0.5 * ac_size, -0.5 * ac_size),
+                                   (0.5 * ac_size, 0.5 * ac_size),
+                                   (-0.5 * ac_size, 0.5 * ac_size)],
+                                  dtype=np.float32)  # a square with diagonal - ACC MODE
+        self.acs_lvnlacc.create(vertex=acv_lvnlacc)
+        self.acs_lvnlacc.set_attribs(lat=self.lat, lon=self.lon, color=self.color,
+                                   instance_divisor=1)
+
+        acv_lvnlapp = np.array([(-0.375 * ac_size, 0 * ac_size),
                                    (-0.375 * ac_size, -0.5 * ac_size),
                                    (-0.375 * ac_size, 0 * ac_size),
                                    (0.375 * ac_size, 0 * ac_size),
@@ -218,10 +217,10 @@ class Traffic(glh.RenderObject, layer=100):
                                    (-0.125 * ac_size, 0.5 * ac_size),
                                    (-0.375 * ac_size, 0 * ac_size),
                                    (0.375 * ac_size, 0 * ac_size)],
-                                    dtype=np.float32)  # A - UCO at ACC
+                                    dtype=np.float32)  # A - UCO at ACC - APP Screen Initial Symbol
 
-        self.acs_lvnlacc.create(vertex=acv_lvnlacc)  # create LVNL ACC symbol - self required for vertices?
-        self.acs_lvnlacc.set_attribs(lat=self.latacc, lon=self.lonacc, color=self.coloracc,
+        self.acs_lvnlapp.create(vertex=acv_lvnlapp)
+        self.acs_lvnlapp.set_attribs(lat=self.latapp, lon=self.lonapp, color=self.colorapp,
                                        instance_divisor=1)
 
         acv_lvnluco = np.array([(0.5 * ac_size, 0.433 * ac_size),
@@ -313,15 +312,15 @@ class Traffic(glh.RenderObject, layer=100):
 
         self.shaderset.set_vertex_scale_type(self.shaderset.VERTEX_IS_SCREEN)
 
-        # Draw UCO symbols
-        # if check_uco():
-        self.acs_lvnluco.draw(n_instances=len(draw_uco(actdata.acdata.uco)))
-
         # Draw traffic symbols
         if actdata.atcmode == 'BLUESKY':
             self.ac_symbol.draw(n_instances=actdata.naircraft)
         else:
-            self.acs_lvnlacc.draw(n_instances=actdata.naircraft-len(draw_uco(actdata.acdata.uco)))  #all a/c ip address are in uco like lat #
+            if actdata.atcmode == 'APP':
+                self.acs_lvnlapp.draw(n_instances=actdata.naircraft- len(draw_uco(actdata.acdata.uco)))  # all a/c ip address are in uco like lat #
+                self.acs_lvnluco.draw(n_instances=len(draw_uco(actdata.acdata.uco)))
+            elif actdata.atcmode == 'ACC':
+                self.acs_lvnlacc.draw(n_instances=actdata.naircraft)
             if self.tbar_ac is not None and self.show_tbar_ac:
                 self.tbar_ac.draw(n_instances=actdata.naircraft)
 
@@ -363,8 +362,8 @@ class Traffic(glh.RenderObject, layer=100):
         ''' Process incoming traffic data. '''
         if 'ACDATA' in changed_elems:
             self.update_aircraft_data(nodedata.acdata)
-            # self.acs_lvnluco.set_attribs(color=self.color)
-            # self.acs_lvnlacc.set_attribs(color=self.color)
+            # self.acs_lvnluco.set_attribs(color=self.coloruco)
+            # self.acs_lvnlacc.set_attribs(color=self.colorapp)
         if 'ROUTEDATA' in changed_elems:
             self.update_route_data(nodedata.routedata)
         if 'TRAILS' in changed_elems:
@@ -374,8 +373,8 @@ class Traffic(glh.RenderObject, layer=100):
                                     nodedata.traillon1)
         if 'ATCMODE' in changed_elems:
             self.hist_symbol.set_attribs(color=palette.aircraft)
-            # self.acs_lvnluco.set_attribs(color=self.color)
-            # self.acs_lvnlacc.set_attribs(color=self.color)
+            # self.acs_lvnluco.set_attribs(color=self.coloruco)
+            # self.acs_lvnlacc.set_attribs(color=self.coloracc)
 
 
     def update_trails_data(self, lat0, lon0, lat1, lon1):
@@ -474,8 +473,8 @@ class Traffic(glh.RenderObject, layer=100):
             self.cpalines.set_vertex_count(0)
         else:
             iuco = misc.get_indices(actdata.acdata.uco, IP[-11:])  #ip address
-            self.latacc.update(np.array(remove_data(data.lat, iuco), dtype=np.float32))  # minus of selected
-            self.lonacc.update(np.array(remove_data(data.lon, iuco), dtype=np.float32))
+            self.latapp.update(np.array(remove_data(data.lat, iuco), dtype=np.float32))  # minus of selected
+            self.lonapp.update(np.array(remove_data(data.lon, iuco), dtype=np.float32))
             self.latuco.update(np.array(data.lat[iuco], dtype=np.float32))  # attributes
             self.lonuco.update(np.array(data.lon[iuco], dtype=np.float32))
             self.lat.update(np.array(data.lat, dtype=np.float32))  # minus of selected
@@ -601,12 +600,9 @@ class Traffic(glh.RenderObject, layer=100):
                 self.ssd.update(selssd=selssd)
 
             self.cpalines.update(vertex=cpalines)
-
-            self.color.update(np.array(color))   #no array initially - added
-            self.coloruco.update(color[iuco])
-            self.coloracc.update(remove_data(color, iuco))   #and also vertices??
-            # self.acs_lvnluco.set_attribs(color=self.color[iuco])  #glbuffer object not subscriptable
-            # self.acs_lvnlacc.set_attribs(color=self.color[remove_data(color, iuco)])
+            self.color.update(color)   #no array initially - added
+            self.coloruco.update(np.array(color[iuco], dtype=np.uint8))
+            self.colorapp.update(np.array(remove_data(color, iuco), dtype=np.uint8))  # and also vertices??
 
             # BlueSky default label (ATC mode BLUESKY)
             if actdata.atcmode == 'BLUESKY':
@@ -631,6 +627,9 @@ class Traffic(glh.RenderObject, layer=100):
                 # Leader line update
                 self.leaderlinepos = leaderlinepos
                 self.leaderlines.update(vertex=self.leaderlinepos, lat=data.lat, lon=data.lon, color=color)
+
+                # self.coloruco.update(color[iuco])
+                # self.coloracc.update(remove_data(color, iuco))  # and also vertices??
             
             # If there is a visible route, update the start position
             if self.route_acid in data.id:
@@ -800,38 +799,9 @@ class Traffic(glh.RenderObject, layer=100):
         # Draw
         self.show_tbar_ac = True
 
-
-
 """
 Static functions
 """
-
-"add new function to get vertices separately"
-
-# def get_vertices(acid): #arguments - same as APP ?
-#     ac_size = settings.ac_size
-#
-#     for ele in acid:
-#         if ele == 'AC001':
-#             acverticeslvnl = np.array([(0 * ac_size, 0 * ac_size),
-#                               (0.5 * ac_size, 0 * ac_size),
-#                               (-0.5 * ac_size, 0 * ac_size),
-#                               (0 * ac_size, 0 * ac_size),
-#                               (0 * ac_size, -0.5 * ac_size),
-#                               (0 * ac_size, 0.5 * ac_size),
-#                               (0 * ac_size, 0 * ac_size)],
-#                              dtype=np.float32)  #a plus
-#         else:
-#             acverticeslvnl = np.array([(0 * ac_size, 0 * ac_size),
-#                                    (0.5 * ac_size, 0.5 * ac_size),
-#                                    (-0.5 * ac_size, -0.5 * ac_size),
-#                                    (0 * ac_size, 0 * ac_size),
-#                                    (-0.5 * ac_size, 0.5 * ac_size),
-#                                    (0.5 * ac_size, -0.5 * ac_size)],
-#                                   dtype=np.float32)  # a cross
-#
-#     return acverticeslvnl
-
 
 def baselabel(actdata, data, i):
     """
@@ -1178,9 +1148,6 @@ def leaderline_vertices(actdata, offsetx, offsety):
 
     return vertices
 
-# def check_uco():
-#     return True
-
 def draw_uco(uco):
     uco = [i for i in uco if i != '0']
     return uco
@@ -1188,3 +1155,4 @@ def draw_uco(uco):
 def remove_data(data,idx):
     data = np.delete(data, idx)
     return data
+

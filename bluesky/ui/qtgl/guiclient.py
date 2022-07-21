@@ -881,7 +881,6 @@ class nodeData:
             self.show_wptlbl = False
             self.show_apt = 0
             self.show_aptlbl = False
-            # self.uco_update = True   #to initiate symbol change
         elif atcmode.upper() == 'ACC':
             self.show_map = False
             self.show_histsymb = True
@@ -890,7 +889,6 @@ class nodeData:
             self.show_wptlbl = False
             self.show_apt = 0
             self.show_aptlbl = False
-            self.uco_update = False
         elif atcmode.upper() == 'TWR':
             self.show_map = False
             self.show_histsymb = False
@@ -899,7 +897,6 @@ class nodeData:
             self.show_wptlbl = False
             self.show_apt = 0
             self.show_aptlbl = False
-            self.uco_update = False
         else:
             self.show_map = True
             self.show_histsymb = False
@@ -908,7 +905,6 @@ class nodeData:
             self.show_wptlbl = True
             self.show_apt = 1
             self.show_aptlbl = True
-            self.uco_update = False
 
 def getIPAddresses():
     from ctypes import Structure, windll, sizeof
