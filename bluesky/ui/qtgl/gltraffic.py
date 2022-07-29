@@ -224,9 +224,9 @@ class Traffic(glh.RenderObject, layer=100):
                                        instance_divisor=1)
 
         acv_lvnluco = np.array([(0.5 * ac_size, 0.433 * ac_size),
-                                    (-0.5 * ac_size, 0.433 * ac_size),
-                                    (0 * ac_size, -0.433 * ac_size)],
-                                    dtype=np.float32) # triangle - UCO at APP
+                                (-0.5 * ac_size, 0.433 * ac_size),
+                                (0 * ac_size, -0.433 * ac_size)],
+                                dtype=np.float32) # triangle - UCO at APP
 
         self.acs_lvnluco.create(vertex=acv_lvnluco)  # create LVNL APP symbol - self required for vertices?
         self.acs_lvnluco.set_attribs(lat=self.latuco, lon=self.lonuco, color=self.coloruco,
@@ -450,7 +450,7 @@ class Traffic(glh.RenderObject, layer=100):
         actdata = bs.net.get_nodedata()
         IP = socket.gethostbyname(socket.gethostname())
 
-        # Filer on altitude
+        # Filer on altitude     # BUG       # NEVER EXECUTED
         if actdata.filteralt:
             idx         = np.where((data.alt >= actdata.filteralt[0]) * (data.alt <= actdata.filteralt[1]))
             data.lat    = data.lat[idx]
@@ -578,7 +578,7 @@ class Traffic(glh.RenderObject, layer=100):
                              4] = [lat, lon, lat1, lon1]
                     confidx += 1
                 # Selected aircraft  #additional - not in bluesky - elif statement
-                elif actdata.atcmode != 'BLUESKY' and acid == console.Console._instance.id_select:
+                elif actdata.atcmode != 'BLUESKY' and acid==console.Console._instance.id_select:
                     rgb = (218, 218, 0) + (255,)
                     color[i, :] = rgb
                 else:
@@ -682,18 +682,6 @@ class Traffic(glh.RenderObject, layer=100):
             self.leaderlinepos[idx] = leaderline_vertices(actdata, self.labelpos[idx][0], self.labelpos[idx][1])
 
             self.leaderlines.update(vertex=self.leaderlinepos)
-
-    # def update_tracksymbol(self):  #arguments?
-    #     actdata = bs.net.get_nodedata()
-    #     idx = misc.get_indices(actdata.acdata.id, console.Console._instance.id_select)
-    #
-    #     if len(idx) != 0 and actdata.acdata.uco[idx]:
-    #         # idx=idx[0]
-    #
-    #         self.acverticeslvnl = get_vertices(actdata.acdata.id)  #acid?  #shape mismatch error
-    #
-    #         self.acs_lvnlacc.create(vertex=self.acverticeslvnl)
-    #         self.acs_lvnlacc.update(lat=self.lat, lon=self.lon, color=self.color)  #update requied - not in leaderlines
 
     def plugin_init(self, blocksize=None, position=None):
         """
@@ -886,7 +874,6 @@ def applabel(actdata, data, i):
             label += '%-3s' % '   '
         label += '%-1s' % ' '
 
-
         # Line 4
         label += '%-3s' % leading_zeros(data.gs[i]/kts)[:3]
         if data.wtc[i].upper() == 'H' or data.wtc[i].upper() == 'J':
@@ -902,7 +889,7 @@ def applabel(actdata, data, i):
         label += 8*4*' '
 
     # Micro label
-    if data.mlbl[i]:   #NEVER EXECUTED
+    if data.mlbl[i]:   # INBOUND NOT EXECUTING
         if data.flighttype[i].upper() == 'OUTBOUND':
             mlabel += '  '+chr(30)
         else:

@@ -127,9 +127,10 @@ class VEMMISRead:
         self.tracks = self.tracks.dropna(subset=['TIME', 'X', 'Y', 'MODE_C', 'SPEED', 'HEADING',
                                                  'FLIGHT_ID', 'T_START', 'T_END'])
 
-        # Flight times data
+        # Flight times data # ROUTE
         self.flighttimes = self.flighttimes.dropna(subset=['FLIGHT_ID', 'LOCATION_TYPE',
                                                            'LOCATION_NAME', 'TIME_TYPE', 'TIME'])
+
 
     def convert_data(self):
         """
@@ -399,16 +400,16 @@ class VEMMISRead:
         Created by: Bob van Dillen
         Date: 24-5-2022
         """
-
-        # ---------- T-Bar ----------
+        # # COMMENT - 404-410
+        # # ---------- T-Bar ----------
         # self.flightdata = self.flightdata.loc[self.flightdata['FLIGHT_TYPE'] == 'INBOUND']  # Only inbounds
         #
         # # ---------- Scenario ----------
         # self.flightdata = self.flightdata.loc[self.flightdata['DEST'] == 'EHAM']  # Only inbound EHAM
         # self.flightdata = self.flightdata.loc[(self.flightdata['RUNWAY_IN'] == '18R') |
         #                                       (self.flightdata['RUNWAY_IN'] == '18C')]
-        #
-        # return
+
+        return
 
     def get_initial(self, swdatafeed):
         """
@@ -425,8 +426,8 @@ class VEMMISRead:
 
         # ---------- Select the right initial commands method ----------
         cmds, cmdst = self.initial(swdatafeed)
-        # cmds, cmdst = self.initial_tbar()
-        # cmds, cmdst = self.initial_scenario('C')
+        # cmds, cmdst = self.initial_tbar()    #COMMENT - 429-430
+        # cmds, cmdst = self.initial_scenario('both')
 
         # ---------- Sort and process ----------
         command_df = pd.DataFrame({'COMMAND': cmds, 'TIME': cmdst})
@@ -737,7 +738,7 @@ class VEMMISRead:
         sugol = setsim.loc[setsim['STACK'] == 'SUGOL']
         river = setsim.loc[setsim['STACK'] == 'RIVER']
 
-        # if runway == 'both':
+        # if runway == 'both':   #IF CONDITION COMMENT
         #
         #     cmds += list("SETSIM " + self.flightdata['CALLSIGN'])
         #     cmdst += list(self.flightdata['TMA_ENTRY_SIMTIME'] + 0.01)
