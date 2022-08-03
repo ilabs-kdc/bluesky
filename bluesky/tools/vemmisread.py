@@ -425,9 +425,9 @@ class VEMMISRead:
         """
 
         # ---------- Select the right initial commands method ----------
-        cmds, cmdst = self.initial(swdatafeed)
+        # cmds, cmdst = self.initial(swdatafeed)
         # cmds, cmdst = self.initial_tbar()    #COMMENT - 429-430
-        # cmds, cmdst = self.initial_scenario('both')
+        cmds, cmdst = self.initial_scenario('both')
 
         # ---------- Sort and process ----------
         command_df = pd.DataFrame({'COMMAND': cmds, 'TIME': cmdst})

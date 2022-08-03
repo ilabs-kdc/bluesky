@@ -317,7 +317,7 @@ class Traffic(glh.RenderObject, layer=100):
             self.ac_symbol.draw(n_instances=actdata.naircraft)
         else:
             if actdata.atcmode == 'APP':
-                self.acs_lvnlapp.draw(n_instances=actdata.naircraft- len(draw_uco(actdata.acdata.uco)))  # all a/c ip address are in uco like lat #
+                self.acs_lvnlapp.draw(n_instances=actdata.naircraft - len(draw_uco(actdata.acdata.uco)))  # all a/c ip address are in uco like lat #
                 self.acs_lvnluco.draw(n_instances=len(draw_uco(actdata.acdata.uco)))
             elif actdata.atcmode == 'ACC':
                 self.acs_lvnlacc.draw(n_instances=actdata.naircraft)
@@ -627,9 +627,6 @@ class Traffic(glh.RenderObject, layer=100):
                 # Leader line update
                 self.leaderlinepos = leaderlinepos
                 self.leaderlines.update(vertex=self.leaderlinepos, lat=data.lat, lon=data.lon, color=color)
-
-                # self.coloruco.update(color[iuco])
-                # self.coloracc.update(remove_data(color, iuco))  # and also vertices??
             
             # If there is a visible route, update the start position
             if self.route_acid in data.id:
@@ -852,7 +849,7 @@ def applabel(actdata, data, i):
 
         # Line 2
         label += '%-3s' % leading_zeros(data.alt[i]/ft/100)[-3:]
-        if data.alt[i] < actdata.translvl:
+        if actdata.acdata.alt[i] < actdata.translvl:
             label += '%-1s' % 'A'
         else:
             label += '%-1s' % ' '
@@ -1135,11 +1132,11 @@ def leaderline_vertices(actdata, offsetx, offsety):
 
     return vertices
 
-def draw_uco(uco):
+def draw_uco(uco):   #for instances
     uco = [i for i in uco if i != '0']
     return uco
 
-def remove_data(data,idx):
+def remove_data(data,idx):   #for attributes
     data = np.delete(data, idx)
     return data
 
