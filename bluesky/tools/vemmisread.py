@@ -305,6 +305,8 @@ class VEMMISRead:
         # Add callsign to route data
         self.routedata = pd.merge(self.flighttimes, self.flights[['FLIGHT_ID', 'CALLSIGN']], on='FLIGHT_ID')
 
+        # self.routedata = self.routedata.loc[(self.routedata['LOCATION_TYPE'] == 'RP') & (self.routedata['TIME_TYPE'] == 'ACTUAL')]  #JUST ACTUAL AND RP POINTS
+
         # Add callsign to track data
         self.trackdata = pd.merge(self.tracks, self.flights[['FLIGHT_ID', 'CALLSIGN']], on='FLIGHT_ID')
 
@@ -425,9 +427,9 @@ class VEMMISRead:
         """
 
         # ---------- Select the right initial commands method ----------
-        # cmds, cmdst = self.initial(swdatafeed)
+        cmds, cmdst = self.initial(swdatafeed)
         # cmds, cmdst = self.initial_tbar()    #COMMENT - 429-430
-        cmds, cmdst = self.initial_scenario('both')
+        # cmds, cmdst = self.initial_scenario('both')
 
         # ---------- Sort and process ----------
         command_df = pd.DataFrame({'COMMAND': cmds, 'TIME': cmdst})
