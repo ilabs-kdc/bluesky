@@ -77,6 +77,7 @@ class VEMMISRead:
         self.merge_data()
         self.select_flights()
         self.add_callsign()
+        self.add_route()
         self.sort_data()
         self.get_simtime()
 
@@ -305,10 +306,23 @@ class VEMMISRead:
         # Add callsign to route data
         self.routedata = pd.merge(self.flighttimes, self.flights[['FLIGHT_ID', 'CALLSIGN']], on='FLIGHT_ID')
 
-        # self.routedata = self.routedata.loc[(self.routedata['LOCATION_TYPE'] == 'RP') & (self.routedata['TIME_TYPE'] == 'ACTUAL')]  #JUST ACTUAL AND RP POINTS
-
         # Add callsign to track data
         self.trackdata = pd.merge(self.tracks, self.flights[['FLIGHT_ID', 'CALLSIGN']], on='FLIGHT_ID')
+
+    def add_route(self):
+        """
+        Function: Get Route Points and Actual Time for route data
+        Args: -
+        Returns: -
+
+        Created by: Ajay Kumbhar
+        Date:
+        """
+
+        # Just Actual Time and Route Points
+        self.routedata = self.routedata.loc[self.routedata['LOCATION_TYPE'] == 'RP']
+        self.routedata = self.routedata.loc[self.routedata['TIME_TYPE'] == 'ACTUAL']
+
 
     def sort_data(self):
         """
@@ -402,11 +416,10 @@ class VEMMISRead:
         Created by: Bob van Dillen
         Date: 24-5-2022
         """
-        # # COMMENT - 404-410
-        # # ---------- T-Bar ----------
+        # ---------- T-Bar ----------
         # self.flightdata = self.flightdata.loc[self.flightdata['FLIGHT_TYPE'] == 'INBOUND']  # Only inbounds
         #
-        # # ---------- Scenario ----------
+        # ---------- Scenario ----------
         # self.flightdata = self.flightdata.loc[self.flightdata['DEST'] == 'EHAM']  # Only inbound EHAM
         # self.flightdata = self.flightdata.loc[(self.flightdata['RUNWAY_IN'] == '18R') |
         #                                       (self.flightdata['RUNWAY_IN'] == '18C')]
@@ -428,7 +441,7 @@ class VEMMISRead:
 
         # ---------- Select the right initial commands method ----------
         cmds, cmdst = self.initial(swdatafeed)
-        # cmds, cmdst = self.initial_tbar()    #COMMENT - 429-430
+        # cmds, cmdst = self.initial_tbar()
         # cmds, cmdst = self.initial_scenario('both')
 
         # ---------- Sort and process ----------

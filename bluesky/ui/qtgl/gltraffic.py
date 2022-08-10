@@ -495,6 +495,10 @@ class Traffic(glh.RenderObject, layer=100):
             self.histsymblat.update(np.array(data.histsymblat, dtype=np.float32))
             self.histsymblon.update(np.array(data.histsymblon, dtype=np.float32))
 
+            # for i in range(naircraft):
+            #     if actdata.acdata.alt[i] < actdata.translvl:
+            #         actdata.acdata.uco[i] = IP[-11:]
+
             if hasattr(data, 'asasn') and hasattr(data, 'asase'):
                 self.asasn.update(np.array(data.asasn, dtype=np.float32))
                 self.asase.update(np.array(data.asase, dtype=np.float32))
@@ -1140,11 +1144,32 @@ def leaderline_vertices(actdata, offsetx, offsety):
 
     return vertices
 
-def draw_uco(uco):   #for instances
+def draw_uco(uco): # for instances
+    """
+    Function: Returns aircrafts that are UCO
+    Args:
+        uco:    uco array [array with str dtype]
+    Returns:
+        uco:    uco array [array with str dtype]
+
+    Created by: Ajay Kumbhar
+    Date:
+    """
     uco = [i for i in uco if i != '0']
     return uco
 
-def remove_data(data,idx):   #for attributes
+def remove_data(data,idx): # for attributes
+    """
+    Function: Deletes the data for flights under UCO
+    Args:
+        data:   Data Array such as lat/lon [array]
+        idx:    Index of data need to be deleted [int]
+    Returns:
+        data:   Updated Data Array such as lat/lon [array]
+
+    Created by: Ajay Kumbhar
+    Date:
+        """
     data = np.delete(data, idx)
     return data
 
