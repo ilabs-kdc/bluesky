@@ -77,7 +77,7 @@ class VEMMISRead:
         self.merge_data()
         self.select_flights()
         self.add_callsign()
-        self.add_route()
+        # self.add_route()
         self.sort_data()
         self.get_simtime()
 
@@ -214,6 +214,7 @@ class VEMMISRead:
 
             # Apply start time
             self.tracks = self.tracks.loc[self.tracks['ACTUAL_TIME'] >= self.time0]
+            self.flighttimes = self.flighttimes.loc[self.flighttimes['TIME'] >= self.time0]
 
             self.datetime0 = self.time0
         else:
@@ -745,7 +746,7 @@ class VEMMISRead:
             setsim = self.flightdata.loc[self.flightdata['RUNWAY_IN'] == '18C']
         if runway == 'both':
             setsim = self.flightdata
-        cmds += list("SETSIM"+setsim['CALLSIGN'])
+        cmds += list("SETSIM "+setsim['CALLSIGN'])
         cmdst += list(setsim['TMA_ENTRY_SIMTIME'] + 0.01)
 
         # Routes
