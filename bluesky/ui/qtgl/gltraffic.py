@@ -495,9 +495,6 @@ class Traffic(glh.RenderObject, layer=100):
             self.histsymblat.update(np.array(data.histsymblat, dtype=np.float32))
             self.histsymblon.update(np.array(data.histsymblon, dtype=np.float32))
 
-            # for i in range(naircraft):
-            #     if actdata.acdata.alt[i] < actdata.translvl:
-            #         actdata.acdata.uco[i] = IP[-11:]
 
             if hasattr(data, 'asasn') and hasattr(data, 'asase'):
                 self.asasn.update(np.array(data.asasn, dtype=np.float32))

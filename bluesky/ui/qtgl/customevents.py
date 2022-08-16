@@ -44,7 +44,6 @@ class ACDataEvent(QEvent):
         self.nconf_cur  = 0
         self.nlos_cur   = 0
         self.translvl   = 0.0
-        self.uco_update = True
 
         # Update values
         if data:

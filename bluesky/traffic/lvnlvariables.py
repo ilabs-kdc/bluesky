@@ -12,6 +12,8 @@ from bluesky.core import Entity, timed_function
 from bluesky.tools import misc, geo
 from bluesky import stack
 
+# from bluesky import settings
+
 
 """
 Classes
@@ -247,11 +249,16 @@ class LVNLVariables(Entity):
         Created by: Mitchell de Keijzer
         Date: 12-5-2022
         """
-
+        # IP = socket.gethostbyname(socket.gethostname())
+        # print(IP[-11:])
+        # self.uco[idx] = True
+        # bs.traf.trafdatafeed.uco(idx)
+        # self.uco[idx] = IP[-11:]
 
         acid = bs.traf.id[idx]
         cmd = 'PCALL LVNL/Routes/' + route.upper() + ' ' + acid
         stack.stack(cmd)
+        # self.selucocmd(index, IP)
 
     @stack.command(name='AUTOLABEL', brief='AUTOLABEL (ON/OFF or ACID or ACID ON/OFF)')
     def setautolabel(self, *args):
