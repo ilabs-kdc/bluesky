@@ -805,6 +805,14 @@ class VEMMISRead:
         cmds  += list("SSRCODE "+acid+", "+acssr)
         cmdst += list(self.flightdata['SIM_START'] + 0.01)
 
+        inbound = self.flightdata.dropna(subset=['RUNWAY_IN'])
+        cmds += list("RWY " + inbound['CALLSIGN'] + ", " + inbound['RUNWAY_IN'])
+        cmdst += list(inbound['SIM_START'] + 0.01)
+
+        outbound = self.flightdata.dropna(subset=['RUNWAY_OUT'])
+        cmds += list("RWY " + outbound['CALLSIGN'] + ", " + outbound['RUNWAY_OUT'])
+        cmdst += list(outbound['SIM_START'] + 0.01)
+
         # STACK
         cmds    += list("ARR "+acid+", "+self.flightdata['STACK']+", OFF")
         cmdst   += list(self.flightdata['SIM_START'] + 0.01)
