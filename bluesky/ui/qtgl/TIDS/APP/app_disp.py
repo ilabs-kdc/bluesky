@@ -41,7 +41,7 @@ appdisp = [['a1',    'RANGE\nRADAR',    ['lambda: appdisp.close()',
            ['f2',    '',                None],
            ['f3',    'TID\nCTRL',       ['lambda: None']],
            ['f4',    'EXQ',             ['lambda: appdisp.close()',
-                                         'lambda: show_basetid("appmain", "appmain")']]
+                                         'lambda: show_basetid("appmain", "appmain")']]   #main
            ]
 
 

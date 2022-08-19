@@ -79,7 +79,7 @@ class LVNLVariables(Entity):
 
         self.autolabel[-n:] = True
         self.tracklbl[-n:]  = True
-        self.mlbl[-n:]      = False
+        self.mlbl[-n:]      = True   #False
 
     @timed_function(name='lvnlvars', dt=0.1)
     def update(self):
@@ -249,16 +249,10 @@ class LVNLVariables(Entity):
         Created by: Mitchell de Keijzer
         Date: 12-5-2022
         """
-        # IP = socket.gethostbyname(socket.gethostname())
-        # print(IP[-11:])
-        # self.uco[idx] = True
-        # bs.traf.trafdatafeed.uco(idx)
-        # self.uco[idx] = IP[-11:]
 
         acid = bs.traf.id[idx]
         cmd = 'PCALL LVNL/Routes/' + route.upper() + ' ' + acid
         stack.stack(cmd)
-        # self.selucocmd(index, IP)
 
     @stack.command(name='AUTOLABEL', brief='AUTOLABEL (ON/OFF or ACID or ACID ON/OFF)')
     def setautolabel(self, *args):

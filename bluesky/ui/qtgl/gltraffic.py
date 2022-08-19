@@ -556,7 +556,13 @@ class Traffic(glh.RenderObject, layer=100):
 
                     # Label position
                     if idchange:
-                        if acid in idcreate:
+                        if acid in idcreate:   #Label position for runways
+                            # if data.flighttype[i] == 'OUTBOUND':
+                            #     labelpos[i] = [-100, 0]
+                            #     leaderlinepos[i] = leaderline_vertices(actdata, -100, 0)
+                            # else:
+                            #     labelpos[i] = [50, 0]
+                            #     leaderlinepos[i] = leaderline_vertices(actdata, 50, 0)
                             labelpos[i] = [50, 0]
                             leaderlinepos[i] = leaderline_vertices(actdata, 50, 0)
 
@@ -900,6 +906,7 @@ def applabel(actdata, data, i):
             mlabel += '  '+chr(30)
         else:
             mlabel += '%-3s' % data.rwy[i][:3]
+            # print(data.rwy[i])
     else:
         mlabel += 3*' '
 

@@ -21,7 +21,9 @@ start = [['a1',    '',        None],
          ['c3',    'APP',     ['lambda: console.Console._instance.stack("ATCMODE APP")',
                                'lambda: console.Console._instance.stack("MAPTOGGLE MAP 252")',
                                'lambda: start.close()',
-                               'lambda: show_basetid("appmain","appmain")']],
+                               'lambda: show_basetid("appmain","appmain")'
+                               # 'lambda: show_basetid2("appdisp","appdisp")'
+                               ]],
          ['c4',    '',        None],
 
          ['d1',    '',        None],
