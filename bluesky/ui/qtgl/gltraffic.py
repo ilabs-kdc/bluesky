@@ -207,7 +207,7 @@ class Traffic(glh.RenderObject, layer=100):
                                    (0.5 * ac_size, -0.5 * ac_size),
                                    (0.5 * ac_size, 0.5 * ac_size),
                                    (-0.5 * ac_size, 0.5 * ac_size)],
-                                  dtype=np.float32)  # a square with diagonal - ACC MODE
+                                  dtype=np.float32)  # a square with diagonals - ACC MODE
         self.acs_lvnlacc.create(vertex=acv_lvnlacc)
         self.acs_lvnlacc.set_attribs(lat=self.lat, lon=self.lon, color=self.color,
                                    instance_divisor=1)
@@ -322,8 +322,10 @@ class Traffic(glh.RenderObject, layer=100):
             self.ac_symbol.draw(n_instances=actdata.naircraft)
         else:
             if actdata.atcmode == 'APP':
-                self.acs_lvnluacc.draw(n_instances=actdata.naircraft - len(draw_uco(actdata.acdata.uco)))
-                self.acs_lvnluapp.draw(n_instances=len(draw_uco(actdata.acdata.uco)))
+                if actdata.naircraft - len(draw_uco(actdata.acdata.uco)) != 0:
+                    self.acs_lvnluacc.draw(n_instances=actdata.naircraft - len(draw_uco(actdata.acdata.uco)))
+                if len(draw_uco(actdata.acdata.uco)) != 0:
+                    self.acs_lvnluapp.draw(n_instances=len(draw_uco(actdata.acdata.uco)))
             elif actdata.atcmode == 'ACC':
                 self.acs_lvnlacc.draw(n_instances=actdata.naircraft)
             if self.tbar_ac is not None and self.show_tbar_ac:
@@ -367,8 +369,6 @@ class Traffic(glh.RenderObject, layer=100):
         ''' Process incoming traffic data. '''
         if 'ACDATA' in changed_elems:
             self.update_aircraft_data(nodedata.acdata)
-            # self.acs_lvnluco.set_attribs(color=self.coloruco)
-            # self.acs_lvnlacc.set_attribs(color=self.colorapp)
         if 'ROUTEDATA' in changed_elems:
             self.update_route_data(nodedata.routedata)
         if 'TRAILS' in changed_elems:
@@ -378,9 +378,6 @@ class Traffic(glh.RenderObject, layer=100):
                                     nodedata.traillon1)
         if 'ATCMODE' in changed_elems:
             self.hist_symbol.set_attribs(color=palette.aircraft)
-            # self.acs_lvnluco.set_attribs(color=self.coloruco)
-            # self.acs_lvnlacc.set_attribs(color=self.coloracc)
-
 
     def update_trails_data(self, lat0, lon0, lat1, lon1):
         ''' Update GPU buffers with route data from simulation. '''
@@ -482,19 +479,19 @@ class Traffic(glh.RenderObject, layer=100):
             #         actdata.acdata.uco[i] = IP[-11:]
 
             iuco = misc.get_indices(actdata.acdata.uco, IP[-11:])  #ip address
+            self.lat.update(np.array(data.lat, dtype=np.float32))
+            self.lon.update(np.array(data.lon, dtype=np.float32))
             self.latuacc.update(np.array(remove_data(data.lat, iuco), dtype=np.float32))
             self.lonuacc.update(np.array(remove_data(data.lon, iuco), dtype=np.float32))
             self.latuapp.update(np.array(data.lat[iuco], dtype=np.float32))
             self.lonuapp.update(np.array(data.lon[iuco], dtype=np.float32))
-            self.lat.update(np.array(data.lat, dtype=np.float32))
-            self.lon.update(np.array(data.lon, dtype=np.float32))
+
             self.hdg.update(np.array(data.trk, dtype=np.float32))
             self.alt.update(np.array(data.alt, dtype=np.float32))
             self.tas.update(np.array(data.tas, dtype=np.float32))
             self.rpz.update(np.array(data.rpz, dtype=np.float32))
             self.histsymblat.update(np.array(data.histsymblat, dtype=np.float32))
             self.histsymblon.update(np.array(data.histsymblon, dtype=np.float32))
-
 
             if hasattr(data, 'asasn') and hasattr(data, 'asase'):
                 self.asasn.update(np.array(data.asasn, dtype=np.float32))
@@ -592,8 +589,8 @@ class Traffic(glh.RenderObject, layer=100):
                     cpalines[4 * confidx: 4 * confidx +
                              4] = [lat, lon, lat1, lon1]
                     confidx += 1
-                # Selected aircraft  #additional - not in bluesky - elif statement
-                elif actdata.atcmode != 'BLUESKY' and acid==console.Console._instance.id_select:
+                # Selected aircraft
+                elif actdata.atcmode != 'BLUESKY' and acid == console.Console._instance.id_select:
                     rgb = (218, 218, 0) + (255,)
                     color[i, :] = rgb
                 else:
@@ -615,9 +612,11 @@ class Traffic(glh.RenderObject, layer=100):
                 self.ssd.update(selssd=selssd)
 
             self.cpalines.update(vertex=cpalines)
-            self.color.update(color)   #no array initially - added
+
+            self.color.update(color)
             self.coloruapp.update(np.array(color[iuco], dtype=np.uint8))
             self.coloruacc.update(np.array(remove_data(color, iuco), dtype=np.uint8))  # and also vertices??
+
 
             # BlueSky default label (ATC mode BLUESKY)
             if actdata.atcmode == 'BLUESKY':
@@ -1174,6 +1173,6 @@ def remove_data(data,idx): # for attributes
     Created by: Ajay Kumbhar
     Date:
         """
-    data = np.delete(data, idx)
+    data = np.delete(data, idx, axis=0)
     return data
 
