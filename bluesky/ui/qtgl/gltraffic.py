@@ -554,14 +554,14 @@ class Traffic(glh.RenderObject, layer=100):
                     # Label position
                     if idchange:
                         if acid in idcreate:   #Label position for runways
-                            # if data.flighttype[i] == 'OUTBOUND':
-                            #     labelpos[i] = [-100, 0]
-                            #     leaderlinepos[i] = leaderline_vertices(actdata, -100, 0)
-                            # else:
-                            #     labelpos[i] = [50, 0]
-                            #     leaderlinepos[i] = leaderline_vertices(actdata, 50, 0)
-                            labelpos[i] = [50, 0]
-                            leaderlinepos[i] = leaderline_vertices(actdata, 50, 0)
+                            if data.rwy[i] == '18R':
+                                labelpos[i] = [-125, 0]
+                                leaderlinepos[i] = leaderline_vertices(actdata, -125, 0)
+                            else:
+                                labelpos[i] = [50, 0]
+                                leaderlinepos[i] = leaderline_vertices(actdata, 50, 0)
+                            # labelpos[i] = [50, 0]
+                            # leaderlinepos[i] = leaderline_vertices(actdata, 50, 0)
 
                         else:
                             i_prev = self.id_prev.index(acid)
@@ -615,7 +615,7 @@ class Traffic(glh.RenderObject, layer=100):
 
             self.color.update(color)
             self.coloruapp.update(np.array(color[iuco], dtype=np.uint8))
-            self.coloruacc.update(np.array(remove_data(color, iuco), dtype=np.uint8))  # and also vertices??
+            self.coloruacc.update(np.array(remove_data(color, iuco), dtype=np.uint8))
 
 
             # BlueSky default label (ATC mode BLUESKY)
@@ -1168,7 +1168,7 @@ def remove_data(data,idx): # for attributes
         data:   Data Array such as lat/lon [array]
         idx:    Index of data need to be deleted [int]
     Returns:
-        data:   Updated Data Array such as lat/lon [array]
+        data:   Updated Data Array such as lat/lon/color [array]
 
     Created by: Ajay Kumbhar
     Date:
