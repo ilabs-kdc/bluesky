@@ -176,7 +176,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QToolButton" name="tid">
+       <widget class="QToolButton" name="tid2">
         <property name="maximumSize">
          <size>
           <width>40</width>
@@ -192,7 +192,28 @@ background-color: rgb(0, 0, 0);
 </string>
         </property>
         <property name="text">
-         <string>TID</string>
+         <string>TID-D</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QToolButton" name="tid1">
+        <property name="maximumSize">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+        <property name="focusPolicy">
+         <enum>Qt::NoFocus</enum>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">color: rgb(255, 255, 255);
+background-color: rgb(0, 0, 0);
+</string>
+        </property>
+        <property name="text">
+         <string>TID-F</string>
         </property>
        </widget>
       </item>

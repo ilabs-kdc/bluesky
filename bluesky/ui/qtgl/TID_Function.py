@@ -5,7 +5,7 @@ Start window
 """
 
 
-start = [['a1',    '',        None],
+start2 = [['a1',    '',        None],
          ['a2',    '',        None],
          ['a3',    '',        None],
          ['a4',    '',        None],
