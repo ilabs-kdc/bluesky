@@ -16,8 +16,8 @@ from bluesky.tools.misc import tim2txt
 from bluesky.network import get_ownip
 from bluesky.ui import palette
 from bluesky.ui.qtgl import console
-import bluesky.ui.qtgl.TID_layouts as tid
-from bluesky.ui.qtgl.TIDS.base_tid import show_basetid, show_basetid2, tidclose
+import bluesky.ui.qtgl.TID_Function as tid
+from bluesky.ui.qtgl.TIDS.base_tid import show_basetid #show_basetid2, tidclose
 
 
 # Child windows
@@ -154,7 +154,8 @@ class MainWindow(QMainWindow):
                     self.SPD:         ['fwd.svg', 'Speed Command', self.buttonClicked],
                     self.DIRECT:      ['panright', 'Direct to', self.buttonClicked],
                     self.MANUAL:      ['stop.svg', 'Set Aircraft on Manual', self.buttonClicked],
-                    self.tid:       [None, 'TID', self.buttonClicked],
+                    self.tid1:        [None, 'TID', self.buttonClicked],
+                    self.tid2:        [None, 'TID', self.buttonClicked],
                     }
 
         for b in buttons.items():
@@ -391,9 +392,10 @@ class MainWindow(QMainWindow):
             console.process_cmdline("DIRECT")
         elif self.sender() == self.MANUAL:
             console.process_cmdline("MANUAL")
-        elif self.sender() == self.tid:
-            show_basetid('start', 'start')
-            show_basetid2('start', 'start')
+        elif self.sender() == self.tid1:
+            show_basetid('start', 'start2')
+        # elif self.sender() == self.tid2:
+        #     show_basetid2('start', 'start')
 
     def show_file_dialog(self):
         # Due to Qt5 bug in Windows, use temporarily Tkinter
