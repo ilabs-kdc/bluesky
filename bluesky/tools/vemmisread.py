@@ -408,9 +408,6 @@ class VEMMISRead:
         spd = np.array(self.trackdata['SPEED'])*aero.kts
         return simt, simt_count, acid, lat, lon, hdg, alt, spd
 
-    # def get_routedata(self):
-
-
     def select_flights(self):
         """
         Function: Select the desired flights
@@ -421,7 +418,7 @@ class VEMMISRead:
         Date: 24-5-2022
         """
         # # ---------- T-Bar ----------
-        self.flightdata = self.flightdata.loc[self.flightdata['FLIGHT_TYPE'] == 'INBOUND']  # Only inbounds
+        # self.flightdata = self.flightdata.loc[self.flightdata['FLIGHT_TYPE'] == 'INBOUND']  # Only inbounds
         #
         # # ---------- Scenario ----------
         # self.flightdata = self.flightdata.loc[self.flightdata['DEST'] == 'EHAM']  # Only inbound EHAM
@@ -463,7 +460,7 @@ class VEMMISRead:
         self.routedata = self.routedata.loc[self.routedata['TIME_TYPE'] == 'ACTUAL']
         self.flightdata = pd.merge(self.flightdata, self.routedata[['LOCATION_NAME', 'FLIGHT_ID']], on='FLIGHT_ID')
         self.flightdata.drop_duplicates(subset='FLIGHT_ID', keep='first', inplace=True)
-        print(self.flightdata.keys())
+        # print(self.flightdata.keys())
 
         cmds = ["DATE " + self.datetime0.strftime('%d %m %Y %H:%M:%S')]
         cmdst = [0.]
