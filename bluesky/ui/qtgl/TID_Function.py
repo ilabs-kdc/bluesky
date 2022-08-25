@@ -5,7 +5,7 @@ Start window
 """
 
 
-start2 = [['a1',    '',        None],
+start = [['a1',    '',        None],
          ['a2',    '',        None],
          ['a3',    '',        None],
          ['a4',    '',        None],
@@ -21,9 +21,7 @@ start2 = [['a1',    '',        None],
          ['c3',    'APP',     ['lambda: console.Console._instance.stack("ATCMODE APP")',
                                'lambda: console.Console._instance.stack("MAPTOGGLE MAP 252")',
                                'lambda: start.close()',
-                               'lambda: show_basetid("appmain","appmain")'
-                               # 'lambda: show_basetid2("appdisp","appdisp")'
-                               ]],
+                               'lambda: show_basetid("appmain","appmain")']],
          ['c4',    '',        None],
 
          ['d1',    '',        None],
@@ -92,7 +90,7 @@ wpts =  [ ['a1',    'RIVER',        'lambda:  tidclose(console.process_cmdline("
           ['b3',    '',        None],
           ['b4',    '',        None],
 
-          ['c1',    'ARTIP',        'lambda:  tidclose(console.process_cmdline("SUGOL"), "waypoints")'],
+          ['c1',    'ARTIP',        'lambda:  tidclose(console.process_cmdline("ARTIP"), "waypoints")'],
           ['c2',    '',        None],
           ['c3',    '',        None],
           ['c4',    '',        None],

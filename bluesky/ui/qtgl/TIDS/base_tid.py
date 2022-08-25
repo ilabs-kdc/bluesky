@@ -2,7 +2,7 @@ import bluesky as bs
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QDialog
 from PyQt5 import uic
-from bluesky.ui.qtgl import console
+from bluesky.ui.qtgl import console, gui
 from bluesky.ui.qtgl.TIDS import *
 from bluesky.tools import misc
 import platform
@@ -32,36 +32,38 @@ def show_basetid(name, layout):
 
     globals()[str(name)].setWindowTitle("Function TID")
     globals()[str(name)].setWindowModality(Qt.WindowModal)
+    # globals()[str(name)].windowHandle()
+    # globals()[str(name)].move(globals()[str(name)].left(), globals()[str(name)].top())
     globals()[str(name)].showMaximized()
     globals()[str(name)].setWindowFlag(Qt.WindowMinMaxButtonsHint)
     globals()[str(name)].exec()
 
-# def show_basetid2(name, layout):
-#     globals()[str(name)] = QDialog()
-#     uic.loadUi(os.path.join(bs.settings.gfx_path, 'TID_Base.ui'), globals()[str(name)])
-# #    uic.loadUi('C:/Users/LVNL_ILAB3/Desktop/bluesky-lvnl_2/bluesky-master2/data/graphics/TID_Base.ui', globals()[str(name)])
-#
-#     tid_load = 'bs.ui.qtgl.TID_layouts.' + layout
-#     dlgbuttons = eval(tid_load)
-#
-#     for i in range(len(dlgbuttons)):
-#         loop_button = 'pushButton_'+str(dlgbuttons[i][0])
-#         exec(name+'.'+loop_button+'.setText(dlgbuttons[i][1])')
-#         if dlgbuttons[i][2] != None:
-#             # Check for multiple functions
-#             if isinstance(dlgbuttons[i][2], list):
-#                 for func in dlgbuttons[i][2]:
-#                     exec(name + '.' + loop_button + '.clicked.connect(' + func + ')')
-#             else:
-#                 exec(name + '.' + loop_button + '.clicked.connect(' + dlgbuttons[i][2] + ')')
-#         else:
-#             exec(name+'.' + loop_button + '.setStyleSheet("border: 0px solid red;")')
-#
-#     globals()[str(name)].setWindowTitle("Display TID")
-#     globals()[str(name)].setWindowModality(Qt.WindowModal)
-#     globals()[str(name)].showMaximized()
-#     globals()[str(name)].setWindowFlag(Qt.WindowMinMaxButtonsHint)
-#     globals()[str(name)].exec()
+def show_basetid2(name, layout):
+    globals()[str(name)] = QDialog()
+    uic.loadUi(os.path.join(bs.settings.gfx_path, 'TID_Base.ui'), globals()[str(name)])
+#    uic.loadUi('C:/Users/LVNL_ILAB3/Desktop/bluesky-lvnl_2/bluesky-master2/data/graphics/TID_Base.ui', globals()[str(name)])
+
+    tid_load = 'bs.ui.qtgl.TID_Display.' + layout
+    dlgbuttons = eval(tid_load)
+
+    for i in range(len(dlgbuttons)):
+        loop_button = 'pushButton_'+str(dlgbuttons[i][0])
+        exec(name+'.'+loop_button+'.setText(dlgbuttons[i][1])')
+        if dlgbuttons[i][2] != None:
+            # Check for multiple functions
+            if isinstance(dlgbuttons[i][2], list):
+                for func in dlgbuttons[i][2]:
+                    exec(name + '.' + loop_button + '.clicked.connect(' + func + ')')
+            else:
+                exec(name + '.' + loop_button + '.clicked.connect(' + dlgbuttons[i][2] + ')')
+        else:
+            exec(name+'.' + loop_button + '.setStyleSheet("border: 0px solid red;")')
+
+    globals()[str(name)].setWindowTitle("Display TID")
+    globals()[str(name)].setWindowModality(Qt.WindowModal)
+    globals()[str(name)].showMaximized()
+    globals()[str(name)].setWindowFlag(Qt.WindowMinMaxButtonsHint)
+    globals()[str(name)].exec()
 
 
 # def tidclose(command, dialogname):

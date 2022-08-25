@@ -52,7 +52,7 @@ class LVNLVariables(Entity):
         with self.settrafarrays():
             self.arr        = []                           # Arrival/Stack
             self.autolabel  = np.array([], dtype=np.bool)  # Auto label change
-            self.dtg_tbar   = np.array([])                 # Distance to T-Bar point
+            self.dtg        = np.array([])                 # Distance to T-Bar point
             self.flighttype = []                           # Flight type
             self.mlbl       = np.array([], dtype=np.bool)  # Show micro label
             self.rel        = np.array([], dtype=np.bool)  # Release
@@ -136,13 +136,13 @@ class LVNLVariables(Entity):
         inirsi_gal2 = misc.get_indices(self.arr, "NIRSI_GAL02")
         inirsi_603 = misc.get_indices(self.arr, "NIRSI_AM603")
 
-        self.dtg_tbar[inirsi_gal1] = geo.kwikdist_matrix(bs.traf.lat[inirsi_gal1], bs.traf.lon[inirsi_gal1],
+        self.dtg[inirsi_gal1] = geo.kwikdist_matrix(bs.traf.lat[inirsi_gal1], bs.traf.lon[inirsi_gal1],
                                                          np.ones(len(inirsi_gal1))*52.47962777777778,
                                                          np.ones(len(inirsi_gal1))*4.513372222222222)
-        self.dtg_tbar[inirsi_gal2] = geo.kwikdist_matrix(bs.traf.lat[inirsi_gal2], bs.traf.lon[inirsi_gal2],
+        self.dtg[inirsi_gal2] = geo.kwikdist_matrix(bs.traf.lat[inirsi_gal2], bs.traf.lon[inirsi_gal2],
                                                          np.ones(len(inirsi_gal2))*52.58375277777778,
                                                          np.ones(len(inirsi_gal2))*4.342225)
-        self.dtg_tbar[inirsi_603] = geo.kwikdist_matrix(bs.traf.lat[inirsi_603], bs.traf.lon[inirsi_603],
+        self.dtg[inirsi_603] = geo.kwikdist_matrix(bs.traf.lat[inirsi_603], bs.traf.lon[inirsi_603],
                                                         np.ones(len(inirsi_603))*52.68805555555555,
                                                         np.ones(len(inirsi_603))*4.513333333333334)
 
