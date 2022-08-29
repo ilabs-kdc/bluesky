@@ -47,8 +47,7 @@ appmain = [['a1', 'UCO',            ['lambda: console.Console._instance.stack("E
            ['e4', 'UCO',            ['lambda: console.Console._instance.stack("EXQ CMD UCO")']],
 
            ['f1', 'COR',            ['lambda: console.Console._instance.stack("EXQ COR")']],  # tidcmds.cor()
-           ['f2', 'MAIN 2',         [#'lambda: appmain.close()',  #to open main2 in different window
-                                     'lambda: show_basetid("appdisp", "appdisp")']],
+           ['f2', 'MAIN 2',         ['lambda: show_basetid("appdisp", "appdisp")']],
            ['f3', '',             None],
            ['f4', 'EXQ',            ['lambda: console.Console._instance.stack("EXQ EXQ")']]  #lambda: tidcmds.exq()']]
            ]

@@ -1,6 +1,6 @@
 
 
-appdisp = [['a1',    'RANGE\nRADAR',    ['lambda: appdisp.close()',
+start = [['a1',    'RANGE\nRADAR',    ['lambda: appdisp.close()',   #appdisp
                                          'lambda: show_basetid("apprange", "apprange")']],
            ['a2',    '36',              ['lambda: console.Console._instance.stack("SCREENRANGE 36")']],
            ['a3',    '48',              ['lambda: console.Console._instance.stack("SCREENRANGE 48")']],

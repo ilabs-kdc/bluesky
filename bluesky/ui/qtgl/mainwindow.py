@@ -396,7 +396,7 @@ class MainWindow(QMainWindow):
         elif self.sender() == self.tid1:
             show_basetid('start', 'start')
         elif self.sender() == self.tid2:
-            show_basetid2('appdisp', 'appdisp')
+            show_basetid2('start', 'start')
 
     def show_file_dialog(self):
         # Due to Qt5 bug in Windows, use temporarily Tkinter

@@ -8,7 +8,7 @@ Changed: changed all commands for client position
 """
 
 appdisp = [['a1',    'RANGE\nRADAR',    ['lambda: appdisp.close()',
-                                         'lambda: show_basetid("apprange", "apprange")']],
+                                         'lambda: show_basetid2("apprange", "apprange")']],
            ['a2',    '36',              ['lambda: console.Console._instance.stack("SCREENRANGE 36")']],
            ['a3',    '48',              ['lambda: console.Console._instance.stack("SCREENRANGE 48")']],
            ['a4',    'CRO',             ['lambda: None']],
@@ -21,7 +21,7 @@ appdisp = [['a1',    'RANGE\nRADAR',    ['lambda: appdisp.close()',
            ['c1',    'OCK',             ['lambda: None']],
            ['c2',    'SIZE\nLISTS',     ['lambda: None']],
            ['c3',    'LABEL',           ['lambda: appdisp.close()',
-                                         'lambda: show_basetid("applabel", "applabel")']],
+                                         'lambda: show_basetid2("applabel", "applabel")']],
            ['c4',    'CBM',             ['lambda: None']],
 
            ['d1',    'OCO',             ['lambda: None']],
@@ -30,13 +30,13 @@ appdisp = [['a1',    'RANGE\nRADAR',    ['lambda: appdisp.close()',
            ['d4',    'CXY',             ['lambda: None']],
 
            ['e1',    'MAPS\nAPP',       ['lambda: appdisp.close()',
-                                         'lambda: show_basetid("appmaps", "appmaps")']],
+                                         'lambda: show_basetid2("appmaps", "appmaps")']],
            ['e2',    'TBS',             ['lambda: None']],
            ['e3',    'BRIGHT\nNESS',    ['lambda: None']],
            ['e4',    'CRM',             ['lambda: None']],
 
            ['f1',    'COR',             ['lambda: console.Console._instance.stack("EXQ COR")',
-                                         'lambda: appdisp.close()',
+                                         'lambda: appdisp2.close()',
                                          'lambda: show_basetid("appmain", "appmain")']],
            ['f2',    '',                None],
            ['f3',    'TID\nCTRL',       ['lambda: None']],
@@ -72,7 +72,7 @@ apprange = [['a1',    '16',                 ['lambda: console.Console._instance.
 
             ['f1',    '',                   None],
             ['f2',    'MAIN',               ['lambda: apprange.close()',
-                                             'lambda: show_basetid("appdisp", "appdisp")']],
+                                             'lambda: show_basetid2("appdisp", "appdisp")']],
             ['f3',    '',                   None],
             ['f4',    '',                   None]
             ]
@@ -105,7 +105,7 @@ applabel = [['a1',    'SLA\nLARGE',         ['lambda: None']],
 
             ['f1',    '',                   None],
             ['f2',    'MAIN',               ['lambda: applabel.close()',
-                                             'lambda: show_basetid("appdisp", "appdisp")']],
+                                             'lambda: show_basetid2("appdisp", "appdisp")']],
             ['f3',    '',                   None],
             ['f4',    'FULL\nLABEL',        ['lambda: tidcmds.exqcmd("TRACKLABEL")']]
             ]
