@@ -5,7 +5,7 @@ Start window
 """
 
 
-start = [['a1',    '',        None],
+start1 = [['a1',    '',        None],
          ['a2',    '',        None],
          ['a3',    '',        None],
          ['a4',    '',        None],
@@ -16,11 +16,10 @@ start = [['a1',    '',        None],
          ['b4',    '',        None],
 
          ['c1',    '',        None],
-         ['c2',    'BASE',    ['lambda: start.close()',
+         ['c2',    'BASE',    ['lambda: start1.close()',
                                'lambda: show_basetid("base", "base")']],
          ['c3',    'APP',     ['lambda: console.Console._instance.stack("ATCMODE APP")',
-                               'lambda: console.Console._instance.stack("MAPTOGGLE MAP 252")',
-                               'lambda: start.close()',
+                               'lambda: start1.close()',
                                'lambda: show_basetid("appmain","appmain")']],
          ['c4',    '',        None],
 
@@ -28,7 +27,7 @@ start = [['a1',    '',        None],
          ['d2',    '',        None],
          ['d3',    'ACC',     ['lambda: console.Console._instance.stack("ATCMODE ACC")',
                                'lambda: console.Console._instance.stack("MAPTOGGLE MAP 751; MAPTOGGLE MAP 752")',
-                               'lambda: start.close()',
+                               'lambda: start1.close()',
                                'lambda: show_basetid("accmain", "accmain")']],
          ['d4',    '',        None],
 

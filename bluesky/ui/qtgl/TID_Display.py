@@ -1,39 +1,37 @@
+from bluesky.ui.qtgl.TIDS import *
 
+start2 = [['a1',    '',        None],
+         ['a2',    '',        None],
+         ['a3',    '',        None],
+         ['a4',    '',        None],
 
-start = [['a1',    'RANGE\nRADAR',    ['lambda: appdisp.close()',   #appdisp
-                                         'lambda: show_basetid("apprange", "apprange")']],
-           ['a2',    '36',              ['lambda: console.Console._instance.stack("SCREENRANGE 36")']],
-           ['a3',    '48',              ['lambda: console.Console._instance.stack("SCREENRANGE 48")']],
-           ['a4',    'CRO',             ['lambda: None']],
+         ['b1',    '',        None],
+         ['b2',    '',        None],
+         ['b3',    '',        None],
+         ['b4',    '',        None],
 
-           ['b1',    'MOV',             ['lambda: None']],
-           ['b2',    'WXS',             ['lambda: None']],
-           ['b3',    'D/F',             ['lambda: None']],
-           ['b4',    'CRB',             ['lambda: None']],
+         ['c1',    '',        None],
+         ['c2',    'BASE',    ['lambda: start2.close()',
+                               'lambda: show_basetid2("base", "base")']],
+         ['c3',    'APP',     ['lambda: console.Console._instance.stack("MAPTOGGLE MAP 252")',
+                               'lambda: start2.close()',
+                               'lambda: show_basetid2("appdisp","appdisp")']],
+         ['c4',    '',        None],
 
-           ['c1',    'OCK',             ['lambda: None']],
-           ['c2',    'SIZE\nLISTS',     ['lambda: None']],
-           ['c3',    'LABEL',           ['lambda: appdisp.close()',
-                                         'lambda: show_basetid("applabel", "applabel")']],
-           ['c4',    'CBM',             ['lambda: None']],
+         ['d1',    '',        None],
+         ['d2',    '',        None],
+         ['d3',    'ACC',     ['lambda: console.Console._instance.stack("ATCMODE ACC")',
+                               'lambda: console.Console._instance.stack("MAPTOGGLE MAP 751; MAPTOGGLE MAP 752")',
+                               'lambda: start2.close()',
+                               'lambda: show_basetid("accmain", "accmain")']],
+         ['d4',    '',        None],
 
-           ['d1',    'OCO',             ['lambda: None']],
-           ['d2',    'RAP\nOCO',        ['lambda: None']],
-           ['d3',    'ANKB',            ['lambda: None']],
-           ['d4',    'CXY',             ['lambda: None']],
+         ['e1',    '',        None],
+         ['e2',    '',        None],
+         ['e3',    '',        None],
+         ['e4',    '',        None],
 
-           ['e1',    'MAPS\nAPP',       ['lambda: appdisp.close()',
-                                         'lambda: show_basetid("appmaps", "appmaps")']],
-           ['e2',    'TBS',             ['lambda: None']],
-           ['e3',    'BRIGHT\nNESS',    ['lambda: None']],
-           ['e4',    'CRM',             ['lambda: None']],
-
-           ['f1',    'COR',             ['lambda: console.Console._instance.stack("EXQ COR")',
-                                         'lambda: appdisp.close()',
-                                         'lambda: show_basetid("appmain", "appmain")']],
-           ['f2',    '',                None],
-           ['f3',    'TID\nCTRL',       ['lambda: None']],
-           ['f4',    'EXQ',             ['lambda: appdisp.close()',
-                                         'lambda: show_basetid("appmain", "appmain")']]   #main
-           ]
-
+         ['f1',    '',        None],
+         ['f2',    '',        None],
+         ['f3',    '',        None],
+         ['f4',    '',        None]]

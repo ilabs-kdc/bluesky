@@ -32,16 +32,16 @@ appdisp = [['a1',    'RANGE\nRADAR',    ['lambda: appdisp.close()',
            ['e1',    'MAPS\nAPP',       ['lambda: appdisp.close()',
                                          'lambda: show_basetid2("appmaps", "appmaps")']],
            ['e2',    'TBS',             ['lambda: None']],
-           ['e3',    'BRIGHT\nNESS',    ['lambda: None']],
+           ['e3',    'BRIGHT\nNESS',    ['lambda: appdisp.close()',
+                                         'lambda: show_basetid2("brightness", "brightness")']],
            ['e4',    'CRM',             ['lambda: None']],
 
            ['f1',    'COR',             ['lambda: console.Console._instance.stack("EXQ COR")',
                                          'lambda: appdisp2.close()',
-                                         'lambda: show_basetid("appmain", "appmain")']],
+                                         'lambda: show_basetid2("appmain", "appmain")']],
            ['f2',    '',                None],
            ['f3',    'TID\nCTRL',       ['lambda: None']],
-           ['f4',    'EXQ',             ['lambda: appdisp.close()',
-                                         'lambda: show_basetid("appmain", "appmain")']]   #main
+           ['f4',    'EXQ',             ['lambda: show_basetid2("appdisp", "appdisp")']]
            ]
 
 
@@ -110,3 +110,34 @@ applabel = [['a1',    'SLA\nLARGE',         ['lambda: None']],
             ['f4',    'FULL\nLABEL',        ['lambda: tidcmds.exqcmd("TRACKLABEL")']]
             ]
 
+brightness = [['a1', 'TRACK',        'lambda: None'],
+              ['a2', 'BKGND',        'lambda: None'],
+              ['a3', 'TRAIL',        'lambda: None'],
+              ['a4', 'PDS1',         'lambda: None'],
+
+              ['b1', 'LABEL',        'lambda: None'],
+              ['b2', 'MAP',          'lambda: None'],
+              ['b3', 'NTZ',          'lambda: None'],
+              ['b4', 'PDS2',         'lambda: None'],
+
+              ['c1', 'SSR\nLABEL',   'lambda: None'],
+              ['c2', 'DF/RB',        'lambda: None'],
+              ['c3', 'ALS',          'lambda: None'],
+              ['c4', 'PDS3',         'lambda: None'],
+
+              ['d1', 'LIST',         'lambda: None'],
+              ['d2', 'WX\nKNMI',     'lambda: None'],
+              ['d3', '',             None],
+              ['d4', 'PDS4',         'lambda: None'],
+
+              ['e1', '',             None],
+              ['e2', 'WX\nTAR',      'lambda: None'],
+              ['e3', '',             None],
+              ['e4', 'PDS5',         'lambda: None'],
+
+              ['f1', '',             None],
+              ['f2', 'MAIN',         ['lambda: brightness.close()',
+                                      'lambda: show_basetid2("appdisp", "appdisp")']],
+              ['f3', '',             None],
+              ['f4', '',             None],
+              ]
