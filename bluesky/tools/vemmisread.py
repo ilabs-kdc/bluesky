@@ -802,13 +802,13 @@ class VEMMISRead:
         cmds  += list("SSRCODE "+acid+", "+acssr)
         cmdst += list(self.flightdata['SIM_START'] + 0.01)
 
-        inbound = self.flightdata.dropna(subset=['RUNWAY_IN'])
-        cmds += list("RWY " + inbound['CALLSIGN'] + ", " + inbound['RUNWAY_IN'])
-        cmdst += list(inbound['SIM_START'] + 0.01)
-
-        outbound = self.flightdata.dropna(subset=['RUNWAY_OUT'])
-        cmds += list("RWY " + outbound['CALLSIGN'] + ", " + outbound['RUNWAY_OUT'])
-        cmdst += list(outbound['SIM_START'] + 0.01)
+        # inbound = self.flightdata.dropna(subset=['RUNWAY_IN'])
+        # cmds += list("RWY " + inbound['CALLSIGN'] + ", " + inbound['RUNWAY_IN'])
+        # cmdst += list(inbound['SIM_START'] + 0.01)
+        #
+        # outbound = self.flightdata.dropna(subset=['RUNWAY_OUT'])
+        # cmds += list("RWY " + outbound['CALLSIGN'] + ", " + outbound['RUNWAY_OUT'])
+        # cmdst += list(outbound['SIM_START'] + 0.01)
 
         # STACK
         cmds    += list("ARR "+acid+", "+self.flightdata['STACK']+", OFF")
@@ -844,17 +844,31 @@ class VEMMISRead:
 
         cmds += list("SETROUTE " + artip['CALLSIGN'] + ' ATP18C')
         cmdst += list(artip['TMA_ENTRY_SIMTIME'] + 0.01)
+        cmds += list("RWY " + artip['CALLSIGN'] + " 18C")
+        cmdst += list(artip['SIM_START'] + 0.01)
 
         cmds += list("SETROUTE " + sugol['CALLSIGN'] + ' SUG18R')
         cmdst += list(sugol['TMA_ENTRY_SIMTIME'] + 0.01)
+        cmds += list("RWY " + sugol['CALLSIGN'] + " 18R")
+        cmdst += list(sugol['SIM_START'] + 0.01)
 
         if runway == 'R':
             cmds += list("SETROUTE " + river['CALLSIGN'] + ' RIV18R')
+            # cmdst += list(river['TMA_ENTRY_SIMTIME'] + 0.01)
+            cmds += list("RWY " + river['CALLSIGN'] + " 18R")
+            # cmdst += list(river['SIM_START'] + 0.01)
         if runway == 'C':
             cmds += list("SETROUTE " + river['CALLSIGN'] + ' RIV18C')
+            # cmdst += list(river['TMA_ENTRY_SIMTIME'] + 0.01)
+            cmds += list("RWY " + river['CALLSIGN'] + " 18C")
+            # cmdst += list(river['SIM_START'] + 0.01)
         if runway == 'both':
             cmds += list("SETROUTE " + river['CALLSIGN'] + ' RIV18R')
+            # cmdst += list(river['TMA_ENTRY_SIMTIME'] + 0.01)
+            cmds += list("RWY " + river['CALLSIGN'] + " 18R")
+            # cmdst += list(river['SIM_START'] + 0.01)
         cmdst += list(river['TMA_ENTRY_SIMTIME'] + 0.01)
+        cmdst += list(river['SIM_START'] + 0.01)
 
 
         # Delete

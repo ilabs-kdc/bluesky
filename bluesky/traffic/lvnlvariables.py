@@ -229,12 +229,15 @@ class LVNLVariables(Entity):
         Created by: Bob van Dillen
         Date: 21-12-2021
         """
-
+        # IP = socket.gethostbyname(socket.gethostname())
         self.arr[idx] = arr.upper()
+        # self.uco[idx] = IP[-11:]
 
         if addwpts:
             acid = bs.traf.id[idx]
+            # self.uco[idx] = IP[-11:]
             cmd = 'PCALL LVNL/Routes/ARR/'+arr.upper()+' '+acid
+
             stack.stack(cmd)
 
     @stack.command(name='SETROUTE', brief='SETROUTE CALLSIGN ARRIVAL/STACK')
@@ -249,8 +252,9 @@ class LVNLVariables(Entity):
         Created by: Mitchell de Keijzer
         Date: 12-5-2022
         """
-
+        # IP = socket.gethostbyname(socket.gethostname())
         acid = bs.traf.id[idx]
+        # self.uco[idx] = IP[-11:]
         cmd = 'PCALL LVNL/Routes/' + route.upper() + ' ' + acid
         stack.stack(cmd)
 
