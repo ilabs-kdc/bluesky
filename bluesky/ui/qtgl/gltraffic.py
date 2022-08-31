@@ -593,6 +593,12 @@ class Traffic(glh.RenderObject, layer=100):
                 elif actdata.atcmode != 'BLUESKY' and acid == console.Console._instance.id_select:
                     rgb = (218, 218, 0) + (255,)
                     color[i, :] = rgb
+                    # a = True
+                    # id = acid
+                    # if a == True and id == console.Console._instance.id_select:
+                    #     rgb = (218, 218, 220) + (255,)
+                    #     color[i, :] = rgb
+                    #     a = False
                 else:
                     # Get custom color if available, else default
                     rgb = palette.aircraft

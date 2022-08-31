@@ -146,6 +146,26 @@ class LVNLVariables(Entity):
                                                         np.ones(len(inirsi_603))*52.68805555555555,
                                                         np.ones(len(inirsi_603))*4.513333333333334)
 
+        # --------------- GMP DTG ---------------
+
+        iatp_18c = misc.get_indices(self.arr, "ATP18C")
+        iriv_18c = misc.get_indices(self.arr, "RIV18C")
+        iriv_18r = misc.get_indices(self.arr, "RIV18R")
+        isug_18r = misc.get_indices(self.arr, "SUG18R")
+
+        self.dtg[iatp_18c] = geo.kwikdist_matrix(bs.traf.lat[iatp_18c], bs.traf.lon[iatp_18c],
+                                                    np.ones(len(iatp_18c)) * 52.61224523851872,
+                                                    np.ones(len(iatp_18c)) * 4.890376355417231)
+        self.dtg[iriv_18c] = geo.kwikdist_matrix(bs.traf.lat[iriv_18c], bs.traf.lon[iriv_18c],
+                                                    np.ones(len(iriv_18c)) * 52.61224523851872,
+                                                    np.ones(len(iriv_18c)) * 4.890376355417231)
+        self.dtg[iriv_18r] = geo.kwikdist_matrix(bs.traf.lat[iriv_18r], bs.traf.lon[iriv_18r],
+                                                   np.ones(len(iriv_18r)) * 52.60490551344223,
+                                                   np.ones(len(iriv_18r)) * 4.581121278305933)
+        self.dtg[isug_18r] = geo.kwikdist_matrix(bs.traf.lat[isug_18r], bs.traf.lon[isug_18r],
+                                                 np.ones(len(isug_18r)) * 52.60490551344223,
+                                                 np.ones(len(isug_18r)) * 4.581121278305933)
+
         return
 
     @stack.command(name='UCO')
