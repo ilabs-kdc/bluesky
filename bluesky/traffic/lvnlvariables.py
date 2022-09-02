@@ -163,8 +163,12 @@ class LVNLVariables(Entity):
                                                    np.ones(len(iriv_18r)) * 52.60490551344223,
                                                    np.ones(len(iriv_18r)) * 4.581121278305933)
         self.dtg[isug_18r] = geo.kwikdist_matrix(bs.traf.lat[isug_18r], bs.traf.lon[isug_18r],
-                                                 np.ones(len(isug_18r)) * 52.60490551344223,
-                                                 np.ones(len(isug_18r)) * 4.581121278305933)
+                                                 np.ones(len(isug_18r)) * 52.60490551344223,   #52.60490551344223
+                                                 np.ones(len(isug_18r)) * 4.581121278305933)   #4.581121278305933
+
+
+        #th18c #52.331388888888895 #4.74
+        #th18r #52.36027777777778  #4.711666666666667
 
         return
 

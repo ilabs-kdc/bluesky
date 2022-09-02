@@ -84,6 +84,7 @@ class Traffic(glh.RenderObject, layer=100):
         self.mlbl       = glh.GLBuffer()
 
         self.lbloffset  = glh.GLBuffer()
+        # self.mlbloffset = glh.GLBuffer()
 
         # --------------- Aircraft objects ---------------
 
@@ -108,7 +109,7 @@ class Traffic(glh.RenderObject, layer=100):
         self.aclabels       = glh.Text(settings.text_size, (8, 3))  # Default label BlueSky
         self.aclabels_lvnl  = glh.Text(settings.text_size, (8, 4))  # LVNL label
         self.ssrlabels      = glh.Text(0.95*settings.text_size, (7, 3))
-        self.microlabels    = glh.Text(0.95*settings.text_size, (3, 1))
+        self.microlabels    = glh.Text(0.95*settings.text_size, (3, 1))   #3
 
         self.leaderlines    = glh.Line()
 
@@ -174,6 +175,7 @@ class Traffic(glh.RenderObject, layer=100):
         self.mlbl.create(MAX_NAIRCRAFT * 24, glh.GLBuffer.StreamDraw)
 
         self.lbloffset.create(MAX_NAIRCRAFT * 24, glh.GLBuffer.StreamDraw)
+        # self.mlbloffset.create(MAX_NAIRCRAFT * 24, glh.GLBuffer.StreamDraw)
 
         # --------------- SSD ---------------
 
@@ -256,7 +258,9 @@ class Traffic(glh.RenderObject, layer=100):
         self.ssrlabels.create(self.ssrlbl, self.lat, self.lon, self.color,
                               (ac_size, -1.1*ac_size), instanced=True)
         self.microlabels.create(self.mlbl, self.lat, self.lon, self.color,
-                                (-3*0.8*text_size-ac_size, 0.5*ac_size), instanced=True)
+                                (-3*0.8*text_size-ac_size, 0.5*ac_size), instanced=True)  #-3*0.8
+        # self.microlabels.create(self.mlbl, self.lat, self.lon, self.color,
+        #                         self.mlbloffset, instanced=True)
 
         # --------------- Leader lines ---------------
 
@@ -517,6 +521,7 @@ class Traffic(glh.RenderObject, layer=100):
                 idcreate = []
             labelpos      = np.empty((min(naircraft, MAX_NAIRCRAFT), 2), dtype=np.float32)
             leaderlinepos = np.empty((min(naircraft, MAX_NAIRCRAFT), 4), dtype=np.float32)
+            # mlabelpos     = np.empty((min(naircraft, MAX_NAIRCRAFT), 2), dtype=np.float32)
 
             # Colors
             color       = np.empty((min(naircraft, MAX_NAIRCRAFT), 4), dtype=np.uint8)
@@ -554,7 +559,7 @@ class Traffic(glh.RenderObject, layer=100):
                     # Label position
                     if idchange:
                         if acid in idcreate:   #Label position for runways
-                            if data.rwy[i] == '18R':
+                            if data.rwy[i] in ['18R', '18R_E']:
                                 labelpos[i] = [-125, 0]
                                 leaderlinepos[i] = leaderline_vertices(actdata, -125, 0)
                             else:
@@ -580,6 +585,11 @@ class Traffic(glh.RenderObject, layer=100):
                         else:
                             leaderlinepos[i] = [0, 0, 0, 0]
 
+                # Microlabel position
+                # if rwy ==
+                #     mlabelpos[i] =
+                # else:
+
                 # Colours
                 if inconf:
                     if actdata.ssd_conflicts:
@@ -593,12 +603,6 @@ class Traffic(glh.RenderObject, layer=100):
                 elif actdata.atcmode != 'BLUESKY' and acid == console.Console._instance.id_select:
                     rgb = (218, 218, 0) + (255,)
                     color[i, :] = rgb
-                    # a = True
-                    # id = acid
-                    # if a == True and id == console.Console._instance.id_select:
-                    #     rgb = (218, 218, 220) + (255,)
-                    #     color[i, :] = rgb
-                    #     a = False
                 else:
                     # Get custom color if available, else default
                     rgb = palette.aircraft
@@ -640,6 +644,7 @@ class Traffic(glh.RenderObject, layer=100):
                 self.labelpos = labelpos
                 self.id_prev = data.id
                 self.lbloffset.update(np.array(self.labelpos, dtype=np.float32))
+                # self.mlbloffset
 
                 if self.pluginlbloffset is not None:
                     self.pluginlbloffset.update(np.array(self.labelpos+self.pluginlabelpos, dtype=np.float32))
@@ -906,12 +911,11 @@ def applabel(actdata, data, i):
         label += 8*4*' '
 
     # Micro label
-    if data.mlbl[i]:   # INBOUND NOT EXECUTING
+    if data.mlbl[i]:
         if data.flighttype[i].upper() == 'OUTBOUND':
-            mlabel += '  '+chr(30)
+            mlabel += '  '+chr(30)   #30
         else:
-            mlabel += '%-3s' % data.rwy[i][:3]
-            # print(data.rwy[i])
+            mlabel += '%-3s' % data.rwy[i][:3]   #3
     else:
         mlabel += 3*' '
 
