@@ -84,7 +84,7 @@ class Traffic(glh.RenderObject, layer=100):
         self.mlbl       = glh.GLBuffer()
 
         self.lbloffset  = glh.GLBuffer()
-        # self.mlbloffset = glh.GLBuffer()
+        self.mlbloffset = glh.GLBuffer()
 
         # --------------- Aircraft objects ---------------
 
@@ -175,7 +175,7 @@ class Traffic(glh.RenderObject, layer=100):
         self.mlbl.create(MAX_NAIRCRAFT * 24, glh.GLBuffer.StreamDraw)
 
         self.lbloffset.create(MAX_NAIRCRAFT * 24, glh.GLBuffer.StreamDraw)
-        # self.mlbloffset.create(MAX_NAIRCRAFT * 24, glh.GLBuffer.StreamDraw)
+        self.mlbloffset.create(MAX_NAIRCRAFT * 24, glh.GLBuffer.StreamDraw)
 
         # --------------- SSD ---------------
 
@@ -257,10 +257,10 @@ class Traffic(glh.RenderObject, layer=100):
                                   self.lbloffset, instanced=True)
         self.ssrlabels.create(self.ssrlbl, self.lat, self.lon, self.color,
                               (ac_size, -1.1*ac_size), instanced=True)
-        self.microlabels.create(self.mlbl, self.lat, self.lon, self.color,
-                                (-3*0.8*text_size-ac_size, 0.5*ac_size), instanced=True)  #-3*0.8
         # self.microlabels.create(self.mlbl, self.lat, self.lon, self.color,
-        #                         self.mlbloffset, instanced=True)
+        #                         (2*0.8*text_size-ac_size, 0.5*ac_size), instanced=True)  #-3*0.8*text_size-ac_size
+        self.microlabels.create(self.mlbl, self.lat, self.lon, self.color,
+                                self.mlbloffset, instanced=True)
 
         # --------------- Leader lines ---------------
 
@@ -455,6 +455,8 @@ class Traffic(glh.RenderObject, layer=100):
         self.glsurface.makeCurrent()
         actdata = bs.net.get_nodedata()
         IP = socket.gethostbyname(socket.gethostname())
+        ac_size = settings.ac_size
+        text_size = settings.text_size
 
         # Filer on altitude     # BUG       # NEVER EXECUTED
         if actdata.filteralt:
@@ -521,7 +523,7 @@ class Traffic(glh.RenderObject, layer=100):
                 idcreate = []
             labelpos      = np.empty((min(naircraft, MAX_NAIRCRAFT), 2), dtype=np.float32)
             leaderlinepos = np.empty((min(naircraft, MAX_NAIRCRAFT), 4), dtype=np.float32)
-            # mlabelpos     = np.empty((min(naircraft, MAX_NAIRCRAFT), 2), dtype=np.float32)
+            mlabelpos     = np.empty((min(naircraft, MAX_NAIRCRAFT), 2), dtype=np.float32)
 
             # Colors
             color       = np.empty((min(naircraft, MAX_NAIRCRAFT), 4), dtype=np.uint8)
@@ -532,6 +534,8 @@ class Traffic(glh.RenderObject, layer=100):
             # Loop over aircraft
             zdata = zip(data.gs, data.id, data.inconf, data.ingroup, data.lat, data.lon, data.tcpamax, data.trk)
             for i, (gs, acid, inconf, ingroup, lat, lon, tcpa, trk) in enumerate(zdata):
+                # ac_size = settings.ac_size
+                # text_size = settings.text_size
                 # Check for maximum aircraft
                 if i >= MAX_NAIRCRAFT:
                     break
@@ -562,9 +566,11 @@ class Traffic(glh.RenderObject, layer=100):
                             if data.rwy[i] in ['18R', '18R_E']:
                                 labelpos[i] = [-125, 0]
                                 leaderlinepos[i] = leaderline_vertices(actdata, -125, 0)
+
                             else:
                                 labelpos[i] = [50, 0]
                                 leaderlinepos[i] = leaderline_vertices(actdata, 50, 0)
+
                             # labelpos[i] = [50, 0]
                             # leaderlinepos[i] = leaderline_vertices(actdata, 50, 0)
 
@@ -585,10 +591,12 @@ class Traffic(glh.RenderObject, layer=100):
                         else:
                             leaderlinepos[i] = [0, 0, 0, 0]
 
-                # Microlabel position
-                # if rwy ==
-                #     mlabelpos[i] =
-                # else:
+
+                    # Microlabel position
+                    if data.rwy[i] in ['18C', '18C_E']:
+                        mlabelpos[i] = [2*0.8*text_size-ac_size, 0.5*ac_size]
+                    else:
+                        mlabelpos[i] = [-3*0.8*text_size-ac_size, 0.5*ac_size]
 
                 # Colours
                 if inconf:
@@ -644,7 +652,8 @@ class Traffic(glh.RenderObject, layer=100):
                 self.labelpos = labelpos
                 self.id_prev = data.id
                 self.lbloffset.update(np.array(self.labelpos, dtype=np.float32))
-                # self.mlbloffset
+                self.mlabelpos = mlabelpos
+                self.mlbloffset.update(np.array(self.mlabelpos, dtype=np.float32))
 
                 if self.pluginlbloffset is not None:
                     self.pluginlbloffset.update(np.array(self.labelpos+self.pluginlabelpos, dtype=np.float32))

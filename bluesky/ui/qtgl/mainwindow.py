@@ -41,6 +41,7 @@ palette.set_default_colours(stack_text=(0, 255, 0),
 fg = palette.stack_text
 bg = palette.stack_background
 
+
 class Splash(QSplashScreen):
     """ Splash screen: BlueSky logo during start-up"""
     def __init__(self):

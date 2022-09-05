@@ -55,16 +55,16 @@ def start(mode):
     app.processEvents()
     win = MainWindow(mode)
     win.show()
+    # win.windowHandle().setScreen(app.screens()[0])
     splash.showMessage('Done!')
     app.processEvents()
     splash.finish(win)
     # If this instance of the gui is started in client-only mode, show
-    # server selection dialog
+    # server selection dialog   #always else executed
     if mode == 'client':
         dialog = DiscoveryDialog(win)
         dialog.show()
         bs.net.start_discovery()
-
     else:
         client.connect(event_port=bs.settings.event_port,
                        stream_port=bs.settings.stream_port)
