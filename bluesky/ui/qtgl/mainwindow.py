@@ -52,7 +52,7 @@ class DiscoveryDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setModal(True)
-        self.setMinimumSize(200,200) # To prevent Geometry error
+        self.setMinimumSize(200, 200) # To prevent Geometry error
         self.hosts = []
         layout = QVBoxLayout()
         self.setLayout(layout)
@@ -110,7 +110,7 @@ class MainWindow(QMainWindow):
         # self.nd = ND(shareWidget=self.radarwidget)
         self.infowin = InfoWindow()
         self.settingswin = SettingsWindow()
-        self.touchinterface = showTID()
+        self.touchinterface = showTID()  # mostly not needed
 
         try:
             self.docwin = DocWindow(self)

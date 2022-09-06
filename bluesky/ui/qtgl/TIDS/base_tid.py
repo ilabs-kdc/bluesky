@@ -1,8 +1,9 @@
 import bluesky as bs
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QDialog
+from PyQt5.QtWidgets import QDialog, QApplication
 from PyQt5 import uic
 from bluesky.ui.qtgl import console, gui
+
 from bluesky.ui.qtgl.TIDS import *
 from bluesky.tools import misc
 import platform
@@ -11,6 +12,7 @@ import os
 
 def show_basetid(name, layout):
     globals()[str(name)] = QDialog()
+    # app = QApplication([])
     uic.loadUi(os.path.join(bs.settings.gfx_path, 'TID_Base.ui'), globals()[str(name)])
 #    uic.loadUi('C:/Users/LVNL_ILAB3/Desktop/bluesky-lvnl_2/bluesky-master2/data/graphics/TID_Base.ui', globals()[str(name)])
 
@@ -32,9 +34,9 @@ def show_basetid(name, layout):
 
     globals()[str(name)].setWindowTitle("Function TID")
     globals()[str(name)].setWindowModality(Qt.WindowModal)
-    # gui.win.windowHandle().setScreen(app.screens()[1])
+    # globals()[str(name)].windowHandle().setScreen(app.screens()[1])
     # globals()[str(name)].move(globals()[str(name)].left(), globals()[str(name)].top())
-    globals()[str(name)].showMaximized()
+    # globals()[str(name)].showFullScreen()
     globals()[str(name)].setWindowFlag(Qt.WindowMinMaxButtonsHint)
     globals()[str(name)].exec()
 
@@ -61,6 +63,7 @@ def show_basetid2(name, layout):
 
     globals()[str(name)].setWindowTitle("Display TID")
     globals()[str(name)].setWindowModality(Qt.WindowModal)
+    # globals()[str(name)].showFullScreen()
     globals()[str(name)].showMaximized()
     globals()[str(name)].setWindowFlag(Qt.WindowMinMaxButtonsHint)
     globals()[str(name)].exec()

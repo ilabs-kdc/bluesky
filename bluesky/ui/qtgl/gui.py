@@ -54,13 +54,19 @@ def start(mode):
     splash.showMessage('Constructing main window')
     app.processEvents()
     win = MainWindow(mode)
-    win.show()
-    # win.windowHandle().setScreen(app.screens()[0])
+
+    # screenList = app.screens()
+    # monitor = DiscoveryDialog().screenGeometry(screenList)
+    # win.move(monitor.left(), monitor.top())
+
+    win.show()  # showMaximized #showFullScreen
+
+    # win.windowHandle().setScreen(app.screens()[1])
     splash.showMessage('Done!')
     app.processEvents()
     splash.finish(win)
     # If this instance of the gui is started in client-only mode, show
-    # server selection dialog   #always else executed
+    # server selection dialog
     if mode == 'client':
         dialog = DiscoveryDialog(win)
         dialog.show()
