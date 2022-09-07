@@ -338,6 +338,7 @@ class ScreenIO:
             data['flighttype']  = bs.traf.lvnlvars.flighttype
             data['wtc']         = bs.traf.lvnlvars.wtc
             data['dtg']         = bs.traf.lvnlvars.dtg
+            data['dtg_route']   = bs.traf.lvnlvars.dtg_route
 
             # Transition level as defined in traf
             data['translvl']    = bs.traf.translvl

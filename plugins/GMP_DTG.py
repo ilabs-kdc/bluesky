@@ -67,11 +67,12 @@ class GMP(core.Entity):
             self.gmplbl = Traffic()
 
             # Initialize plugin label
-            self.gmplbl.plugin_init(blocksize=(3, 1), position=(2, 7))
+            self.gmplbl.plugin_init(blocksize=(3, 2), position=(2, 8))
 
             # Update label with current data
             rawlabel = ''
             for idx in range(len(actdata.acdata.id)):
+                rawlabel += 3*' '
                 rawlabel += 3*' '
 
             self.gmplbl.pluginlbl.update(np.array(rawlabel.encode('utf8'), dtype=np.string_))
@@ -101,11 +102,12 @@ class GMP(core.Entity):
 
                 for idx in range(len(nodedata.acdata.id)):
                     acid = nodedata.acdata.id[idx]
-                    dtg = nodedata.acdata.dtg[idx]
+                    dtg_route = nodedata.acdata.dtg_route[idx]
                     tracklbl = nodedata.acdata.tracklbl[idx]
-                    if tracklbl and dtg != 0. and acid == console.Console._instance.id_select:
-                        rawlabel += '%-3s' % leading_zeros(dtg)[:3]
+                    if tracklbl and dtg_route != 0. and acid == console.Console._instance.id_select:
+                        rawlabel += '%-3s' % leading_zeros(dtg_route)[:3]
+                        # rawlabel += '%-3s' % 'B E'
                     else:
-                        rawlabel += 3*' '
+                        rawlabel += 3*2*' '
                 self.gmplbl.pluginlbl.update(np.array(rawlabel.encode('utf8'), dtype=np.string_))
 

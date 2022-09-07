@@ -36,7 +36,7 @@ def show_basetid(name, layout):
     globals()[str(name)].setWindowModality(Qt.WindowModal)
     # globals()[str(name)].windowHandle().setScreen(app.screens()[1])
     # globals()[str(name)].move(globals()[str(name)].left(), globals()[str(name)].top())
-    # globals()[str(name)].showFullScreen()
+    globals()[str(name)].showMaximized()
     globals()[str(name)].setWindowFlag(Qt.WindowMinMaxButtonsHint)
     globals()[str(name)].exec()
 

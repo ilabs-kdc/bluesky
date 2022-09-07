@@ -150,7 +150,7 @@ class MainWindow(QMainWindow):
                     self.showlabels : ['lbl.svg', 'Show/hide text labels', self.buttonClicked],
                     self.showmap :    ['geo.svg', 'Show/hide satellite image', self.buttonClicked],
                     self.shownodes :  ['nodes.svg', 'Show/hide node list', self.buttonClicked],
-                    self.UCO:        ['play.svg', 'Under Control Command', self.buttonClicked],
+                    self.UCO:         ['play.svg', 'Under Control Command', self.buttonClicked],
                     self.HDG:         ['geo.svg', 'Heading Command', self.buttonClicked],
                     self.ALT:         ['panup.svg', 'Altitude Command', self.buttonClicked],
                     self.SPD:         ['fwd.svg', 'Speed Command', self.buttonClicked],

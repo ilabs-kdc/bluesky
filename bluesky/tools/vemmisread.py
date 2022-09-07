@@ -77,7 +77,6 @@ class VEMMISRead:
         self.merge_data()
         self.select_flights()
         self.add_callsign()
-        # self.add_route()
         self.sort_data()
         self.get_simtime()
 
@@ -310,19 +309,19 @@ class VEMMISRead:
         # Add callsign to track data
         self.trackdata = pd.merge(self.tracks, self.flights[['FLIGHT_ID', 'CALLSIGN']], on='FLIGHT_ID')
 
-    def add_route(self):
-        """
-        Function: Get Route Points and Actual Time for route data
-        Args: -
-        Returns: -
-
-        Created by: Ajay Kumbhar
-        Date:
-        """
-
-        # Just Actual Time and Route Points
-        self.routedata = self.routedata.loc[self.routedata['LOCATION_TYPE'] == 'RP']
-        self.routedata = self.routedata.loc[self.routedata['TIME_TYPE'] == 'ACTUAL']
+    # def add_route(self):
+    #     """
+    #     Function: Get Route Points and Actual Time for route data
+    #     Args: -
+    #     Returns: -
+    #
+    #     Created by: Ajay Kumbhar
+    #     Date:
+    #     """
+    #
+    #     # Just Actual Time and Route Points
+    #     self.routedata = self.routedata.loc[self.routedata['LOCATION_TYPE'] == 'RP']
+    #     self.routedata = self.routedata.loc[self.routedata['TIME_TYPE'] == 'ACTUAL']
 
 
     def sort_data(self):

@@ -570,10 +570,6 @@ class Traffic(glh.RenderObject, layer=100):
                             else:
                                 labelpos[i] = [50, 0]
                                 leaderlinepos[i] = leaderline_vertices(actdata, 50, 0)
-
-                            # labelpos[i] = [50, 0]
-                            # leaderlinepos[i] = leaderline_vertices(actdata, 50, 0)
-
                         else:
                             i_prev = self.id_prev.index(acid)
                             labelpos[i] = self.labelpos[i_prev]
@@ -1105,9 +1101,9 @@ def leading_zeros(number):
 
     if number < 0:
         number = 0
-    if number < 10:
+    if number < 9.5:
         return '00'+str(round(number))
-    elif number < 100:
+    elif number < 99.5:
         return '0'+str(round(number))
     else:
         return str(round(number))
