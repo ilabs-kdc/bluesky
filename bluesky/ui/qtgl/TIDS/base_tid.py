@@ -12,9 +12,8 @@ import os
 
 def show_basetid(name, layout):
     globals()[str(name)] = QDialog()
-    # app = QApplication([])
+    # app2 = QApplication([])
     uic.loadUi(os.path.join(bs.settings.gfx_path, 'TID_Base.ui'), globals()[str(name)])
-#    uic.loadUi('C:/Users/LVNL_ILAB3/Desktop/bluesky-lvnl_2/bluesky-master2/data/graphics/TID_Base.ui', globals()[str(name)])
 
     tid_load = 'bs.ui.qtgl.TID_Function.' + layout
     dlgbuttons = eval(tid_load)
@@ -43,7 +42,6 @@ def show_basetid(name, layout):
 def show_basetid2(name, layout):
     globals()[str(name)] = QDialog()
     uic.loadUi(os.path.join(bs.settings.gfx_path, 'TID_Base.ui'), globals()[str(name)])
-#    uic.loadUi('C:/Users/LVNL_ILAB3/Desktop/bluesky-lvnl_2/bluesky-master2/data/graphics/TID_Base.ui', globals()[str(name)])
 
     tid_load = 'bs.ui.qtgl.TID_Display.' + layout
     dlgbuttons = eval(tid_load)

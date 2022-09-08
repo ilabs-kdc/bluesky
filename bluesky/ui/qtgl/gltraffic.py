@@ -109,7 +109,7 @@ class Traffic(glh.RenderObject, layer=100):
         self.aclabels       = glh.Text(settings.text_size, (8, 3))  # Default label BlueSky
         self.aclabels_lvnl  = glh.Text(settings.text_size, (8, 4))  # LVNL label
         self.ssrlabels      = glh.Text(0.95*settings.text_size, (7, 3))
-        self.microlabels    = glh.Text(0.95*settings.text_size, (3, 1))   #3
+        self.microlabels    = glh.Text(0.95*settings.text_size, (7, 1))   #3
 
         self.leaderlines    = glh.Line()
 
@@ -563,13 +563,13 @@ class Traffic(glh.RenderObject, layer=100):
                     # Label position
                     if idchange:
                         if acid in idcreate:   #Label position for runways
-                            if data.rwy[i] in ['18R', '18R_E']:
-                                labelpos[i] = [-125, 0]
-                                leaderlinepos[i] = leaderline_vertices(actdata, -125, 0)
+                            if data.arr[i] in ['ATP18R', 'RIV18R', 'RIV18REOR', 'SUG18R', 'SUG18REOR']:
+                                labelpos[i] = [-150, 0]  #-125
+                                leaderlinepos[i] = leaderline_vertices(actdata, -150, 0)
 
                             else:
-                                labelpos[i] = [50, 0]
-                                leaderlinepos[i] = leaderline_vertices(actdata, 50, 0)
+                                labelpos[i] = [75, 0]   #50
+                                leaderlinepos[i] = leaderline_vertices(actdata, 75, 0)
                         else:
                             i_prev = self.id_prev.index(acid)
                             labelpos[i] = self.labelpos[i_prev]
@@ -589,10 +589,11 @@ class Traffic(glh.RenderObject, layer=100):
 
 
                     # Microlabel position
-                    if data.rwy[i] in ['18C', '18C_E']:
-                        mlabelpos[i] = [2*0.8*text_size-ac_size, 0.5*ac_size]
+                    if data.arr[i] in ['ATP18C', 'ATP18CEOR', 'RIV18C', 'SUG18C']:
+                        mlabelpos[i] = [2*0.8*text_size-ac_size, 0.5*ac_size]   #2   #0.5-y
                     else:
-                        mlabelpos[i] = [-3*0.8*text_size-ac_size, 0.5*ac_size]
+                        mlabelpos[i] = [-8*0.8*text_size-ac_size, 0.5*ac_size]  #-3
+                    print (data.arr[i])
 
                 # Colours
                 if inconf:
@@ -915,14 +916,18 @@ def applabel(actdata, data, i):
     else:
         label += 8*4*' '
 
-    # Micro label
+    # Micro label   #elif is tried for gmp eor
     if data.mlbl[i]:
         if data.flighttype[i].upper() == 'OUTBOUND':
             mlabel += '  '+chr(30)   #30
+        elif (len(data.rwy[i]) == 3):
+            mlabel += '%-7s' % ('    ' + data.rwy[i][:7])
+        elif (len(data.rwy[i])==5):
+            mlabel += '%-7s' % ('  '+data.rwy[i][:7])
         else:
-            mlabel += '%-3s' % data.rwy[i][:3]   #3
+            mlabel += '%-7s' % data.rwy[i][:7]   #3
     else:
-        mlabel += 3*' '
+        mlabel += 7*' '
 
     # SSR label
     ssrlbl = data.ssrlbl[i].split(';')

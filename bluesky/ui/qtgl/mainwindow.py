@@ -128,6 +128,7 @@ class MainWindow(QMainWindow):
             app.instance().setWindowIcon(QIcon(os.path.join(bs.settings.gfx_path, 'icon.gif')))
 
         uic.loadUi(os.path.join(bs.settings.gfx_path, 'mainwindow.ui'), self)
+        # uic.loadUi(os.path.join(bs.settings.gfx_path, 'TID_Base.ui'), globals()[str(name)])   #FOR COMPARING WITH TID
 
         # list of buttons to connect to, give icons, and tooltips
         #           the button         the icon      the tooltip    the callback
@@ -417,31 +418,3 @@ class MainWindow(QMainWindow):
     def show_doc_window(self, cmd=''):
         self.docwin.show_cmd_doc(cmd)
         self.docwin.show()
-
-
-#     def showdialog(self):
-#         dlg = QDialog()
-#         print(str(dlg))
-# #        uic.loadUi(os.path.join(bs.settings.gfx_path, 'TID_Base.ui'), self)
-#         uic.loadUi('C:/Users/LVNL_ILAB3/Desktop/bluesky-lvnl_2/bluesky-master2/data/graphics/TID_Base.ui', dlg)
-#         buttonoffsetx = 0
-#         buttonoffsety = 0
-#         vertsize = 250
-#         horisize = 300
-#         TID_textsize = 40
-#
-#         dlgbuttons = tid.base
-#
-#         for i in range(len(dlgbuttons)):
-#             loop_button = 'pushButton_'+str(dlgbuttons[i][0])
-#             print(dlg)
-#             exec('dlg.'+ loop_button+'.setText(dlgbuttons[i][1])')
-#             if dlgbuttons[i][2] != None:
-#                 exec('dlg.' + loop_button + '.clicked.connect(' + dlgbuttons[i][2] + ')')
-#             else:
-#                 exec('dlg.' + loop_button + '.setStyleSheet("border: 0px solid red;")')
-#
-#         dlg.setWindowTitle("TID")
-#         dlg.setWindowModality(Qt.WindowModal)
-#         dlg.showMaximized()
-#         dlg.exec()

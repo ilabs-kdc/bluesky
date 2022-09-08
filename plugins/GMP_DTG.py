@@ -1,4 +1,4 @@
-""" Add the DTG to the label for the GMP concept """
+""" Add the DTG to the label for the GMP concept along the route """
 
 import numpy as np
 import bluesky as bs
@@ -84,7 +84,7 @@ class GMP(core.Entity):
 
     def update_gmp(self, nodeid, nodedata, changed_elems):
         """
-        Function: Update T-Bar graphics
+        Function: Update GMP graphics
         Args:
             nodeid:         Node identifier []
             nodedata:       Node data [class]

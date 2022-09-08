@@ -185,7 +185,7 @@ class LVNLVariables(Entity):
 
         for idx in range(naircraft):
             # Distance calculation
-            iactwp = bs.traf.ap.route[idx].iactwp
+            iactwp = bs.traf.ap.route[idx].iactwp  #active waypoint
             if iactwp >= 0:
                 dist_iactwp = geo.kwikdist(bs.traf.lat[idx], bs.traf.lon[idx],
                                            bs.traf.ap.route[idx].wplat[iactwp], bs.traf.ap.route[idx].wplon[iactwp])

@@ -490,7 +490,8 @@ apprwy = [['a1', '06',          ['lambda: console.Console._instance.stack("EXQ A
           ['f2', '',            None],
           ['f3', '',            None],
           ['f4', 'EXQ',         ['lambda: console.Console._instance.stack("EXQ EXQ")',
-                                 'lambda: apprwy.close()']]
+                                 'lambda: apprwy.close()',
+                                 'lambda: show_basetid("appmain", "appmain")']]
           ]
 
 
