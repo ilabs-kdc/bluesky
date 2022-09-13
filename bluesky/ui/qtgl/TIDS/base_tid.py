@@ -1,8 +1,9 @@
 import bluesky as bs
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QDialog, QApplication
+from PyQt5.QtWidgets import QDialog, QApplication, QMainWindow
 from PyQt5 import uic
 from bluesky.ui.qtgl import console, gui
+# from bluesky.ui.qtgl.gui import *
 
 from bluesky.ui.qtgl.TIDS import *
 from bluesky.tools import misc
@@ -12,7 +13,7 @@ import os
 
 def show_basetid(name, layout):
     globals()[str(name)] = QDialog()
-    # app2 = QApplication([])
+    # app = gui.start('server-gui')
     uic.loadUi(os.path.join(bs.settings.gfx_path, 'TID_Base.ui'), globals()[str(name)])
 
     tid_load = 'bs.ui.qtgl.TID_Function.' + layout

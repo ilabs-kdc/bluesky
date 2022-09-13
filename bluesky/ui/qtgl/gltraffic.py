@@ -258,7 +258,7 @@ class Traffic(glh.RenderObject, layer=100):
         self.ssrlabels.create(self.ssrlbl, self.lat, self.lon, self.color,
                               (ac_size, -1.1*ac_size), instanced=True)
         # self.microlabels.create(self.mlbl, self.lat, self.lon, self.color,
-        #                         (2*0.8*text_size-ac_size, 0.5*ac_size), instanced=True)  #-3*0.8*text_size-ac_size
+        #                         (-3*0.8*text_size-ac_size, 0.5*ac_size), instanced=True)  # 2*0.8*text_size-ac_size (RIGHT SIDE)
         self.microlabels.create(self.mlbl, self.lat, self.lon, self.color,
                                 self.mlbloffset, instanced=True)
 
@@ -593,7 +593,7 @@ class Traffic(glh.RenderObject, layer=100):
                         mlabelpos[i] = [2*0.8*text_size-ac_size, 0.5*ac_size]   #2   #0.5-y
                     else:
                         mlabelpos[i] = [-8*0.8*text_size-ac_size, 0.5*ac_size]  #-3
-                    print (data.arr[i])
+                    # print (data.arr[i])
 
                 # Colours
                 if inconf:
@@ -920,9 +920,9 @@ def applabel(actdata, data, i):
     if data.mlbl[i]:
         if data.flighttype[i].upper() == 'OUTBOUND':
             mlabel += '  '+chr(30)   #30
-        elif (len(data.rwy[i]) == 3):
+        elif (len(data.rwy[i]) == 3) and (data.arr in ['ATP18R', 'RIV18R', 'RIV18REOR', 'SUG18R', 'SUG18REOR']):
             mlabel += '%-7s' % ('    ' + data.rwy[i][:7])
-        elif (len(data.rwy[i])==5):
+        elif (len(data.rwy[i]) == 5) and (data.arr in ['ATP18R', 'RIV18R', 'RIV18REOR', 'SUG18R', 'SUG18REOR']):
             mlabel += '%-7s' % ('  '+data.rwy[i][:7])
         else:
             mlabel += '%-7s' % data.rwy[i][:7]   #3

@@ -56,6 +56,8 @@ def start(mode):
     win = MainWindow(mode)
 
     # screenList = app.screens()
+    # print('The number of screens are: ', screenList)
+    # print('')
     # monitor = DiscoveryDialog().screenGeometry(screenList)
     # win.move(monitor.left(), monitor.top())
 
@@ -75,5 +77,7 @@ def start(mode):
         client.connect(event_port=bs.settings.event_port,
                        stream_port=bs.settings.stream_port)
 
+
     # Start the Qt main loop
     app.exec_()
+    # return app
