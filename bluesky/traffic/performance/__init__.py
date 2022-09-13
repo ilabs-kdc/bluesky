@@ -12,6 +12,10 @@ try:
     import bluesky.traffic.performance.legacy
 except ImportError:
     print('Failed to load BlueSky legacy performance model')
+try:
+    import bluesky.traffic.performance.wilabada
+except ImportError:
+    print('Failed to load WILABADA performance model')
 
 settings.set_variable_defaults(performance_model='openap')
 
