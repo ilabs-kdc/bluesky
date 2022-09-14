@@ -186,6 +186,14 @@ def esf(alt, M, climb, descent, delspd, selmach, type='B744', tISA = 0):
     # combine cases
     ef = np.maximum.reduce([efa, efb, efc, efd, efe, eff, efg, efh])
 
+    """
+    alt < 8000 ft and CAS < vmcr + 10 kts is automatically approach
+    alt < 8000 ft and CAS >= vmcr + 10 kts is approach when nearby airport; use different criteria
+        - one of the following waypoints (number undetermined) is the airport
+        - atco gives command that aircraft is in approach -> When aircraft is UCO of APP and below 8000 ft
+         => using bs.traf.lvnlvars.uco
+    """
+
     # ESF of non-climbing/descending aircraft is zero which
     # leads to an error. Therefore, ESF for non-climbing aircraft is 1
     return np.maximum(ef, np.array(ef == 0) * 1)
