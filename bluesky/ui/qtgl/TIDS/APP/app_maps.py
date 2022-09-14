@@ -9,32 +9,32 @@ Changed: new maptoggle function from 'MAP #' to 'MAPTOGGLE MAP #'
 """
 
 appmaps = [['a1',    'ALS\n10NM',     ['lambda: appmaps.close()',
-                                       'lambda: show_basetid("als10nm","als10nm")']],
+                                       'lambda: show_basetid2("als10nm","als10nm")']],
            ['a2',    'T-BAR',         ['lambda: appmaps.close()',
-                                       'lambda: show_basetid("tbar","tbar")']],
+                                       'lambda: show_basetid2("tbar","tbar")']],
            ['a3',    'VMT\nAREAS',    ['lambda: appmaps.close()',
-                                       'lambda: show_basetid("vmt", "vmt")']],
+                                       'lambda: show_basetid2("vmt", "vmt")']],
            ['a4',    'NIGHT\nMAPS',   'lambda: None'],
 
            ['b1',    'ALS\n20NM',     ['lambda: appmaps.close()',
-                                       'lambda: show_basetid("als20nm", "als20nm")']],
+                                       'lambda: show_basetid2("als20nm", "als20nm")']],
            ['b2',    'ALS\nTMA',      ['lambda: appmaps.close()',
-                                       'lambda: show_basetid("alstma", "alstma")']],
+                                       'lambda: show_basetid2("alstma", "alstma")']],
            ['b3',    'FAV\nAREAS',    ['lambda: appmaps.close()',
-                                       'lambda: show_basetid("favareas", "favareas")']],
+                                       'lambda: show_basetid2("favareas", "favareas")']],
            ['b4',    'RNP\nMAPS',     'lambda: None'],
 
            ['c1',    'PAR\nAPP',      ['lambda: appmaps.close()',
                                        'lambda: show_basetid("parapp", "parapp")']],
            ['c2',    'NL\nGEO',       'lambda: console.Console._instance.stack("SWRAD GEO")'],
            ['c3',    'AREAS\nRD',     ['lambda: appmaps.close()',
-                                       'lambda: show_basetid("areasrd", "areasrd")']],
+                                       'lambda: show_basetid2("areasrd", "areasrd")']],
            ['c4',    'AREAS\nLE',     ['lambda: appmaps.close()',
-                                       'lambda: show_basetid("areasle", "areasle")']],
+                                       'lambda: show_basetid2("areasle", "areasle")']],
 
            ['d1',    'REF\nPOINT',    'lambda: None'],
            ['d2',    'TWEC\nTOC',     ['lambda: appmaps.close()',
-                                       'lambda: show_basetid("twectoc", "twectoc")']],
+                                       'lambda: show_basetid2("twectoc", "twectoc")']],
            ['d3',    'OCA',           'lambda: None'],
            ['d4',    'CTR\nKD',       'lambda: console.Console._instance.stack("MAPTOGGLE MAP 205")'],
 
@@ -42,11 +42,11 @@ appmaps = [['a1',    'ALS\n10NM',     ['lambda: appmaps.close()',
            ['e2',    'POINTS\nFINAL', 'lambda: None'],
            ['e3',    'OCN',           'lambda: None'],
            ['e4',    'PARA\nTMA',     ['lambda: appmaps.close()',
-                                       'lambda: show_basetid("paratma", "paratma")']],
+                                       'lambda: show_basetid2("paratma", "paratma")']],
 
            ['f1',    'COR',           'lambda: None'],
            ['f2',    'MAIN',          ['lambda: appmaps.close()',
-                                       'lambda: show_basetid("appdisp", "appdisp")']],
+                                       'lambda: show_basetid2("appdisp", "appdisp")']],
            ['f3', 'TOGGLE\nVNR MAP',         ['lambda: console.Console._instance.stack("MAPTOGGLE map GMP")']],
            ['f4',    'FIC\nMAPS',     'lambda: None']]
 
@@ -78,9 +78,9 @@ parapp = [['a1',    '10 NM\n36C',    'lambda: console.Console._instance.stack("M
 
           ['f1',    'COR',           'lambda: None'],
           ['f2',    'MAIN',          ['lambda: parapp.close()',
-                                      'lambda: show_basetid("appdisp", "appdisp")']],
+                                      'lambda: show_basetid2("appdisp", "appdisp")']],
           ['f3',    'MAPS\nAPP',     ['lambda: parapp.close()',
-                                      'lambda: show_basetid("appmaps", "appmaps")']],
+                                      'lambda: show_basetid2("appmaps", "appmaps")']],
           ['f4',    '',              None]]
 
 
@@ -105,14 +105,14 @@ als10nm = [['a1',    '10 NM\n06',     'lambda: console.Console._instance.stack("
            ['d4',    '',              None],
 
            ['e1',    'ALS\n20NM',     ['lambda: als10nm.close()',
-                                       'lambda: show_basetid("als20nm", "als20nm")']],
+                                       'lambda: show_basetid2("als20nm", "als20nm")']],
            ['e2',    '',              None],
            ['e3',    '',              None],
            ['e4',    '',              None],
 
            ['f1',    '',              None],
            ['f2',    'MAIN',          ['lambda: als10nm.close()',
-                                       'lambda: show_basetid("appdisp", "appdisp")']],
+                                       'lambda: show_basetid2("appdisp", "appdisp")']],
            ['f3',    'MAPS\nAPP',     ['lambda: als10nm.close()',
                                        'lambda: show_basetid("appmaps", "appmaps")']],
            ['f4',    '',              None]]
@@ -146,9 +146,9 @@ als20nm = [['a1',    '20 NM\n06',     'lambda: console.Console._instance.stack("
 
            ['f1',    '',              None],
            ['f2',    'MAIN',          ['lambda: als20nm.close()',
-                                       'lambda: show_basetid("appdisp", "appdisp")']],
+                                       'lambda: show_basetid2("appdisp", "appdisp")']],
            ['f3',    'MAPS\nAPP',     ['lambda: als20nm.close()',
-                                       'lambda: show_basetid("appmaps", "appmaps")']],
+                                       'lambda: show_basetid2("appmaps", "appmaps")']],
            ['f4',    '',              None]]
 
 
@@ -179,9 +179,9 @@ vmt = [['a1',    'VMT\n06',       'lambda: console.Console._instance.stack("MAPT
 
        ['f1',    'COR',           'lambda: None'],
        ['f2',    'MAIN',          ['lambda: vmt.close()',
-                                   'lambda: show_basetid("appdisp", "appdisp")']],
+                                   'lambda: show_basetid2("appdisp", "appdisp")']],
        ['f3',    'MAPS\nAPP',     ['lambda: vmt.close()',
-                                   'lambda: show_basetid("appmaps", "appmaps")']],
+                                   'lambda: show_basetid2("appmaps", "appmaps")']],
        ['f4',    '',              None]]
 
 
@@ -212,9 +212,9 @@ alstma = [['a1',    'KD\n03',        'lambda: console.Console._instance.stack("M
 
           ['f1',    '',              None],
           ['f2',    'MAIN',          ['lambda: alstma.close()',
-                                      'lambda: show_basetid("appdisp", "appdisp")']],
+                                      'lambda: show_basetid2("appdisp", "appdisp")']],
           ['f3',    'MAPS\nAPP',     ['lambda: alstma.close()',
-                                      'lambda: show_basetid("appmaps", "appmaps")']],
+                                      'lambda: show_basetid2("appmaps", "appmaps")']],
           ['f4',    '',              None]]
 
 
@@ -245,9 +245,9 @@ areasle = [['a1',    'LE\n05',        'lambda: console.Console._instance.stack("
 
            ['f1',    '',              None],
            ['f2',    'MAIN',          ['lambda: areasle.close()',
-                                       'lambda: show_basetid("appdisp", "appdisp")']],
+                                       'lambda: show_basetid2("appdisp", "appdisp")']],
            ['f3',    'MAPS\nAPP',     ['lambda: areasle.close()',
-                                       'lambda: show_basetid("appmaps", "appmaps")']],
+                                       'lambda: show_basetid2("appmaps", "appmaps")']],
            ['f4',    '',              None]]
 
 
@@ -278,9 +278,9 @@ areasrd = [['a1',    'ATZ\nVB',       'lambda: console.Console._instance.stack("
 
            ['f1',    '',              None],
            ['f2',    'MAIN',          ['lambda: areasrd.close()',
-                                       'lambda: show_basetid("appdisp", "appdisp")']],
+                                       'lambda: show_basetid2("appdisp", "appdisp")']],
            ['f3',    'MAPS\nAPP',     ['lambda: areasrd.close()',
-                                       'lambda: show_basetid("appmaps", "appmaps")']],
+                                       'lambda: show_basetid2("appmaps", "appmaps")']],
            ['f4',    '',              None]]
 
 
@@ -311,9 +311,9 @@ twectoc = [['a1',    'RAD\n019',      'lambda: console.Console._instance.stack("
 
            ['f1',    '',              None],
            ['f2',    'MAIN',          ['lambda: twectoc.close()',
-                                       'lambda: show_basetid("appdisp", "appdisp")']],
+                                       'lambda: show_basetid2("appdisp", "appdisp")']],
            ['f3',    'MAPS\nAPP',     ['lambda: twectoc.close()',
-                                       'lambda: show_basetid("appmaps", "appmaps")']],
+                                       'lambda: show_basetid2("appmaps", "appmaps")']],
            ['f4',    '',              None]]
 
 
@@ -344,9 +344,9 @@ paratma = [['a1',    '',              None],
 
            ['f1',    '',              None],
            ['f2',    'MAIN',          ['lambda: paratma.close()',
-                                       'lambda: show_basetid("appdisp", "appdisp")']],
+                                       'lambda: show_basetid2("appdisp", "appdisp")']],
            ['f3',    'MAPS\nAPP',     ['lambda: paratma.close()',
-                                       'lambda: show_basetid("appmaps", "appmaps")']],
+                                       'lambda: show_basetid2("appmaps", "appmaps")']],
            ['f4',    '',              None]]
 
 
@@ -377,9 +377,9 @@ favareas = [['a1',    'FAVA\n18R',     'lambda: console.Console._instance.stack(
 
             ['f1',    '',              None],
             ['f2',    'MAIN',          ['lambda: favareas.close()',
-                                        'lambda: show_basetid("appdisp", "appdisp")']],
+                                        'lambda: show_basetid2("appdisp", "appdisp")']],
             ['f3',    'MAPS\nAPP',     ['lambda: favareas.close()',
-                                        'lambda: show_basetid("appmaps", "appmaps")']],
+                                        'lambda: show_basetid2("appmaps", "appmaps")']],
             ['f4',    '',              None]]
 
 
@@ -410,8 +410,8 @@ tbar = [['a1',    'NIRSI',         'lambda: console.Console._instance.stack("MAP
 
         ['f1',    '',              None],
         ['f2',    'MAIN',          ['lambda: tbar.close()',
-                                    'lambda: show_basetid("appdisp", "appdisp")']],
+                                    'lambda: show_basetid2("appdisp", "appdisp")']],
         ['f3',    'MAPS\nAPP',     ['lambda: tbar.close()',
-                                    'lambda: show_basetid("appmaps", "appmaps")']],
+                                    'lambda: show_basetid2("appmaps", "appmaps")']],
         ['f4',    '',              None]
         ]

@@ -39,8 +39,8 @@ def show_basetid(name, layout):
 
     globals()[str(name)].setGeometry(500, 200, 300, 250)
     globals()[str(name)].move(2500, 2500)   #globals()[str(name)].down(), globals()[str(name)].right()
-    globals()[str(name)].showMaximized()
-    globals()[str(name)].setWindowFlag(Qt.WindowMinMaxButtonsHint)
+    globals()[str(name)].showFullScreen()
+    globals()[str(name)].setWindowFlags(Qt.WindowMinMaxButtonsHint)   #FramelessWindowHint
     globals()[str(name)].exec()
 
 def show_basetid2(name, layout):
@@ -63,12 +63,11 @@ def show_basetid2(name, layout):
         else:
             exec(name+'.' + loop_button + '.setStyleSheet("border: 0px solid red;")')
 
-    globals()[str(name)].setWindowTitle("Display TID")
+    # globals()[str(name)].setWindowTitle("Display TID")
     globals()[str(name)].setWindowModality(Qt.WindowModal)
-    # globals()[str(name)].showFullScreen()
     globals()[str(name)].setGeometry(500, 200, 300, 250)
     globals()[str(name)].move(0, 2500)
-    globals()[str(name)].showMaximized()
+    globals()[str(name)].showFullScreen()
     globals()[str(name)].setWindowFlag(Qt.WindowMinMaxButtonsHint)
     globals()[str(name)].exec()
 
