@@ -60,7 +60,7 @@ def start(mode):
     # print('')
     # monitor = DiscoveryDialog().screenGeometry(screenList)
     # win.move(monitor.left(), monitor.top())
-
+    # win.setGeometry(500, 200, 300, 250)
     win.show()  # showMaximized #showFullScreen
 
     # win.windowHandle().setScreen(app.screens()[1])

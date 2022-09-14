@@ -14,6 +14,7 @@ import os
 def show_basetid(name, layout):
     globals()[str(name)] = QDialog()
     # app = gui.start('server-gui')
+
     uic.loadUi(os.path.join(bs.settings.gfx_path, 'TID_Base.ui'), globals()[str(name)])
 
     tid_load = 'bs.ui.qtgl.TID_Function.' + layout
@@ -35,7 +36,9 @@ def show_basetid(name, layout):
     globals()[str(name)].setWindowTitle("Function TID")
     globals()[str(name)].setWindowModality(Qt.WindowModal)
     # globals()[str(name)].windowHandle().setScreen(app.screens()[1])
-    # globals()[str(name)].move(globals()[str(name)].left(), globals()[str(name)].top())
+
+    globals()[str(name)].setGeometry(500, 200, 300, 250)
+    globals()[str(name)].move(2500, 2500)   #globals()[str(name)].down(), globals()[str(name)].right()
     globals()[str(name)].showMaximized()
     globals()[str(name)].setWindowFlag(Qt.WindowMinMaxButtonsHint)
     globals()[str(name)].exec()

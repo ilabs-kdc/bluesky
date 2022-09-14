@@ -396,6 +396,10 @@ class MainWindow(QMainWindow):
         elif self.sender() == self.MANUAL:
             console.process_cmdline("MANUAL")
         elif self.sender() == self.tid1:
+            # if actdata.atcmode == 'APP':
+            #     show_basetid('appmain', 'appmain')
+            # elif actdata.atcmode == 'ACC':
+            #     show_basetid('accmain', 'accmain')
             show_basetid('start1', 'start1')
         elif self.sender() == self.tid2:
             show_basetid2('start2', 'start2')
