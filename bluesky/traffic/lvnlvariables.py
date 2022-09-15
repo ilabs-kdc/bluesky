@@ -164,8 +164,8 @@ class LVNLVariables(Entity):
         #                                            np.ones(len(iriv_18r)) * 52.60490551344223,
         #                                            np.ones(len(iriv_18r)) * 4.581121278305933)
         # self.dtg[isug_18r] = geo.kwikdist_matrix(bs.traf.lat[isug_18r], bs.traf.lon[isug_18r],
-        #                                          np.ones(len(isug_18r)) * 52.60490551344223,   #52.60490551344223
-        #                                          np.ones(len(isug_18r)) * 4.581121278305933)   #4.581121278305933
+        #                                          np.ones(len(isug_18r)) * 52.60490551344223,
+        #                                          np.ones(len(isug_18r)) * 4.581121278305933)
 
         # --------------- RUNWAY DTG ---------------
 

@@ -63,7 +63,7 @@ def start(mode):
     # win.move(monitor.left(), monitor.top())
     # win.setGeometry(500, 200, 300, 250)
     if socket.gethostbyname(socket.gethostname()) == '192.168.0.6':
-        win.showFullScreen()   # showMaximized #showFullScreen
+        win.showMaximized()   # showMaximized #showFullScreen
     else:
         win.show()
 

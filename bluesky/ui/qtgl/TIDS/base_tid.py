@@ -7,11 +7,9 @@ from bluesky.ui.qtgl import console, gui
 from bluesky.tools import misc
 import os
 
-#
+# Function TID
 def show_basetid(name, layout):
     globals()[str(name)] = QDialog()
-    # app = gui.start('server-gui')
-
     uic.loadUi(os.path.join(bs.settings.gfx_path, 'TID_Base.ui'), globals()[str(name)])
 
     tid_load = 'bs.ui.qtgl.TID_Function.' + layout
@@ -44,6 +42,7 @@ def show_basetid(name, layout):
 
     globals()[str(name)].exec()
 
+# Display TID
 def show_basetid2(name, layout):
     globals()[str(name)] = QDialog()
     uic.loadUi(os.path.join(bs.settings.gfx_path, 'TID_Base.ui'), globals()[str(name)])

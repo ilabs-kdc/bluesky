@@ -562,14 +562,10 @@ class Traffic(glh.RenderObject, layer=100):
 
                     # Label position
                     if idchange:
-                        if acid in idcreate:   #Label position for runways
-                            if data.arr[i] in ['ATP18R', 'RIV18R', 'RIV18REOR', 'SUG18R', 'SUG18REOR']:
-                                labelpos[i] = [-150, 0]  #-125
-                                leaderlinepos[i] = leaderline_vertices(actdata, -150, 0)
-
-                            else:
-                                labelpos[i] = [75, 0]   #50
-                                leaderlinepos[i] = leaderline_vertices(actdata, 75, 0)
+                        if acid in idcreate:
+                            labelpos[i] = initial_labelpos(data, i)
+                            offsetx, offsety = labelpos[i]
+                            leaderlinepos[i] = leaderline_vertices(actdata, offsetx, offsety)
                         else:
                             i_prev = self.id_prev.index(acid)
                             labelpos[i] = self.labelpos[i_prev]
@@ -587,13 +583,8 @@ class Traffic(glh.RenderObject, layer=100):
                         else:
                             leaderlinepos[i] = [0, 0, 0, 0]
 
-
                     # Microlabel position
-                    if data.arr[i] in ['ATP18C', 'ATP18CEOR', 'RIV18C', 'SUG18C']:
-                        mlabelpos[i] = [2*0.8*text_size-ac_size, 0.5*ac_size]   #2   #0.5-y
-                    else:
-                        mlabelpos[i] = [-8*0.8*text_size-ac_size, 0.5*ac_size]  #-3
-                    # print (data.arr[i])
+                    mlabelpos[i] = initial_micropos(data, i)
 
                 # Colours
                 if inconf:
@@ -919,10 +910,10 @@ def applabel(actdata, data, i):
     # Micro label   #elif is tried for gmp eor
     if data.mlbl[i]:
         if data.flighttype[i].upper() == 'OUTBOUND':
-            mlabel += '  '+chr(30)   #30
-        elif (len(data.rwy[i]) == 3) and (data.arr in ['ATP18R', 'RIV18R', 'RIV18REOR', 'SUG18R', 'SUG18REOR']):
+            mlabel += '      '+chr(30)   #30
+        elif (len(data.rwy[i]) == 3) and (data.arr[i] in ['ATP18R', 'RIV18R', 'RIV18REOR', 'SUG18R', 'SUG18REOR']):
             mlabel += '%-7s' % ('    ' + data.rwy[i][:7])
-        elif (len(data.rwy[i]) == 5) and (data.arr in ['ATP18R', 'RIV18R', 'RIV18REOR', 'SUG18R', 'SUG18REOR']):
+        elif (len(data.rwy[i]) == 5) and (data.arr[i] in ['ATP18R', 'RIV18R', 'RIV18REOR', 'SUG18R', 'SUG18REOR']):
             mlabel += '%-7s' % ('  '+data.rwy[i][:7])
         else:
             mlabel += '%-7s' % data.rwy[i][:7]   #3
@@ -1178,7 +1169,8 @@ def draw_uco(uco): # for instances
     Created by: Ajay Kumbhar
     Date:
     """
-    uco = [i for i in uco if i != '0']
+    IP = socket.gethostbyname(socket.gethostname())
+    uco = [i for i in uco if i == IP]
     return uco
 
 def remove_data(data,idx): # for attributes
@@ -1192,7 +1184,61 @@ def remove_data(data,idx): # for attributes
 
     Created by: Ajay Kumbhar
     Date:
-        """
+    """
     data = np.delete(data, idx, axis=0)
     return data
 
+def initial_labelpos(data, i):
+    """
+    Function: Compute the offset for the initial label position
+    Args:
+        data:   aircraft data [dict]
+        i:      index for data [int]
+    Returns:
+        labelpos:   offsets x and y [list]
+
+    Created by: Ajay Kumbhar
+    Date:
+    """
+    #   #   Enable data.rwy for normal cases
+    if data.rwy[i] in ['18R', '18R_E']:
+        labelpos = [-125, 0]  # -125
+    else:
+        labelpos = [50, 0]
+
+    #   #   Enable data.arr only for GMPEOR scenario
+    # if data.arr[i] in ['ATP18R', 'RIV18R', 'RIV18REOR', 'SUG18R', 'SUG18REOR']:
+    #     labelpos = [-150, 0]  # -125
+    # else:
+    #     labelpos = [80, 0]  # 50  #75 for R indication
+
+    return labelpos
+
+def initial_micropos(data, i):
+    """
+    Function: Compute the offset for the initial label position
+    Args:
+        data:   aircraft data [dict]
+        i:      index for data [int]
+    Returns:
+        labelpos:   offsets x and y [list]
+
+    Created by: Ajay Kumbhar
+    Date:
+    """
+    ac_size = settings.ac_size
+    text_size = settings.text_size
+
+    #   #   Enable data.rwy for normal cases
+    if data.rwy[i] in ['18R', '18R_E']:
+        mlabelpos = [2 * 0.8 * text_size - ac_size, 0.5 * ac_size]
+    else:
+        mlabelpos = [-3 * 0.8 * text_size - ac_size, 0.5 * ac_size]
+
+    #   #   Enable data.arr only for GMPEOR scenario
+    # if data.arr[i] in ['ATP18C', 'ATP18CEOR', 'RIV18C', 'SUG18C']:
+    #     mlabelpos = [2 * 0.8 * text_size - ac_size, 0.5 * ac_size]  # 2   #0.5-y
+    # else:
+    #     mlabelpos = [-8 * 0.8 * text_size - ac_size, 0.5 * ac_size]  # -3
+
+    return mlabelpos
