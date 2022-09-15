@@ -4,6 +4,7 @@ from PyQt5.QtCore import Qt, QEvent, qInstallMessageHandler, \
     QT_VERSION, QT_VERSION_STR
 from PyQt5.QtWidgets import QApplication, QErrorMessage
 
+import socket
 import bluesky as bs
 from bluesky.ui.qtgl.guiclient import GuiClient
 from bluesky.ui.qtgl.mainwindow import MainWindow, Splash, DiscoveryDialog
@@ -61,7 +62,10 @@ def start(mode):
     # monitor = DiscoveryDialog().screenGeometry(screenList)
     # win.move(monitor.left(), monitor.top())
     # win.setGeometry(500, 200, 300, 250)
-    win.show()  # showMaximized #showFullScreen
+    if socket.gethostbyname(socket.gethostname()) == '192.168.0.6':
+        win.showFullScreen()   # showMaximized #showFullScreen
+    else:
+        win.show()
 
     # win.windowHandle().setScreen(app.screens()[1])
     splash.showMessage('Done!')
