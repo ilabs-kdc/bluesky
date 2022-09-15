@@ -35,7 +35,7 @@ def show_basetid(name, layout):
     # globals()[str(name)].windowHandle().setScreen(app.screens()[1])
     if socket.gethostbyname(socket.gethostname()) == '192.168.0.6':
         globals()[str(name)].setGeometry(500, 200, 300, 250)
-        globals()[str(name)].move(2500, 2500)   #globals()[str(name)].down(), globals()[str(name)].right()
+        globals()[str(name)].move(2500, 2500)
         globals()[str(name)].showMaximized()
         globals()[str(name)].setWindowFlags(Qt.WindowMinMaxButtonsHint | Qt.FramelessWindowHint)
     else:
@@ -69,7 +69,7 @@ def show_basetid2(name, layout):
 
     if socket.gethostbyname(socket.gethostname()) == '192.168.0.6':
         globals()[str(name)].setGeometry(500, 200, 300, 250)
-        globals()[str(name)].move(0, 2500)  # globals()[str(name)].down(), globals()[str(name)].right()
+        globals()[str(name)].move(0, 2500)
         globals()[str(name)].showMaximized()
         globals()[str(name)].setWindowFlags(Qt.WindowMinMaxButtonsHint | Qt.FramelessWindowHint)
     else:
@@ -77,7 +77,6 @@ def show_basetid2(name, layout):
         globals()[str(name)].setWindowFlag(Qt.WindowMinMaxButtonsHint)
 
     globals()[str(name)].exec()
-
 
 # def tidclose(command, dialogname):
 def tidclose(command, dialogname):
