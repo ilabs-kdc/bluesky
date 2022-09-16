@@ -1,6 +1,7 @@
 """ Main window for the QTGL gui."""
 import platform
 import os
+from bluesky.stack.stackbase import stack
 
 from PyQt5.QtWidgets import QApplication as app
 from PyQt5.QtCore import Qt, pyqtSlot, QTimer, QItemSelectionModel, QSize

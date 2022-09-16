@@ -25,7 +25,7 @@ appmaps = [['a1',    'ALS\n10NM',     ['lambda: appmaps.close()',
            ['b4',    'RNP\nMAPS',     'lambda: None'],
 
            ['c1',    'PAR\nAPP',      ['lambda: appmaps.close()',
-                                       'lambda: show_basetid("parapp", "parapp")']],
+                                       'lambda: show_basetid2("parapp", "parapp")']],
            ['c2',    'NL\nGEO',       'lambda: console.Console._instance.stack("SWRAD GEO")'],
            ['c3',    'AREAS\nRD',     ['lambda: appmaps.close()',
                                        'lambda: show_basetid2("areasrd", "areasrd")']],
@@ -114,7 +114,7 @@ als10nm = [['a1',    '10 NM\n06',     'lambda: console.Console._instance.stack("
            ['f2',    'MAIN',          ['lambda: als10nm.close()',
                                        'lambda: show_basetid2("appdisp", "appdisp")']],
            ['f3',    'MAPS\nAPP',     ['lambda: als10nm.close()',
-                                       'lambda: show_basetid("appmaps", "appmaps")']],
+                                       'lambda: show_basetid2("appmaps", "appmaps")']],
            ['f4',    '',              None]]
 
 
@@ -139,7 +139,7 @@ als20nm = [['a1',    '20 NM\n06',     'lambda: console.Console._instance.stack("
            ['d4',    '',              None],
 
            ['e1',    'ALS\n10NM',     ['lambda: als20nm.close()',
-                                       'lambda: show_basetid("als10nm", "als10nm")']],
+                                       'lambda: show_basetid2("als10nm", "als10nm")']],
            ['e2',    '',              None],
            ['e3',    '',              None],
            ['e4',    '',              None],

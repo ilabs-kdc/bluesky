@@ -875,6 +875,7 @@ class nodeData:
 
         if atcmode.upper() == 'APP':
             self.show_map = False
+            self.show_coast = False
             self.show_histsymb = True
             self.show_aptdetails = False
             self.show_wpt = 1
@@ -883,6 +884,7 @@ class nodeData:
             self.show_aptlbl = False
         elif atcmode.upper() == 'ACC':
             self.show_map = False
+            self.show_coast = False
             self.show_histsymb = True
             self.show_aptdetails = False
             self.show_wpt = 1
@@ -891,6 +893,7 @@ class nodeData:
             self.show_aptlbl = False
         elif atcmode.upper() == 'TWR':
             self.show_map = False
+            self.show_coast = False
             self.show_histsymb = False
             self.show_aptdetails = True
             self.show_wpt = 1
@@ -899,6 +902,7 @@ class nodeData:
             self.show_aptlbl = False
         else:
             self.show_map = True
+            self.show_coast = True
             self.show_histsymb = False
             self.show_aptdetails = True
             self.show_wpt = 1

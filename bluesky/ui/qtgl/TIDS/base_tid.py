@@ -31,7 +31,7 @@ def show_basetid(name, layout):
     globals()[str(name)].setWindowTitle("Function TID")
     globals()[str(name)].setWindowModality(Qt.WindowModal)
     # globals()[str(name)].windowHandle().setScreen(app.screens()[1])
-    if socket.gethostbyname(socket.gethostname()) == '192.168.0.6':
+    if socket.gethostbyname(socket.gethostname()) == '192.168.0.6':    #192.168.0.6
         globals()[str(name)].setGeometry(500, 200, 300, 250)
         globals()[str(name)].move(2500, 2500)
         globals()[str(name)].showMaximized()
@@ -66,7 +66,7 @@ def show_basetid2(name, layout):
     globals()[str(name)].setWindowTitle("Display TID")
     globals()[str(name)].setWindowModality(Qt.WindowModal)
 
-    if socket.gethostbyname(socket.gethostname()) == '192.168.0.6':
+    if socket.gethostbyname(socket.gethostname()) == '192.168.0.6':   #192.168.0.6
         globals()[str(name)].setGeometry(500, 200, 300, 250)
         globals()[str(name)].move(0, 2500)
         globals()[str(name)].showMaximized()

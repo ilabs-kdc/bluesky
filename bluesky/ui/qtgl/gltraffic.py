@@ -911,12 +911,14 @@ def applabel(actdata, data, i):
     if data.mlbl[i]:
         if data.flighttype[i].upper() == 'OUTBOUND':
             mlabel += '      '+chr(30)   #30
-        elif (len(data.rwy[i]) == 3) and (data.arr[i] in ['ATP18R', 'RIV18R', 'RIV18REOR', 'SUG18R', 'SUG18REOR']):
+        elif (len(data.rwy[i]) == 3) and ((data.rwy[i] in ['18R', '18R_E']) or ((data.arr[i] in ['ATP18R', 'RIV18R', 'RIV18REOR', 'SUG18R', 'SUG18REOR']))):
             mlabel += '%-7s' % ('    ' + data.rwy[i][:7])
-        elif (len(data.rwy[i]) == 5) and (data.arr[i] in ['ATP18R', 'RIV18R', 'RIV18REOR', 'SUG18R', 'SUG18REOR']):
+        elif (len(data.rwy[i]) == 5) and ((data.rwy[i] in ['18R', '18R_E']) or data.arr[i] in ['ATP18R', 'RIV18R', 'RIV18REOR', 'SUG18R', 'SUG18REOR']):
             mlabel += '%-7s' % ('  '+data.rwy[i][:7])
+        elif (len(data.rwy[i]) == 2):
+            mlabel += '%-7s' % ('     ' + data.rwy[i][:7])
         else:
-            mlabel += '%-7s' % data.rwy[i][:7]   #3
+            mlabel += '%-7s' % data.rwy[i][:7]
     else:
         mlabel += 7*' '
 
@@ -1199,18 +1201,20 @@ def initial_labelpos(data, i):
 
     Created by: Ajay Kumbhar
     Date:
+
+    Note: Enable data.arr conditions only for GMPEOR scenario
     """
     #   #   Enable data.rwy for normal cases
-    if data.rwy[i] in ['18R', '18R_E']:
-        labelpos = [-125, 0]  # -125
-    else:
-        labelpos = [50, 0]
+    # if data.rwy[i] in ['18R', '18R_E']:
+    #     labelpos = [-125, 0]  # -125
+    # else:
+    #     labelpos = [50, 0]
 
     #   #   Enable data.arr only for GMPEOR scenario
-    # if data.arr[i] in ['ATP18R', 'RIV18R', 'RIV18REOR', 'SUG18R', 'SUG18REOR']:
-    #     labelpos = [-150, 0]  # -125
-    # else:
-    #     labelpos = [80, 0]  # 50  #75 for R indication
+    if data.arr[i] in ['ATP18R', 'RIV18R', 'RIV18REOR', 'SUG18R', 'SUG18REOR']:
+        labelpos = [-150, 0]  # -125
+    else:
+        labelpos = [80, 0]  # 50  #75 for R indication
 
     return labelpos
 
@@ -1225,20 +1229,22 @@ def initial_micropos(data, i):
 
     Created by: Ajay Kumbhar
     Date:
+
+    Note: Enable data.arr conditions only for GMPEOR scenario
     """
     ac_size = settings.ac_size
     text_size = settings.text_size
 
     #   #   Enable data.rwy for normal cases
-    if data.rwy[i] in ['18R', '18R_E']:
-        mlabelpos = [2 * 0.8 * text_size - ac_size, 0.5 * ac_size]
-    else:
-        mlabelpos = [-3 * 0.8 * text_size - ac_size, 0.5 * ac_size]
+    # if data.rwy[i] in ['18C', '18C_E']:
+    #     mlabelpos = [2 * 0.8 * text_size - ac_size, 0.5 * ac_size]
+    # else:
+    #     mlabelpos = [-8 * 0.8 * text_size - ac_size, 0.5 * ac_size]   #-3
 
     #   #   Enable data.arr only for GMPEOR scenario
-    # if data.arr[i] in ['ATP18C', 'ATP18CEOR', 'RIV18C', 'SUG18C']:
-    #     mlabelpos = [2 * 0.8 * text_size - ac_size, 0.5 * ac_size]  # 2   #0.5-y
-    # else:
-    #     mlabelpos = [-8 * 0.8 * text_size - ac_size, 0.5 * ac_size]  # -3
+    if data.arr[i] in ['ATP18C', 'ATP18CEOR', 'RIV18C', 'SUG18C']:
+        mlabelpos = [2 * 0.8 * text_size - ac_size, 0.5 * ac_size]  # 2   #0.5-y
+    else:
+        mlabelpos = [-8 * 0.8 * text_size - ac_size, 0.5 * ac_size]  # -3
 
     return mlabelpos

@@ -56,18 +56,11 @@ def start(mode):
     app.processEvents()
     win = MainWindow(mode)
 
-    # screenList = app.screens()
-    # print('The number of screens are: ', screenList)
-    # print('')
-    # monitor = DiscoveryDialog().screenGeometry(screenList)
-    # win.move(monitor.left(), monitor.top())
-    # win.setGeometry(500, 200, 300, 250)
     if socket.gethostbyname(socket.gethostname()) == '192.168.0.6':
         win.showMaximized()   # showMaximized #showFullScreen
     else:
         win.show()
 
-    # win.windowHandle().setScreen(app.screens()[1])
     splash.showMessage('Done!')
     app.processEvents()
     splash.finish(win)
@@ -84,4 +77,3 @@ def start(mode):
 
     # Start the Qt main loop
     app.exec_()
-    # return app
