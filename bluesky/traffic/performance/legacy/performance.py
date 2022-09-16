@@ -43,7 +43,8 @@ PHASE = {"None":0,
 
 
 def phases(alt, gs, delalt, cas, vmto, vmic, vmap,
-           vmcr, vmld, bank, bphase, swhdgsel, bada):
+           vmcr, vmld, bank, bphase, swhdgsel, bada, swapproach = False):
+
     # flight phases: TO (1), IC (2), CR (3), AP(4), LD(5), GD (6)
     #--> no holding phase yet
     #-------------------------------------------------
@@ -96,6 +97,8 @@ def phases(alt, gs, delalt, cas, vmto, vmic, vmap,
     Abalt = np.array((alt > ft) & (alt <= (3000. * ft)))
     if bada:
         Abspd = np.array((cas >= (vmap + 10. * kts)) & (cas < (vmcr + 10. * kts)))
+        if swapproach:
+            Abspd = np.array((cas >= (vmap + 10. * kts)))
     else:
         Abspd = np.array(cas >= (vmap + 10. * kts))
     Abvs = np.array(delalt <= 0.)
@@ -142,7 +145,7 @@ def phases(alt, gs, delalt, cas, vmto, vmic, vmap,
     #swhdgsel == True: Aircraft is turning
     noturn = np.array(swhdgsel) * 100.0
     bank   = np.minimum(noturn, bank)
-
+    print(phase)
     return (phase, bank)
 
 

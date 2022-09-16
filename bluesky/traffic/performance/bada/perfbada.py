@@ -6,6 +6,7 @@ from bluesky.traffic.performance.perfbase import PerfBase
 from bluesky.traffic.performance.legacy.performance import esf, phases, calclimits, PHASE
 from bluesky import settings
 from . import coeff_bada
+from bluesky.traffic.route import Route
 
 # Register settings defaults
 settings.set_variable_defaults(perf_path_bada='data/performance/BADA',
@@ -327,13 +328,38 @@ class BADA(PerfBase):
 
     def update(self, dt):
         ''' Periodic update function for performance calculations. '''
+
+        SWApproach = False
+        routes = {}
+        for aircraft in bs.traf.id:
+            routes[aircraft] = {}
+            routes[aircraft]["Route"] = Route._routes.get(aircraft).wpname
+            routes[aircraft]["Waypoint Altitudes"] = Route._routes.get(aircraft).wpalt
+            routes[aircraft]["Active Waypoint Index"] = bs.traf.ap.route[bs.traf.id.index(aircraft)].iactwp
+            routes[aircraft]["Active Waypoint Name"] = routes[aircraft]["Route"][routes[aircraft]["Active Waypoint Index"]]
+
+            # Number of remaining waypoints after current waypoint
+            wpremain = len(routes[aircraft]["Route"]) - routes[aircraft]["Active Waypoint Index"]
+
+            if wpremain > 5:
+                wpremain = 5
+
+            routes[aircraft]["Next X waypoints"] = routes[aircraft]["Route"][routes[aircraft]["Active Waypoint Index"]:
+                                                   routes[aircraft]["Active Waypoint Index"] + wpremain]
+            routes[aircraft]["Next X altitudes"] = routes[aircraft]["Waypoint Altitudes"][routes[aircraft]["Active Waypoint Index"]:
+                                                   routes[aircraft]["Active Waypoint Index"] + wpremain]
+
+            if all(earlier>= later for earlier, later in zip(routes[aircraft]["Next X altitudes"],
+                                                             routes[aircraft]["Next X altitudes"][1:])):
+                SWApproach = True
+
         # BADA version
         swbada = True
         delalt = bs.traf.selalt - bs.traf.alt
         # flight phase
         self.phase, self.bank = phases(bs.traf.alt, bs.traf.gs, delalt,
             bs.traf.cas, self.vmto, self.vmic, self.vmap, self.vmcr, self.vmld,
-            bs.traf.ap.bankdef, bs.traf.bphase, bs.traf.swhdgsel, swbada)
+            bs.traf.ap.bankdef, bs.traf.bphase, bs.traf.swhdgsel, swbada, SWApproach)
 
         # AERODYNAMICS
         # Lift
