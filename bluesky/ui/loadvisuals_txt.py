@@ -11,6 +11,7 @@ from zipfile import ZipFile
 import numpy as np
 import bluesky as bs
 from bluesky import settings
+from bluesky.tools.files import findfile
 
 REARTH_INV = 1.56961231e-7
 
@@ -113,9 +114,17 @@ def load_basemap_txt(atcmode):
         filename = ['252']
     elif atcmode.upper() == 'ACC':
         filename = ['751', '752']
+    else:
+        filename = []
 
-    # Open the files
+    # Loop over files
     for file in filename:
+
+        # Check if files exist
+        if not findfile(file, 'scenario/LVNL/Maps/mapid'):
+            continue
+
+        # Open the file
         with open(os.path.join('scenario/LVNL/Maps/mapid', '' + file + '.scn'), 'r') as f:
             for line in f:
                 # Edit scenario file to simple strings

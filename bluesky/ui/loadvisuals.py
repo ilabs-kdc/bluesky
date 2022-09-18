@@ -99,25 +99,22 @@ def load_basemap(atcmode):
     Date: 17-9-2022
     """
 
-    if atcmode != 'BLUESKY' and atcmode != 'TWR':
-        with cachefile.openfile('basemap_'+atcmode+'.p', maps_version) as cache:
-            try:
-                lines = cache.load()
-                dashedlines = cache.load()
-                dottedlines = cache.load()
-                points = cache.load()
-            except (pickle.PickleError, cachefile.CacheError) as e:
-                print(e.args[0])
-                lines, dashedlines, dottedlines, points = load_basemap_txt(atcmode)
+    with cachefile.openfile('basemap_'+atcmode+'.p', maps_version) as cache:
+        try:
+            lines = cache.load()
+            dashedlines = cache.load()
+            dottedlines = cache.load()
+            points = cache.load()
+        except (pickle.PickleError, cachefile.CacheError) as e:
+            print(e.args[0])
+            lines, dashedlines, dottedlines, points = load_basemap_txt(atcmode)
+            if lines or dashedlines or dottedlines or points:
                 cache.dump(lines)
                 cache.dump(dashedlines)
                 cache.dump(dottedlines)
                 cache.dump(points)
 
-            return lines, dashedlines, dottedlines, points
-
-    else:
-        return dict(), dict(), dict(), dict()
+        return lines, dashedlines, dottedlines, points
 
 
 def load_maplines(args):
