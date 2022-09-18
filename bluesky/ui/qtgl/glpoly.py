@@ -1,11 +1,15 @@
-''' BlueSky OpenGL line and polygon (areafilter) drawing. '''
+"""
+BlueSky OpenGL line and polygon (areafilter) drawing.
+
+Created by: Original BlueSky version
+"""
+
 import numpy as np
 import bluesky as bs
 from bluesky import settings
 from bluesky.ui import palette
 from bluesky.ui.qtgl import console
 from bluesky.ui.qtgl import glhelpers as glh
-from bluesky.tools import geo
 
 # Default settings
 settings.set_variable_defaults(
@@ -14,7 +18,7 @@ settings.set_variable_defaults(
     point_size=3
 )
 
-# Default pallete
+# Default palette
 palette.set_default_colours(
     polys=(0, 255, 255),
     previewpoly=(0, 204, 255)
@@ -24,8 +28,20 @@ palette.set_default_colours(
 POLYPREV_SIZE = 100
 POLY_SIZE = 2000
 
+
 class Poly(glh.RenderObject, layer=-20):
-    ''' Poly OpenGL object.
+    """
+    Definition: Poly OpenGL object.
+    Methods:
+        create():           Create the OpenGL Objects and Buffers
+        draw():             Draw the OpenGL Objects
+        actdata_changed():  Update buffers when a different node is selected,
+                            or when the data of the current node is updated.
+        cmdline_stacked():  Check if the preview should be deactivated
+        previewpoly():      Update the preview polygon
+
+    Created by: Original BlueSky version
+
     Edited by: Mitchell de Keijzer
     Date: 08-04-2022
     Changed: added a new way of drawing lines and points for the maps without having to use scenario files, this way
@@ -36,55 +52,51 @@ class Poly(glh.RenderObject, layer=-20):
             self.mappoints
             self.mappointslat
             self.mappointslon
-    '''
+    """
 
     def __init__(self, parent=None):
         super().__init__(parent)
+
         # Polygon preview object
         self.polyprev = glh.VertexArrayObject(glh.gl.GL_LINE_LOOP)
 
         # Fixed polygons
         self.allpolys = glh.VertexArrayObject(glh.gl.GL_LINES)
-        self.alldotted = glh.VertexArrayObject(glh.gl.GL_LINES)
-        self.alldashed = glh.VertexArrayObject(glh.gl.GL_LINES)
+        self.alldotted = glh.VertexArrayObject(glh.gl.GL_LINES, shader_type='dashed')
+        self.alldashed = glh.VertexArrayObject(glh.gl.GL_LINES, shader_type='dashed')
         self.allpfill = glh.VertexArrayObject(glh.gl.GL_TRIANGLES)
         # Points
         self.allpoints = glh.VertexArrayObject(glh.gl.GL_TRIANGLE_FAN)
         self.pointslat = glh.GLBuffer()
         self.pointslon = glh.GLBuffer()
 
-        # # Fixed Map Lines
-        # self.maplines = glh.VertexArrayObject(glh.gl.GL_LINES)
-        # self.dottedlines = glh.VertexArrayObject(glh.gl.GL_LINES)
-        # self.dashedlines = glh.VertexArrayObject(glh.gl.GL_LINES)
-        # # Fixed Map Points
-        # self.mappoints = glh.VertexArrayObject(glh.gl.GL_TRIANGLE_FAN)
-        # self.mappointslat = glh.GLBuffer()
-        # self.mappointslon = glh.GLBuffer()
-
         self.prevmousepos = (0, 0)
 
         bs.Signal('cmdline_stacked').connect(self.cmdline_stacked)
         bs.Signal('radarmouse').connect(self.previewpoly)
-        bs.Signal('panzoom').connect(self.dotted_dashed)
         bs.net.actnodedata_changed.connect(self.actdata_changed)
 
     def create(self):
+        """
+        Function: Create the OpenGL Objects and Buffers
+        Args: -
+        Returns: -
+
+        Created by: Original BlueSky version
+        """
+
         # --------------- Preview poly ---------------
         self.polyprev.create(vertex=POLYPREV_SIZE * 8,
                              color=palette.previewpoly, usage=glh.gl.GL_DYNAMIC_DRAW)
 
         # --------------- Polys ---------------
         self.allpolys.create(vertex=POLY_SIZE * 16, color=POLY_SIZE * 8)
-        # self.maplines.create(vertex=POLY_SIZE * 16, color=POLY_SIZE * 8)
 
         # --------------- Dotted lines ---------------
-        self.alldotted.create(vertex=POLY_SIZE * 16, color=palette.polys)
-        # self.dottedlines.create(vertex=POLY_SIZE * 16, color=palette.polys)
+        self.alldotted.create(vertex=POLY_SIZE * 16, color=POLY_SIZE * 8)
 
         # --------------- Dashed lines ---------------
-        self.alldashed.create(vertex=POLY_SIZE * 16, color=palette.polys)
-        # self.dashedlines.create(vertex=POLY_SIZE * 16, color=palette.polys)
+        self.alldashed.create(vertex=POLY_SIZE * 16, color=POLY_SIZE * 8)
 
         # --------------- Fills ---------------
         self.allpfill.create(vertex=POLY_SIZE * 24,
@@ -94,8 +106,6 @@ class Poly(glh.RenderObject, layer=-20):
         # OpenGL Buffers
         self.pointslat.create(POLY_SIZE * 16)
         self.pointslon.create(POLY_SIZE * 16)
-        # self.mappointslat.create(POLY_SIZE * 16)
-        # self.mappointslon.create(POLY_SIZE * 16)
 
         # Define vertices
         point_size = settings.point_size
@@ -111,12 +121,18 @@ class Poly(glh.RenderObject, layer=-20):
         self.allpoints.create(vertex=point_vert)
         self.allpoints.set_attribs(lat=self.pointslat, lon=self.pointslon, color=POLY_SIZE * 8,
                                    instance_divisor=1)
-        # self.mappoints.create(vertex=point_vert)
-        # self.mappoints.set_attribs(lat=self.mappointslat, lon=self.mappointslon, color=POLY_SIZE * 8,
-        #                            instance_divisor=1)
 
     def draw(self):
+        """
+        Function: Draw the OpenGL Objects
+        Args: -
+        Returns: -
+
+        Created by: Original BlueSky version
+        """
+
         actdata = bs.net.get_nodedata()
+
         # Send the (possibly) updated global uniforms to the buffer
         self.shaderset.set_vertex_scale_type(self.shaderset.VERTEX_IS_LATLON)
 
@@ -131,28 +147,40 @@ class Poly(glh.RenderObject, layer=-20):
         if actdata.show_poly > 0 and actdata.show_maplines:
             # Polys
             self.allpolys.draw()
+
+            # Dashed and Dotted
+            dashed_shader = glh.ShaderSet.get_shader('dashed')
+            dashed_shader.bind()
+
+            glh.gl.glUniform1f(dashed_shader.uniforms['dashSize'].loc, float(settings.interval_dotted))
+            glh.gl.glUniform1f(dashed_shader.uniforms['gapSize'].loc, float(settings.interval_dotted))
             self.alldotted.draw()
+
+            glh.gl.glUniform1f(dashed_shader.uniforms['dashSize'].loc, float(settings.interval_dashed))
+            glh.gl.glUniform1f(dashed_shader.uniforms['gapSize'].loc, float(settings.interval_dashed))
             self.alldashed.draw()
 
             # Points (set vertex is screen size)
             self.shaderset.set_vertex_scale_type(self.shaderset.VERTEX_IS_SCREEN)
             self.allpoints.draw(n_instances=len(actdata.points))
-            # self.mappoints.draw(n_instances=len(actdata.pointmap))
 
             # Draw fills
             if actdata.show_poly > 1:
                 self.shaderset.set_vertex_scale_type(self.shaderset.VERTEX_IS_LATLON)
                 self.allpfill.draw()
 
-        # if actdata.show_maplines:
-        #     self.shaderset.set_vertex_scale_type(self.shaderset.VERTEX_IS_LATLON)
-        #     self.maplines.draw()
-        #     self.dashedlines.draw()
-        #     self.dottedlines.draw()
-
     def actdata_changed(self, nodeid, nodedata, changed_elems):
-        ''' Update buffers when a different node is selected, or when
-            the data of the current node is updated. '''
+        """
+        Function: Update buffers when a different node is selected, or when the data of the current node is updated.
+        Args:
+            nodeid:         ID of the Node [bytes]
+            nodedata:       The Node data [class]
+            changed_elems:  The changed elements [list]
+        Returns: -
+
+        Created by: Original BlueSky version
+        """
+
         # Shape data change
         if 'SHAPE' in changed_elems or 'MAP' in changed_elems:
             # Make Current
@@ -165,7 +193,6 @@ class Poly(glh.RenderObject, layer=-20):
                 # Create contour buffer with color
                 self.allpolys.update(vertex=np.concatenate(contours),
                                      color=np.concatenate(colors))
-
                 # Create fill buffer
                 self.allpfill.update(vertex=np.concatenate(fills))
             else:
@@ -187,10 +214,9 @@ class Poly(glh.RenderObject, layer=-20):
                 # Retrieve data
                 contours, fills, colors = zip(*nodedata.dotted.values())
                 contours = np.concatenate(contours)
-                # Divide into segments
-                contours = self.line_interval(contours[::2], contours[1::2], settings.interval_dotted)
-                # Update buffer
-                self.alldotted.update(vertex=np.array(contours, dtype=np.float32))
+                # Update object
+                self.alldotted.update(vertex=np.array(contours, dtype=np.float32),
+                                      color=np.concatenate(colors))
             else:
                 self.alldotted.set_vertex_count(0)
 
@@ -199,10 +225,10 @@ class Poly(glh.RenderObject, layer=-20):
                 # Retrieve data
                 contours, fills, colors = zip(*nodedata.dashed.values())
                 contours = np.concatenate(contours)
-                # Divide into segments
-                contours = self.line_interval(contours[::2], contours[1::2], settings.interval_dashed)
-                # Update buffer
-                self.alldashed.update(vertex=np.array(contours, dtype=np.float32))
+
+                # Update object
+                self.alldashed.update(vertex=np.array(contours, dtype=np.float32),
+                                      color=np.concatenate(colors))
             else:
                 self.alldashed.set_vertex_count(0)
 
@@ -211,63 +237,30 @@ class Poly(glh.RenderObject, layer=-20):
             self.allpfill.set_attribs(color=np.append(palette.polys, 50))
             self.polyprev.set_attribs(color=palette.previewpoly)
 
-        # if 'MAP' in changed_elems and nodedata.show_maplines:
-        #     if nodedata.linemap or nodedata.dotmap or nodedata.dashmap:
-        #         self.glsurface.makeCurrent()
-        #
-        #     # Lines
-        #     if nodedata.linemap:
-        #         contours, fills, colors = zip(*nodedata.linemap.values())
-        #         # Create contour buffer with color
-        #         self.maplines.update(vertex=np.concatenate(contours),
-        #                              color=np.concatenate(colors))
-        #         # Create fill buffer
-        #         self.allpfill.update(vertex=np.concatenate(fills))
-        #     else:
-        #         self.maplines.set_vertex_count(0)
-        #         self.allpfill.set_vertex_count(0)
-        #
-        #     # Points
-        #     if nodedata.pointmap:
-        #         # Retrieve data
-        #         contours, fills, colors = zip(*nodedata.pointmap.values())
-        #         contours = np.concatenate(contours)
-        #         # Update buffers
-        #         self.mappointslat.update(np.array(contours[::2], dtype=np.float32))
-        #         self.mappointslon.update(np.array(contours[1::2], dtype=np.float32))
-        #         self.mappoints.update(color=np.concatenate(colors))
-        #
-        #     # Dotted lines
-        #     if nodedata.dotmap:
-        #         # Retrieve data
-        #         contours, fills, colors = zip(*nodedata.dotmap.values())
-        #         contours = np.concatenate(contours)
-        #         # Divide into segments
-        #         contours = self.line_interval(contours[::2], contours[1::2], settings.interval_dotted)
-        #         # Update buffer
-        #         self.dottedlines.update(vertex=np.array(contours, dtype=np.float32))
-        #     else:
-        #         self.dottedlines.set_vertex_count(0)
-        #
-        #     # Dashed lines
-        #     if nodedata.dashmap:
-        #         # Retrieve data
-        #         contours, fills, colors = zip(*nodedata.dashmap.values())
-        #         contours = np.concatenate(contours)
-        #         # Divide into segments
-        #         contours = self.line_interval(contours[::2], contours[1::2], settings.interval_dashed)
-        #         # Update buffer
-        #         self.dashedlines.update(vertex=np.array(contours, dtype=np.float32))
-        #     else:
-        #         self.dashedlines.set_vertex_count(0)
-
-
     def cmdline_stacked(self, cmd, args):
+        """
+        Function: Check if the preview should be deactivated
+        Args:
+            cmd:    The command [string]
+            args:   The arguments [list]
+        Returns: -
+
+        Created by: Original BlueSky version
+        """
+
         if cmd in ['AREA', 'BOX', 'POLY', 'POLYGON', 'CIRCLE', 'LINE', 'POLYLINE']:
             self.polyprev.set_vertex_count(0)
 
-    # def previewpoly(self, shape_type, data_in=None):
     def previewpoly(self, mouseevent):
+        """
+        Function: Update the preview polygon
+        Args:
+            mouseevent: The mouse event [QMouseEvent]
+        Returns: -
+
+        Created by: Original BlueSky version
+        """
+
         if mouseevent.type() != mouseevent.MouseMove:
             return
         mousepos = (mouseevent.x(), mouseevent.y())
@@ -305,213 +298,5 @@ class Poly(glh.RenderObject, layer=-20):
 
                     self.polyprev.update(vertex=polydata)
 
-
                 except ValueError:
                     pass
-
-    def dotted_dashed(self, finished=False):
-        """
-        Function: Update the dotted and dashed line segments
-        Args:
-            finished:   Not used
-        Returns: -
-
-        Created by: Bob van Dillen
-        Date: 18-2-2022
-        Edited by: Mitchell de Keijzer
-        Date: 7-4-2022
-        Changed: added dotmap & dashmap
-        """
-
-        # Get node data
-        actdata = bs.net.get_nodedata()
-
-        # Update dotted lines
-        if actdata.dotted:
-            # Get coordinates of dotted/dashed line segments
-            contours, fills, colors = zip(*actdata.dotted.values())
-            dotted_coords = np.concatenate(contours)
-
-            # Compute line segments contours
-            contours_dotted = self.line_interval(dotted_coords[::2], dotted_coords[1::2], settings.interval_dotted)
-
-            # Update buffer
-            self.alldotted.update(vertex=np.array(contours_dotted, dtype=np.float32))
-        else:
-            self.alldotted.set_vertex_count(0)
-
-        # Update dashed lines
-        if actdata.dashed:
-            # Get coordinates of dotted/dashed line segments
-            contours, fills, colors = zip(*actdata.dashed.values())
-            dashed_coords = np.concatenate(contours)
-
-            # Compute line segments contours
-            contours_dashed = self.line_interval(dashed_coords[::2], dashed_coords[1::2], settings.interval_dashed)
-
-            # Update buffer
-            self.alldashed.update(vertex=np.array(contours_dashed, dtype=np.float32))
-        else:
-            self.alldashed.set_vertex_count(0)
-
-        # # Update dotted lines
-        # if actdata.dotmap:
-        #     # Get coordinates of dotted/dashed line segments
-        #     contours, fills, colors = zip(*actdata.dotmap.values())
-        #     dotted_coords = np.concatenate(contours)
-        #
-        #     # Compute line segments contours
-        #     contours_dotted = self.line_interval(dotted_coords[::2], dotted_coords[1::2], settings.interval_dotted)
-        #     # Update buffer
-        #     self.dottedlines.update(vertex=np.array(contours_dotted, dtype=np.float32))
-        # else:
-        #     self.dottedlines.set_vertex_count(0)
-        #
-        # # Update dashed lines
-        # if actdata.dashmap:
-        #     # Get coordinates of dotted/dashed line segments
-        #     contours, fills, colors = zip(*actdata.dashmap.values())
-        #     dashed_coords = np.concatenate(contours)
-        #
-        #     # Compute line segments contours
-        #     contours_dashed = self.line_interval(dashed_coords[::2], dashed_coords[1::2], settings.interval_dashed)
-        #
-        #     # Update buffer
-        #     self.dashedlines.update(vertex=np.array(contours_dashed, dtype=np.float32))
-        # else:
-        #     self.dashedlines.set_vertex_count(0)
-
-    def line_interval(self, lat, lon, interval):
-        """
-        Function: Divide a line in segments
-        Args:
-            lat:        latitudes of lines [array]
-            lon:        longitudes of lines [array]
-            interval:   segment interval [float]
-        Returns:
-            contours:   contours of the line segments [array]
-
-        Created by: Bob van Dillen
-        Date: 18-2-2022
-        """
-
-        # Get screen pixel coordinates for the start and end points
-        x, y = self.glsurface.LatLonTopixelCoords(lat, lon)
-
-        # Start and end points
-        x0 = x[::2]
-        x1 = x[1::2]
-        y0 = y[::2]
-        y1 = y[1::2]
-
-        # Determine angle and distance between line start and end point
-        angle = np.arctan2(y1-y0, x1-x0)
-        length = np.sqrt((x1-x0)*(x1-x0) + (y1-y0)*(y1-y0))
-
-        # Determine angle and distance between line start and end point
-        # angle, length = geo.kwikqdrdist_matrix(lat[::2], lon[::2], lat[1::2], lon[1::2])
-
-        # Determine number of segments (including empty segments (line-empty-line-...))
-        n_segments = length//interval
-
-        # Determine amount of line segments (make number of segments odd)
-        n_segments = np.where(n_segments % 2 == 0, n_segments-1, n_segments)
-        n_segments = n_segments.astype(np.int32)
-
-        '''
-        Constructing an array with the number of segments for all lines:
-        [[0 1 2 ... n]  --> [0 1 2 3 0 1 2 0 ... ]
-         [0 1 2 ... n]
-              ...
-         [0 1 2 ... n]]
-        '''
-        dl = np.arange(np.max(n_segments+1))
-        dl = np.broadcast_to(dl, (len(n_segments), len(dl)))
-
-        # Reshape segments count
-        n = n_segments.reshape(len(n_segments), 1)
-
-        # Take number of segments for every line
-        dl = np.extract(dl <= n, dl)
-
-        '''
-        Multiply elementwise with cosine of the angle for dx (i = interval):
-        [0 1 2 3 0 1 ... ] * [i*cos(a1) i*cos(a1) i*cos(a1) i*cos(a1) i*cos(a2) i*cos(a2) ... ]
-        
-        Similar for y (sine)
-        '''
-        # Reshaping angle array
-        angle = np.repeat(angle, n_segments+1)
-
-        # Creating dx and dy array
-        dx = dl*interval*np.cos(angle)
-        dy = dl*interval*np.sin(angle)
-
-        '''
-        Create repeated initial x array (x[::2]):
-        [x1 x1 x1 x2 x2 x3 ... ]
-        
-        Similar for y
-        '''
-        x_start = np.repeat(x0, n_segments+1)
-        y_start = np.repeat(y0, n_segments+1)
-
-        '''
-        Add dx to initial x:
-        [x1 x1+i*cos(a1) x1+2*i*cos(a1) x1+3*cos(a1) x2 x2+i*cos(a2) ... ]
-        
-        Similar for y
-        '''
-        x_segments = x_start+dx
-        y_segments = y_start+dy
-
-        # Convert to lat/lon
-        lat_segments, lon_segments = self.glsurface.pixelCoordsToLatLon(x_segments, y_segments)
-
-        # Only draw line segments in view
-        lat_segments, lon_segments = self.latlon_inview(lat_segments, lon_segments)
-
-        # Create contours array
-        contours = np.empty(2*len(lat_segments), dtype=np.float32)
-        contours[::2] = lat_segments
-        contours[1::2] = lon_segments
-
-        return contours
-
-    def latlon_inview(self, lat, lon):
-        """
-        Function: Delete line segments which are not in view
-        Args:
-            lat:    latitude [array]
-            lon:    longitude [array]
-        Returns:
-            lat:    latitude [array]
-            lon:    longitude [array]
-
-        Created by: Bob van Dillen
-        Date: 20-2-2022
-        """
-
-        # Get screen view
-        viewport = self.glsurface.viewportlatlon()
-
-        # Get lat/lon to draw
-        lat_draw = np.logical_and(lat <= viewport[0], lat >= viewport[2])
-        lon_draw = np.logical_and(lon <= viewport[3], lon >= viewport[1])
-
-        # Get indices to draw
-        ilat = np.nonzero(lat_draw)[0]
-        ilon = np.nonzero(lon_draw)[0]
-        idraw = np.intersect1d(ilat, ilon, assume_unique=True)
-
-        # Get start (even) and end (odd) indices for line segments in view
-        start_end = np.where(idraw % 2 == 0, idraw+1, idraw-1)
-
-        # Get indices of line segments to draw
-        idraw = np.unique(np.append(idraw, start_end))
-
-        # Take lat/lon
-        lat = lat[idraw]
-        lon = lon[idraw]
-
-        return lat, lon
