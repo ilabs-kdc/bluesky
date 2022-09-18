@@ -310,38 +310,40 @@ def load_mapsline_txt(args):
 
     Created by: Mitchell de Keijzer
     Date: 01-04-2022
-
     """
+
     names = []
     shapes = []
     coords = []
     colors = []
-    tbar_maps = ['NIRSI', 'GALIS', 'RANGEBAR', 'SOKS2']
-    if args in tbar_maps:
-        path = 'T-bar'
-    else:
-        path = 'mapid'
+
+    # Get path
+    path = findfile(args+'.scn', 'scenario/LVNL/Maps')
+
+    # Check if file exists
+    if path:
     # Load scenario map file
-    with open(os.path.join('scenario/LVNL/Maps', '' + path + '', '' + args + '.scn'), 'r') as f:
-        for line in f:
-            # Edit scenario file to simple strings
-            line = line.replace('>', ' ')
-            line = line.replace(',', ' ')
-            line = line.strip()
-            arg = line.split()
-            del arg[0]  # delete command time stamp
-            if not (line == "" or line[0] == '#' or arg[0] == 'COLOR'):
-                names.append(arg[1])
-                shapes.append(arg[0])
-                if arg[0] == 'POINT':
-                    coords.append([float(arg[2]), float(arg[3])])
-                else:
-                    coords.append([float(arg[2]), float(arg[3]), float(arg[4]), float(arg[5])])
-                colors.append(None)
-            # If a specific color is given, replace None with the correct color code
-            if arg[0] == 'COLOR':
-                index = names.index(arg[1])
-                colors[index] = (int(arg[2]), int(arg[3]), int(arg[4]))
+        with open(path, 'r') as f:
+            for line in f:
+                # Edit scenario file to simple strings
+                line = line.replace('>', ' ')
+                line = line.replace(',', ' ')
+                line = line.strip()
+                arg = line.split()
+                del arg[0]  # delete command time stamp
+                if not (line == "" or line[0] == '#' or arg[0] == 'COLOR'):
+                    names.append(arg[1])
+                    shapes.append(arg[0])
+                    if arg[0] == 'POINT':
+                        coords.append([float(arg[2]), float(arg[3])])
+                    else:
+                        coords.append([float(arg[2]), float(arg[3]), float(arg[4]), float(arg[5])])
+                    colors.append(None)
+                # If a specific color is given, replace None with the correct color code
+                if arg[0] == 'COLOR':
+                    index = names.index(arg[1])
+                    colors[index] = (int(arg[2]), int(arg[3]), int(arg[4]))
+
     name = names
     shape = shapes
     coordinates = coords

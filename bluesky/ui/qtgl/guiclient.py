@@ -435,6 +435,7 @@ class GuiClient(Client):
                     name, shape, coordinate, color = load_maplines(data['args'])
                     for d in range(len(name)):
                         sender_data.update_poly_data(name[d], shape[d], None, None)
+
                 # Load map
                 else:
                     loaded_maps.append(data['args'])
