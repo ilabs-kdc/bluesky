@@ -111,9 +111,9 @@ def load_basemap_txt(atcmode):
 
     # Get file names
     if atcmode.upper() == 'APP':
-        filename = ['252']
+        filename = ['252.scn']
     elif atcmode.upper() == 'ACC':
-        filename = ['751', '752']
+        filename = ['751.scn', '752.scn']
     else:
         filename = []
 
@@ -125,7 +125,7 @@ def load_basemap_txt(atcmode):
             continue
 
         # Open the file
-        with open(os.path.join('scenario/LVNL/Maps/mapid', '' + file + '.scn'), 'r') as f:
+        with open(os.path.join('scenario/LVNL/Maps/mapid', file), 'r') as f:
             for line in f:
                 # Edit scenario file to simple strings
                 line = line.replace('>', ' ')
