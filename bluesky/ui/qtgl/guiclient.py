@@ -31,7 +31,7 @@ class GuiClient(Client):
     """
     Edited by: Mitchell de Keijzer
     Date: 04-05-2022
-    Changed: Added following methods (origin base_tid.py) for multiposition purposes
+    Changed: Added following methods (origin tid.py) for multiposition purposes
         clear():            Clear variables
         update_cmdline():   Update the command line
         exq():              Execute commandline
@@ -229,7 +229,6 @@ class GuiClient(Client):
         """
 
         cmd = cmd.strip().upper()
-        print('set command:', cmd)
 
         if cmd in self.cmdslst:
             # Get index
@@ -280,9 +279,7 @@ class GuiClient(Client):
         """
 
         # Set the argument
-        print('eerst', self.argslst)
         self.argslst[self.iact][argn - 1] = arg.strip()
-        print('daarna', self.argslst)
 
         # Update command line
         self.update_cmdline()
@@ -308,9 +305,7 @@ class GuiClient(Client):
             char:   character [str]
         Returns: -
         """
-        print(self.argslst)
-        print(self.iact)
-        print(self.argslst[self.iact][-1])
+
         # Append character
         self.argslst[self.iact][-1] += char.strip()
 

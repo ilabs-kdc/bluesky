@@ -16,18 +16,15 @@ start = [['a1',    '',        None],
          ['b4',    '',        None],
 
          ['c1',    '',        None],
-         ['c2',    'BASE',    ['lambda: start.close()',
-                               'lambda: show_basetid("base", "base")']],
+         ['c2',    'BASE',    ['lambda: change_tid("TID", "base")']],
          ['c3',    'APP',     ['lambda: console.Console._instance.stack("ATCMODE APP")',
-                               'lambda: start.close()',
-                               'lambda: show_basetid("appmain","appmain")']],
+                               'lambda: change_tid("TID","appmain")']],
          ['c4',    '',        None],
 
          ['d1',    '',        None],
          ['d2',    '',        None],
          ['d3',    'ACC',     ['lambda: console.Console._instance.stack("ATCMODE ACC")',
-                               'lambda: start.close()',
-                               'lambda: show_basetid("accmain", "accmain")']],
+                               'lambda: change_tid("TID", "accmain")']],
          ['d4',    '',        None],
 
          ['e1',    '',        None],
@@ -51,8 +48,8 @@ base = [  ['a1',    'UCO',     'lambda: console.process_cmdline("UCO ")'],
           ['a3',    'EFL',     'lambda: console.process_cmdline("ALT FL")'],
           ['a4',    'SPD',     'lambda: console.process_cmdline("SPD ")'],
 
-          ['b1',    'WPTS',    "lambda: show_basetid('waypoints','wpts')"],
-          ['b2',    'MAPS',    "lambda: show_basetid('maps','maps')"],
+          ['b1',    'WPTS',    "lambda: change_tid('TID','wpts')"],
+          ['b2',    'MAPS',    "lambda: change_tid('TID','maps')"],
           ['b3',    '',        None],
           ['b4',    '',        None],
 
@@ -78,17 +75,20 @@ base = [  ['a1',    'UCO',     'lambda: console.process_cmdline("UCO ")'],
 
           ]
 
-wpts =  [ ['a1',    'RIVER',        'lambda:  tidclose(console.process_cmdline("RIVER"), "waypoints")'],
+wpts =  [ ['a1',    'RIVER',   ['lambda: console.process_cmdline("RIVER")',
+                                'lambda: change_tid("TID", "base")']],
           ['a2',    '',        None],
           ['a3',    '',        None],
           ['a4',    '',        None],
 
-          ['b1',    'SUGOL',        'lambda:  tidclose(console.process_cmdline("SUGOL"), "waypoints")'],
+          ['b1',    'SUGOL',   ['lambda: console.process_cmdline("SUGOL")',
+                                'lambda: change_tid("TID", "base")']],
           ['b2',    '',        None],
           ['b3',    '',        None],
           ['b4',    '',        None],
 
-          ['c1',    'ARTIP',        'lambda:  tidclose(console.process_cmdline("SUGOL"), "waypoints")'],
+          ['c1',    'ARTIP',   ['lambda: console.process_cmdline("ARTIP")',
+                                'lambda: change_tid("TID", "base")']],
           ['c2',    '',        None],
           ['c3',    '',        None],
           ['c4',    '',        None],
@@ -103,15 +103,18 @@ wpts =  [ ['a1',    'RIVER',        'lambda:  tidclose(console.process_cmdline("
           ['e3',    '',        None],
           ['e4',    '',        None],
 
-          ['f1',    'BACK',        'lambda:  waypoints.close()'],
+          ['f1',    'BACK',    'lambda:  change_tid("TID", "base")'],
           ['f2',    '',        None],
           ['f3',    '',        None],
           ['f4',    '',        None],
           ]
 
-maps =  [ ['a1',    '751',        'lambda:  tidclose(console.process_cmdline("MAPTOGGLE map 751"), "maps")'],
-          ['a2',    '752',        'lambda:  tidclose(console.process_cmdline("MAPTOGGLE map 752"), "maps")'],
-          ['a3',    '252',        'lambda:  tidclose(console.process_cmdline("MAPTOGGLE map 252"), "maps")'],
+maps =  [ ['a1',    '751',     ['lambda: console.Console._instance.stack("MAPTOGGLE map 751")',
+                                'lambda: change_tid("TID", "base")']],
+          ['a2',    '752',     ['lambda: console.Console._instance.stack("MAPTOGGLE map 752")',
+                                'lambda: change_tid("TID", "base")']],
+          ['a3',    '252',     ['lambda: console.Console._instance.stack("MAPTOGGLE map 252")',
+                                'lambda: change_tid("TID", "base")']],
           ['a4',    '',        None],
 
           ['b1',    '',        None],
@@ -134,7 +137,7 @@ maps =  [ ['a1',    '751',        'lambda:  tidclose(console.process_cmdline("MA
           ['e3',    '',        None],
           ['e4',    '',        None],
 
-          ['f1',    'BACK',        'lambda:  maps.close()'],
+          ['f1',    'BACK',    ['lambda:  change_tid("TID", "base")']],
           ['f2',    '',        None],
           ['f3',    '',        None],
           ['f4',    '',        None],
