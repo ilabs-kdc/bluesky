@@ -136,7 +136,7 @@ def phases(alt, gs, delalt, cas, vmto, vmic, vmap,
 # (BADA User Manual 3.12, p.15)
 #
 #-----------------------------------------------------------------------------
-def esf(alt, M, climb, descent, delspd, selmach, type='B744', tISA = 0):
+def esf(alt, M, climb, descent, delspd, selmach, esf_table, tISA = 0):
 
 
     # test for acceleration / deceleration
@@ -173,11 +173,17 @@ def esf(alt, M, climb, descent, delspd, selmach, type='B744', tISA = 0):
         (((1.0 + gamma1 * (M**2))**gamma2) - 1.0)) * \
         np.logical_and.reduce([cspd, selcas, abtp]) * 1
 
+    # #case e: acceleration in climb
+    # efe    = 0.3 * np.logical_and.reduce([acc, climb])
+
     #case e: acceleration in climb
-    efe    = 0.3 * np.logical_and.reduce([acc, climb])
+    efe    = interpolate_esf(alt/0.3048/100, esf_table) * np.logical_and.reduce([acc, climb]) * 1
+
+    # #case f: deceleration in descent
+    # eff    = 0.3 * np.logical_and.reduce([dec, descent])
 
     #case f: deceleration in descent
-    eff    = 0.3 * np.logical_and.reduce([dec, descent])
+    eff    = interpolate_esf(alt/0.3048/100, esf_table, dec = True) * np.logical_and.reduce([dec, descent]) * 1
 
     #case g: deceleration in climb
     efg    = 1.7 * np.logical_and.reduce([dec, climb])
@@ -199,6 +205,35 @@ def esf(alt, M, climb, descent, delspd, selmach, type='B744', tISA = 0):
     # ESF of non-climbing/descending aircraft is zero which
     # leads to an error. Therefore, ESF for non-climbing aircraft is 1
     return np.maximum(ef, np.array(ef == 0) * 1)
+
+def interpolate_esf(alt, esf_table, dec=False):
+
+    ESF = np.array([])
+
+    found = False
+
+    for n,i in enumerate(esf_table):
+        for j,val in enumerate(i.FL):
+            if found: continue
+            if val>alt[n]:
+                if not dec:
+                    iESF = (i.ESF_climb[j] - i.ESF_climb[j-1])/(i.FL[j]-i.FL[j-1]) * (alt[n] - i.FL[j-1]) + \
+                           i.ESF_climb[j-1]
+                else:
+                    iESF = (i.ESF_descent[j] - i.ESF_descent[j - 1]) / (i.FL[j] - i.FL[j - 1]) * (alt[n] - i.FL[j - 1]) + \
+                           i.ESF_descent[j - 1]
+                # ESF[-n:] = iESF
+                ESF = np.append(ESF, iESF)
+                found = True
+        # if not found: ESF[-n:] = 0.3
+        if not found: ESF = np.append(ESF, 0.3)
+        found = False
+
+    return ESF
+
+
+
+
 
 #------------------------------------------------------------------------------
 #
@@ -236,8 +271,12 @@ def calclimits(desspd, gs, to_spd, vmin, vmo, mmo, M, alt, hmaxact,
 
     # thrust and vertical speed
     Thr_corrected   = np.where((Thr > maxthr-1.0), maxthr-1., Thr)
-    limvs = np.where((Thr >maxthr-1.0), ((Thr_corrected - D) * tas) / (mass * g0)* ESF, -9999.0)
-    limvs_flag = np.where(limvs > -9999.0 , True, False)
+    # limvs = np.where((Thr >maxthr-1.0), ((Thr_corrected - D) * tas) / (mass * g0)* ESF, -9999.0)
+    # limvs_flag = np.where(limvs > -9999.0 , True, False)
+
+    #ADDED
+    limvs = ((Thr_corrected - D) * tas) / (mass * g0) * ESF
+    limvs_flag = True
 
     # aircraft can only take-off as soon as their speed is above v_rotate
     # True means that current speed is below rotation speed

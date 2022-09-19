@@ -2,8 +2,8 @@ import numpy as np
 import pandas as pd
 import fortranformat as ff
 
-climb = 'I6, 1X, I3, 1X, I6, 1X, F7.3, 1X, I7, 2(1X, F8.2), 1X, F7.2, 1X, I6, 2(1X, I9), 1X, F7.1, 1X, F7.2, 1X, I7, 1X, I8, 1X, F7.2'
-descent = 'I6, 1X, I3, 1X, I6, 1X, F7.3, 1X, I7, 2(1X, F8.2), 1X, F7.2, 1X, I6, 2(1X, I9), 1X, F7.1, 1X, F7.2, 1X, I7, 1X, I8, 1X, F8.2'
+ff_climb   = 'I6, 1X, I3, 1X, I6, 1X, F7.3, 1X, I7, 2(1X, F8.2), 1X, F7.2, 1X, I6, 2(1X, I9), 1X, F7.1, 1X, F7.2, 1X, I7, 1X, I8, 1X, F7.2'
+ff_descent = 'I6, 1X, I3, 1X, I6, 1X, F7.3, 1X, I7, 2(1X, F8.2), 1X, F7.2, 1X, I6, 2(1X, I9), 1X, F7.1, 1X, F7.2, 1X, I7, 1X, I8, 1X, F8.2'
 
 FL_index = 0
 ESF_index = 12
@@ -11,33 +11,58 @@ ESF_index = 12
 
 
 class ESFinterpolate():
-
-    def __init__(self):
+#
+    def __init__(self, bada_path, actype):
         self.FL =           np.array([])
         self.ESF_climb =    np.array([])
         self.ESF_descent =  np.array([])
 
-    def read_data(self, bada_path):
+# def read_data(self, bada_path, actype):
 
-        data_file = bada_path + '/' + type + '__.PTD'
+        print(actype)
+
+        FL = []
+        ESF_climb =    []
+        ESF_descent =  []
+
+        data_file = bada_path + '/' + actype + '__.PTD'
         data = pd.read_csv(data_file)['BADA PERFORMANCE FILE RESULTS']
 
-        climb_reader = ff.FortranRecordReader(climb)
-        descent_reader = ff.FortranRecordReader(descent)
+        climb_reader = ff.FortranRecordReader(ff_climb)
+        descent_reader = ff.FortranRecordReader(ff_descent)
 
         table_count = 0
+        line_count = 0
         correct_set = False
 
-        for i, line in data:
+        climb = False
+        descent = False
+
+        for i, line in enumerate(data):
             if correct_set:
-                if line.isspace():
+                # if line.isspace():
+                #     print(line, 'isspace')
+                #     correct_set = False
+                #     continue
+
+                # if line_count >10:
+                #     correct_set = False
+                #     continue
+                # line_count += 1
+
+                # print('line', len(line), line)
+
+                if '.' not in line:
                     correct_set = False
                     continue
 
                 if climb:
                     data_points = climb_reader.read(line)
+                    FL.append(data_points[FL_index])
+                    ESF_climb.append(data_points[ESF_index])
                 if descent:
                     data_points = descent_reader.read(line)
+                    ESF_descent.append(data_points[ESF_index])
 
                 # if data_points[0] < alt:
                 #     FL_1, ESF_1 = climb_reader.read(data[i - 1])[FL_index], climb_reader.read(data[i - 1])[ESF_index]
@@ -47,10 +72,22 @@ class ESFinterpolate():
                 #
                 #     return ESF_c
 
-            if 'FL[-]' in i:
+            if 'FL[-]' in line:
                 table_count += 1
+                line_count = 0
+                correct_set = True
                 if table_count == 2:
                     climb = True
+                if table_count == 3:
+                    climb = False
+                if table_count == 4:
+                    descent = True
+
+        self.FL = np.array(FL)
+        self.ESF_climb = np.array(ESF_climb)
+        self.ESF_descent = np.array(ESF_descent)
+
+    # return np.array(FL), np.array(ESF_climb), np.array(ESF_descent)
 
 
 

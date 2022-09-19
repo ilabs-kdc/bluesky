@@ -514,6 +514,9 @@ class Traffic(Entity):
         self.vs = np.where(need_az, self.vs+self.az*bs.sim.simdt, target_vs)
         self.vs = np.where(np.isfinite(self.vs), self.vs, 0)    # fix vs nan issue
 
+        #DELETE
+        # print('vs', self.vs/fpm)
+
     def update_groundspeed(self):
         # Compute ground speed and track from heading, airspeed and wind
         if self.wind.winddim == 0:  # no wind

@@ -6,8 +6,9 @@ from bluesky.traffic.performance.perfbase import PerfBase
 from bluesky.traffic.performance.wilabada.performance import esf, phases, calclimits, PHASE
 
 from bluesky import settings
-from . import coeff_bada, esfinterpolate
+from . import coeff_bada
 from bluesky.traffic.route import Route
+from .esfinterpolate import ESFinterpolate
 
 # Register settings defaults
 settings.set_variable_defaults(perf_path_bada='data/performance/BADA',
@@ -168,8 +169,7 @@ class WILABADA(PerfBase):
             self.limvs_flag  = np.array([])  # A need to limit V/S detected
 
             # ESF Tables
-            # self.esf_table = ESFinterpolate()
-
+            self.esf_table = np.array([], dtype=object)
 
     def engchange(self, acid, engid=None):
         return False, "BADA performance model doesn't allow changing engine type"
@@ -337,6 +337,9 @@ class WILABADA(PerfBase):
         self.gr_acc[-n:] = coeff.gr_acc
         self.gr_dec[-n:] = coeff.gr_acc ######### ik weet niet zeker of dit zomaar mag -winand
 
+        # ESF look-up table generate
+        self.esf_table[-n:] = ESFinterpolate(settings.perf_path_bada, actype)
+
         return
 
     def update(self, dt):
@@ -397,7 +400,6 @@ class WILABADA(PerfBase):
         #Use cruise values instead
         cdld = np.where(self.cd0ld !=0, self.cd0ld+self.cd2ld*(cl*cl), cdph)
 
-
         # now combine phases
         cd = (self.phase==PHASE['TO'])*cdph + (self.phase==PHASE["IC"])*cdph + (self.phase==PHASE["CR"])*cdph \
             + (self.phase==PHASE['AP'])*cdapp + (self.phase ==PHASE['LD'])*cdld
@@ -416,7 +418,7 @@ class WILABADA(PerfBase):
         # energy share factor
         delspd = bs.traf.aporasas.tas - bs.traf.tas
         selmach = bs.traf.selspd < 2.0
-        self.ESF = esf(bs.traf.alt, bs.traf.M, climb, descent, delspd, selmach)
+        self.ESF = esf(bs.traf.alt, bs.traf.M, climb, descent, delspd, selmach, self.esf_table)
 
         # THRUST
         # 1. climb: max.climb thrust in ISA conditions (p. 32, BADA User Manual 3.12)
@@ -452,6 +454,9 @@ class WILABADA(PerfBase):
 
         # max climb thrust for futher calculations (equals maximum avaliable thrust)
         maxthr = Tj*self.jet + Tt*self.turbo + Tp*self.piston
+
+        #ADDED; update max thrust
+        self.maxthr = maxthr
 
         # 2. level flight: Thr = D.
         Tlvl = lvl*self.D
@@ -497,7 +502,9 @@ class WILABADA(PerfBase):
                       (self.ESF*np.maximum(bs.traf.eps,bs.traf.tas)*cpred)) \
                       + self.D)) + ((bs.traf.selvs==0)*T)
 
-        self.thrust = T
+        # self.thrust = T
+        #ADDED
+        self.thrust = np.where(T > maxthr - 1, maxthr - 1, T)
 
 
         # Fuel consumption
@@ -637,7 +644,9 @@ class WILABADA(PerfBase):
         allowed_alt = np.where(self.limalt_flag, self.limalt, intent_h)
 
         # Autopilot selected vertical speed (V/S)
-        allowed_vs = np.where(self.limvs_flag, self.limvs, intent_vs)
+        # allowed_vs = np.where(self.limvs_flag, self.limvs, intent_vs)
+        #ADDED
+        allowed_vs = np.where(intent_vs > self.limvs, self.limvs, intent_vs)
 
         return allowed_tas, allowed_vs, allowed_alt
 
