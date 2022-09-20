@@ -43,9 +43,10 @@ void main()
 	}
 	position -= vec2(panlon, panlat);
 
+	vec4 pos;
+
 	// Select vertex scale type
 	switch (vertex_scale_type) {
-		vec4 pos;
 
 		// Vertex coordinates are screen pixels, so correct for screen size
 		case VERTEX_IS_SCREEN:
