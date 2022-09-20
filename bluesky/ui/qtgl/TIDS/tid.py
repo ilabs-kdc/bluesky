@@ -66,12 +66,12 @@ def start_tid(name, layout):
         globals()[str(name)].setGeometry(500, 200, 300, 250)
         globals()[str(name)].move(2500, 2500)
         globals()[str(name)].showMaximized()
-        globals()[str(name)].setWindowFlag(Qt.WindowMinMaxButtonsHint)
+        globals()[str(name)].setWindowFlags(Qt.WindowMinMaxButtonsHint | Qt.FramelessWindowHint)
     elif (name == 'TID_Display' and socket.gethostbyname(socket.gethostname()) == '192.168.0.6'):
         globals()[str(name)].setGeometry(500, 200, 300, 250)
         globals()[str(name)].move(0, 2500)
         globals()[str(name)].showMaximized()
-        globals()[str(name)].setWindowFlag(Qt.WindowMinMaxButtonsHint)
+        globals()[str(name)].setWindowFlags(Qt.WindowMinMaxButtonsHint | Qt.FramelessWindowHint)
     else:
         globals()[str(name)].showMaximized()
         globals()[str(name)].setWindowFlag(Qt.WindowMinMaxButtonsHint)
