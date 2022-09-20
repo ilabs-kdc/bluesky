@@ -7,12 +7,10 @@ Date: 26-1-2022
 
 
 accmain = [['a1', 'DCT',            ['lambda: console.Console._instance.stack("EXQ CMD HDG")',
-                                     'lambda: accmain.close()',
-                                     'lambda: show_basetid("accdct", "accdct")']],
+                                     'lambda: change_tid("TID", "accdct")']],
            ['a2', 'HOLD/\nSWAP',    ['lambda: None']],
            ['a3', 'SSI',            ['lambda: None']],
-           ['a4', '>>>>',           ['lambda: accmain.close()',
-                                     'lambda: show_basetid("accdisp", "accdisp")']],
+           ['a4', '>>>>',           ['lambda: change_tid("TID", "accdisp")']],
 
            ['b1', 'COORD',          ['lambda: None']],
            ['b2', 'AMA',            ['lambda: None']],
@@ -30,16 +28,12 @@ accmain = [['a1', 'DCT',            ['lambda: console.Console._instance.stack("E
            ['d4', 'EC\nNKB',        ['lambda: None']],
 
            ['e1', 'EFL',            ['lambda: console.Console._instance.stack("EXQ CMD EFL")',
-                                     'lambda: accmain.close()',
-                                     'lambda: show_basetid("accefl", "accefl")']],
+                                     'lambda: change_tid("TID", "accefl")']],
            ['e2', 'HDG',            ['lambda: console.Console._instance.stack("EXQ CMD HDG")',
-                                     'lambda: accmain.close()',
-                                     'lambda: show_basetid("acchdg", "acchdg")']],
+                                     'lambda: change_tid("TID", "acchdg")']],
            ['e3', 'SPD',            ['lambda: console.Console._instance.stack("EXQ CMD SPD")',
-                                     'lambda: accmain.close()',
-                                     'lambda: show_basetid("accspd", "accspd")']],
-           ['e4', 'PLAY\nBACK',     ['lambda: accmain.close()',
-                                     'lambda: show_basetid("accpbm", "accpbm")']],
+                                     'lambda: change_tid("TID", "accspd")']],
+           ['e4', 'PLAY\nBACK',     ['lambda: change_tid("TID", "accpbm")']],
 
            ['f1', 'COR',            ['lambda: None']],
            ['f2', 'REV\nEXQ',       ['lambda: None']],
@@ -74,13 +68,11 @@ accdct = [['a1', '',        None],
           ['e4', '',        None],
 
           ['f1', 'COR',     ['lambda: console.Console._instance.stack("EXQ COR")',
-                             'lambda: accdct.close()',
-                             'lambda: show_basetid("accmain", "accmain")']],
+                             'lambda: change_tid("TID", "accmain")']],
           ['f2', 'CLR',     ['lambda: console.Console._instance.stack("EXQ CLR")']],
           ['f3', 'ANKB',    ['lambda: None']],
           ['f4', 'EXQ',     ['lambda: console.Console._instance.stack("EXQ EXQ")',
-                             'lambda: accdct.close()',
-                             'lambda: show_basetid("accmain", "accmain")']]
+                             'lambda: change_tid("TID", "accmain")']]
           ]
 
 
@@ -110,13 +102,11 @@ accefl = [['a1', '',        None],
           ['e4', '',        None],
 
           ['f1', 'COR',     ['lambda: console.Console._instance.stack("EXQ COR")',
-                             'lambda: accefl.close()',
-                             'lambda: show_basetid("accmain", "accmain")']],
+                             'lambda: change_tid("TID", "accmain")']],
           ['f2', 'CLR',     ['lambda: console.Console._instance.stack("EXQ CLR")']],
           ['f3', '',        None],
           ['f4', 'EXQ',     ['lambda: console.Console._instance.stack("EXQ EXQ")',
-                             'lambda: accefl.close()',
-                             'lambda: show_basetid("accmain", "accmain")']]
+                             'lambda: change_tid("TID", "accmain")']]
           ]
 
 
@@ -146,13 +136,11 @@ acchdg = [['a1', '',        None],
           ['e4', '',        None],
 
           ['f1', 'COR',     ['lambda: console.Console._instance.stack("EXQ COR")',
-                             'lambda: acchdg.close()',
-                             'lambda: show_basetid("accmain", "accmain")']],
+                             'lambda: change_tid("TID", "accmain")']],
           ['f2', 'CLR',     ['lambda: console.Console._instance.stack("EXQ CLR")']],
           ['f3', 'ANKB',    ['lambda: None']],
           ['f4', 'EXQ',     ['lambda: console.Console._instance.stack("EXQ EXQ")',
-                             'lambda: acchdg.close()',
-                             'lambda: show_basetid("accmain", "accmain")']]
+                             'lambda: change_tid("TID", "accmain")']]
           ]
 
 
@@ -182,13 +170,11 @@ accspd = [['a1', '220',     ['lambda: console.Console._instance.stack("EXQ SETAR
           ['e4', '',        None],
 
           ['f1', 'COR',     ['lambda: console.Console._instance.stack("EXQ COR")',
-                             'lambda: accspd.close()',
-                             'lambda: show_basetid("accmain", "accmain")']],
+                             'lambda: change_tid("TID", "accmain")']],
           ['f2', 'CLR',     ['lambda: console.Console._instance.stack("EXQ CLR")']],
           ['f3', '',        None],
           ['f4', 'EXQ',     ['lambda: console.Console._instance.stack("EXQ EXQ")',
-                             'lambda: accspd.close()',
-                             'lambda: show_basetid("accmain", "accmain")']]
+                             'lambda: change_tid("TID", "accmain")']]
           ]
 
 accpbm = [['a1', '',        None],
@@ -217,8 +203,7 @@ accpbm = [['a1', '',        None],
           ['e4', '',        None],
 
           ['f1', '',        None],
-          ['f2', 'MAIN',    ['lambda: accpbm.close()',
-                             'lambda: show_basetid("accmain", "accmain")']],
+          ['f2', 'MAIN',    ['lambda: change_tid("TID", "accmain")']],
           ['f3', '',        None],
           ['f4', '',        None]
           ]

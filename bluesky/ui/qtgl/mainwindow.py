@@ -1,14 +1,13 @@
 """ Main window for the QTGL gui."""
 import platform
 import os
-from bluesky.stack.stackbase import stack
 
 from PyQt5.QtWidgets import QApplication as app
 from PyQt5.QtCore import Qt, pyqtSlot, QTimer, QItemSelectionModel, QSize
-from PyQt5.QtGui import QPixmap, QIcon, QFont
+from PyQt5.QtGui import QPixmap, QIcon
 from PyQt5.QtWidgets import QMainWindow, QSplashScreen, QTreeWidgetItem, \
     QPushButton, QFileDialog, QDialog, QTreeWidget, QVBoxLayout, \
-    QDialogButtonBox, QWidget
+    QDialogButtonBox
 from PyQt5 import uic
 
 # Local imports
@@ -16,18 +15,14 @@ import bluesky as bs
 from bluesky.tools.misc import tim2txt
 from bluesky.network import get_ownip
 from bluesky.ui import palette
-from bluesky.ui.qtgl import console
-import bluesky.ui.qtgl.TID_Function as tid1
-import bluesky.ui.qtgl.TID_Display as tid2
-from bluesky.ui.qtgl.TIDS.base_tid import show_basetid, show_basetid2, tidclose
-
+from bluesky.ui.qtgl import console, tid
 
 # Child windows
 from bluesky.ui.qtgl.docwindow import DocWindow
 from bluesky.ui.qtgl.radarwidget import RadarWidget
 from bluesky.ui.qtgl.infowindow import InfoWindow
 from bluesky.ui.qtgl.settingswindow import SettingsWindow
-from bluesky.ui.qtgl.TID import showTID
+#from bluesky.ui.qtgl.TID import showTID
 # from bluesky.ui.qtgl.nd import ND
 
 if platform.system().lower() == "windows":
@@ -42,7 +37,6 @@ palette.set_default_colours(stack_text=(0, 255, 0),
 fg = palette.stack_text
 bg = palette.stack_background
 
-
 class Splash(QSplashScreen):
     """ Splash screen: BlueSky logo during start-up"""
     def __init__(self):
@@ -53,7 +47,7 @@ class DiscoveryDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setModal(True)
-        self.setMinimumSize(200, 200) # To prevent Geometry error
+        self.setMinimumSize(200,200) # To prevent Geometry error
         self.hosts = []
         layout = QVBoxLayout()
         self.setLayout(layout)
@@ -111,7 +105,7 @@ class MainWindow(QMainWindow):
         # self.nd = ND(shareWidget=self.radarwidget)
         self.infowin = InfoWindow()
         self.settingswin = SettingsWindow()
-        self.touchinterface = showTID()  # mostly not needed
+        #self.touchinterface = showTID()
 
         try:
             self.docwin = DocWindow(self)
@@ -129,7 +123,6 @@ class MainWindow(QMainWindow):
             app.instance().setWindowIcon(QIcon(os.path.join(bs.settings.gfx_path, 'icon.gif')))
 
         uic.loadUi(os.path.join(bs.settings.gfx_path, 'mainwindow.ui'), self)
-        # uic.loadUi(os.path.join(bs.settings.gfx_path, 'TID_Base.ui'), globals()[str(name)])   #FOR COMPARING WITH TID
 
         # list of buttons to connect to, give icons, and tooltips
         #           the button         the icon      the tooltip    the callback
@@ -152,14 +145,13 @@ class MainWindow(QMainWindow):
                     self.showlabels : ['lbl.svg', 'Show/hide text labels', self.buttonClicked],
                     self.showmap :    ['geo.svg', 'Show/hide satellite image', self.buttonClicked],
                     self.shownodes :  ['nodes.svg', 'Show/hide node list', self.buttonClicked],
-                    self.UCO:         ['play.svg', 'Under Control Command', self.buttonClicked],
+                    self.UCO:        ['play.svg', 'Under Control Command', self.buttonClicked],
                     self.HDG:         ['geo.svg', 'Heading Command', self.buttonClicked],
                     self.ALT:         ['panup.svg', 'Altitude Command', self.buttonClicked],
                     self.SPD:         ['fwd.svg', 'Speed Command', self.buttonClicked],
                     self.DIRECT:      ['panright', 'Direct to', self.buttonClicked],
                     self.MANUAL:      ['stop.svg', 'Set Aircraft on Manual', self.buttonClicked],
-                    self.tid1:        [None, 'TID', self.buttonClicked],
-                    self.tid2:        [None, 'TID', self.buttonClicked],
+                    self.tid:       [None, 'TID', self.buttonClicked],
                     }
 
         for b in buttons.items():
@@ -396,14 +388,8 @@ class MainWindow(QMainWindow):
             console.process_cmdline("DIRECT")
         elif self.sender() == self.MANUAL:
             console.process_cmdline("MANUAL")
-        elif self.sender() == self.tid1:
-            # if actdata.atcmode == 'APP':
-            #     show_basetid('appmain', 'appmain')
-            # elif actdata.atcmode == 'ACC':
-            #     show_basetid('accmain', 'accmain')
-            show_basetid('start1', 'start1')
-        elif self.sender() == self.tid2:
-            show_basetid2('start2', 'start2')
+        elif self.sender() == self.tid:
+            tid.start_tid('TID', 'start')
 
     def show_file_dialog(self):
         # Due to Qt5 bug in Windows, use temporarily Tkinter
@@ -423,3 +409,31 @@ class MainWindow(QMainWindow):
     def show_doc_window(self, cmd=''):
         self.docwin.show_cmd_doc(cmd)
         self.docwin.show()
+
+
+#     def showdialog(self):
+#         dlg = QDialog()
+#         print(str(dlg))
+# #        uic.loadUi(os.path.join(bs.settings.gfx_path, 'TID_Base.ui'), self)
+#         uic.loadUi('C:/Users/LVNL_ILAB3/Desktop/bluesky-lvnl_2/bluesky-master2/data/graphics/TID_Base.ui', dlg)
+#         buttonoffsetx = 0
+#         buttonoffsety = 0
+#         vertsize = 250
+#         horisize = 300
+#         TID_textsize = 40
+#
+#         dlgbuttons = tid.base
+#
+#         for i in range(len(dlgbuttons)):
+#             loop_button = 'pushButton_'+str(dlgbuttons[i][0])
+#             print(dlg)
+#             exec('dlg.'+ loop_button+'.setText(dlgbuttons[i][1])')
+#             if dlgbuttons[i][2] != None:
+#                 exec('dlg.' + loop_button + '.clicked.connect(' + dlgbuttons[i][2] + ')')
+#             else:
+#                 exec('dlg.' + loop_button + '.setStyleSheet("border: 0px solid red;")')
+#
+#         dlg.setWindowTitle("TID")
+#         dlg.setWindowModality(Qt.WindowModal)
+#         dlg.showMaximized()
+#         dlg.exec()

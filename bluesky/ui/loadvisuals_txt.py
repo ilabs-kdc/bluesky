@@ -1,13 +1,24 @@
-''' Load visual data from text files.'''
+"""
+Load visual data from text files.
+
+Created by: Original BlueSky version
+"""
+
 from bluesky.navdatabase.loadnavdata_txt import thresholds, thrpoints
+from bluesky.ui import palette
 import os
 from zipfile import ZipFile
 import numpy as np
 import bluesky as bs
 from bluesky import settings
+from bluesky.tools.files import findfile
 
 REARTH_INV = 1.56961231e-7
 
+# Default settings and palette
+palette.set_default_colours(
+    polys=(0, 255, 255)
+)
 
 # used for calculating the vertices of the runways as well as the threshold boxes
 def dlatlon(lat0, lon0, lat1, lon1, width):
@@ -81,6 +92,215 @@ def load_coastline_txt():
     return coastvertices, coastindices
 
 
+def load_basemap_txt(atcmode):
+    """
+    Function: Load the LVNL base map from text file (for APP or ACC)
+    Args:
+        atcmode: ATC mode [string]
+    Returns:
+
+    Created by: Bob van Dillen
+    Date: 17-9-2022
+    """
+
+    # Dictonaries to store the data
+    lines = dict()
+    dashedlines = dict()
+    dottedlines = dict()
+    points = dict()
+
+    # Get file names
+    if atcmode.upper() == 'APP':
+        filename = ['252.scn']
+    elif atcmode.upper() == 'ACC':
+        filename = ['751.scn', '752.scn']
+    else:
+        filename = []
+
+    # Loop over files
+    for file in filename:
+
+        # Check if files exist
+        if not findfile(file, 'scenario/LVNL/Maps/mapid'):
+            continue
+
+        # Open the file
+        with open(os.path.join('scenario/LVNL/Maps/mapid', file), 'r') as f:
+            for line in f:
+                # Edit scenario file to simple strings
+                line = line.replace('>', ' ')
+                line = line.replace(',', ' ')
+                line = line.strip()
+                arg = line.split()
+                del arg[0]  # delete command time stamp
+
+                # Check if there is something to draw
+                if not (line == "" or line[0] == '#' or arg[0] == 'COLOR'):
+
+                    # Capital letters
+                    arg[0] = arg[0].upper()
+
+                    # Dashed line
+                    if arg[0] == 'DASHEDLINE':
+                        # Get the coordinates
+                        vbuf_dashed = np.array([float(arg[2]), float(arg[3]), float(arg[4]), float(arg[5])],
+                                               dtype=np.float32)
+
+                        # Define the color
+                        defclr = tuple(palette.polys) + (255,)
+                        colorbuf = np.array(len(vbuf_dashed) // 2 * defclr, dtype=np.uint8)
+
+                        # Save the data
+                        dashedlines[arg[1]] = (vbuf_dashed, colorbuf)
+
+                    # Dotted line
+                    elif arg[0] == 'DOTTEDLINE':
+                        # Get the coordinates
+                        vbuf_dotted = np.array([float(arg[2]), float(arg[3]), float(arg[4]), float(arg[5])],
+                                               dtype=np.float32)
+
+                        # Define the color
+                        defclr = tuple(palette.polys) + (255,)
+                        colorbuf = np.array(len(vbuf_dotted) // 2 * defclr, dtype=np.uint8)
+
+                        # Save the data
+                        dottedlines[arg[1]] = (vbuf_dotted, colorbuf)
+
+                    # Lines
+                    elif arg[0][-4:] == 'LINE':
+                        # Get teh coordinates
+                        data = np.array(arg[2:], dtype=np.float32)
+                        # Process the coordinates
+                        vbuf_line = np.empty(2 * len(data-4), dtype=np.float32)
+                        vbuf_line[0::4] = data[0:-2:2]  # lat
+                        vbuf_line[1::4] = data[1:-2:2]  # lon
+                        vbuf_line[2::4] = data[2::2]  # lat
+                        vbuf_line[3::4] = data[3::2]  # lon
+
+                        # Define the color
+                        defclr = tuple(palette.polys) + (255,)
+                        colorbuf = np.array(len(vbuf_line) // 2 * defclr, dtype=np.uint8)
+
+                        # Save the data
+                        lines[arg[1]] = (vbuf_line, colorbuf)
+
+                    # Polys
+                    elif arg[0][-4:] == 'POLY':
+                        # Get the coordinates
+                        data = np.array(arg[2:], dtype=np.float32)
+                        # Process the coordinates
+                        vbuf_poly = np.empty(2 * len(data), dtype=np.float32)
+                        vbuf_poly[0::4] = data[0::2]   # lat
+                        vbuf_poly[1::4] = data[1::2]   # lon
+                        vbuf_poly[2:-2:4] = data[2::2]  # lat
+                        vbuf_poly[3:-3:4] = data[3::2]  # lon
+                        vbuf_poly[-2:] = data[0:2]
+
+                        # Define the color
+                        defclr = tuple(palette.polys) + (255,)
+                        colorbuf = np.array(len(vbuf_poly) // 2 * defclr, dtype=np.uint8)
+
+                        # Save the data
+                        lines[arg[1]] = (vbuf_poly, colorbuf)
+
+                    # Box
+                    elif arg[0] == 'BOX':
+                        # Convert box coordinates into polyline list
+                        # BOX: 0 = lat0, 1 = lon0, 2 = lat1, 3 = lon1 , use bounding box
+                        data = np.array([arg[2], arg[3],
+                                         arg[2], arg[5],
+                                         arg[4], arg[5],
+                                         arg[4], arg[3]], dtype=np.float32)
+                        vbuf_box = np.empty(2 * len(data), dtype=np.float32)
+                        vbuf_box[0::4] = data[0::2]  # lat
+                        vbuf_box[1::4] = data[1::2]  # lon
+                        vbuf_box[2:-2:4] = data[2::2]  # lat
+                        vbuf_box[3:-3:4] = data[3::2]  # lon
+                        vbuf_box[-2:] = data[0:2]
+
+                        # Define the color
+                        defclr = tuple(palette.polys) + (255,)
+                        colorbuf = np.array(len(vbuf_box) // 2 * defclr, dtype=np.uint8)
+
+                        # Save the data
+                        lines[arg[1]] = (vbuf_box, colorbuf)
+
+                    # Circle
+                    elif arg[0] == 'CIRCLE':
+                        # Input data is latctr,lonctr,radius[nm]
+                        # Convert circle into polyline list
+
+                        # Circle parameters
+                        Rearth = 6371000.0  # radius of the Earth [m]
+                        numPoints = 72  # number of straight line segments that make up the circrle
+
+                        # Inputs
+                        lat0 = float(arg[2])  # latitude of the center of the circle [deg]
+                        lon0 = float(arg[3])  # longitude of the center of the circle [deg]
+                        Rcircle = float(arg[4]) * 1852.0  # radius of circle [NM]
+
+                        # Compute flat Earth correction at the center of the experiment circle
+                        coslatinv = 1.0 / np.cos(np.deg2rad(lat0))
+
+                        # compute the x and y coordinates of the circle
+                        angles = np.linspace(0.0, 2.0 * np.pi, numPoints)  # ,endpoint=True) # [rad]
+
+                        # Calculate the circle coordinates in lat/lon degrees.
+                        # Use flat-earth approximation to convert from cartesian to lat/lon.
+                        latCircle = lat0 + np.rad2deg(Rcircle * np.sin(angles) / Rearth)  # [deg]
+                        lonCircle = lon0 + np.rad2deg(Rcircle * np.cos(angles) * coslatinv / Rearth)  # [deg]
+
+                        # make the data array in the format needed to plot circle
+                        data = np.empty(2 * numPoints, dtype=np.float32)  # Create empty array
+                        data[0::2] = latCircle  # Fill array lat0,lon0,lat1,lon1....
+                        data[1::2] = lonCircle
+
+                        # Process the coordinates
+                        vbuf_circle = np.empty(2 * len(data), dtype=np.float32)
+                        vbuf_circle[0::4] = data[0::2]  # lat
+                        vbuf_circle[1::4] = data[1::2]  # lon
+                        vbuf_circle[2:-2:4] = data[2::2]  # lat
+                        vbuf_circle[3:-3:4] = data[3::2]  # lon
+                        vbuf_circle[-2:] = data[0:2]
+
+                        # Define the color
+                        defclr = tuple(palette.polys) + (255,)
+                        colorbuf = np.array(len(vbuf_circle) // 2 * defclr, dtype=np.uint8)
+
+                        # Save the data
+                        lines[arg[1]] = (vbuf_circle, colorbuf)
+
+                    # Points
+                    elif arg[0] == 'POINT':
+                        # Get the coordinates
+                        vbuf_points = np.array([float(arg[2]), float(arg[3])], dtype=np.float32)
+
+                        # Define the color
+                        defclr = tuple(palette.polys) + (255,)
+                        colorbuf = np.array(len(vbuf_points) // 2 * defclr, dtype=np.uint8)
+
+                        # Save the data
+                        points[arg[1]] = (vbuf_points, colorbuf)
+
+                # Colour
+                if arg[0] == 'COLOR':
+                    objects = [lines, dashedlines, dottedlines, points]
+
+                    # Loop over object types
+                    for obj in objects:
+                        data = obj.get(arg[1])
+
+                        # Find data
+                        if data:
+                            # Add the colour
+                            defclr = (int(arg[2]), int(arg[3]), int(arg[4]), 255)
+                            colorbuf = np.array(len(data[0]) // 2 * defclr, dtype=np.uint8)
+
+                            obj[arg[1]] = (data[0], colorbuf)
+
+    return lines, dashedlines, dottedlines, points
+
+
 def load_mapsline_txt(args):
     """
     Function: Loads init map lines/points data and convert format to arrays with name, shape, coordinates and color
@@ -90,38 +310,40 @@ def load_mapsline_txt(args):
 
     Created by: Mitchell de Keijzer
     Date: 01-04-2022
-
     """
+
     names = []
     shapes = []
     coords = []
     colors = []
-    tbar_maps = ['NIRSI', 'GALIS', 'RANGEBAR', 'SOKS2']
-    if args in tbar_maps:
-        path = 'T-bar'
-    else:
-        path = 'mapid'
+
+    # Get path
+    path = findfile(args+'.scn', 'scenario/LVNL/Maps')
+
+    # Check if file exists
+    if path:
     # Load scenario map file
-    with open(os.path.join('scenario/LVNL/Maps', '' + path + '', '' + args + '.scn'), 'r') as f:
-        for line in f:
-            # Edit scenario file to simple strings
-            line = line.replace('>', ' ')
-            line = line.replace(',', ' ')
-            line = line.strip()
-            arg = line.split()
-            del arg[0]  # delete command time stamp
-            if not (line == "" or line[0] == '#' or arg[0] == 'COLOR'):
-                names.append(arg[1])
-                shapes.append(arg[0])
-                if arg[0] == 'POINT':
-                    coords.append([float(arg[2]), float(arg[3])])
-                else:
-                    coords.append([float(arg[2]), float(arg[3]), float(arg[4]), float(arg[5])])
-                colors.append(None)
-            # If a specific color is given, replace None with the correct color code
-            if arg[0] == 'COLOR':
-                index = names.index(arg[1])
-                colors[index] = (int(arg[2]), int(arg[3]), int(arg[4]))
+        with open(path, 'r') as f:
+            for line in f:
+                # Edit scenario file to simple strings
+                line = line.replace('>', ' ')
+                line = line.replace(',', ' ')
+                line = line.strip()
+                arg = line.split()
+                del arg[0]  # delete command time stamp
+                if not (line == "" or line[0] == '#' or arg[0] == 'COLOR'):
+                    names.append(arg[1])
+                    shapes.append(arg[0])
+                    if arg[0] == 'POINT':
+                        coords.append([float(arg[2]), float(arg[3])])
+                    else:
+                        coords.append([float(arg[2]), float(arg[3]), float(arg[4]), float(arg[5])])
+                    colors.append(None)
+                # If a specific color is given, replace None with the correct color code
+                if arg[0] == 'COLOR':
+                    index = names.index(arg[1])
+                    colors[index] = (int(arg[2]), int(arg[3]), int(arg[4]))
+
     name = names
     shape = shapes
     coordinates = coords

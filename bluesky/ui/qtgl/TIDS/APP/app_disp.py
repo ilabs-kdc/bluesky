@@ -7,8 +7,7 @@ Edited by: Mitchell de Keijzer
 Changed: changed all commands for client position
 """
 
-appdisp = [['a1',    'RANGE\nRADAR',    ['lambda: appdisp.close()',
-                                         'lambda: show_basetid2("apprange", "apprange")']],
+appdisp = [['a1',    'RANGE\nRADAR',    ['lambda: change_tid("TID", "apprange")']],
            ['a2',    '36',              ['lambda: console.Console._instance.stack("SCREENRANGE 36")']],
            ['a3',    '48',              ['lambda: console.Console._instance.stack("SCREENRANGE 48")']],
            ['a4',    'CRO',             ['lambda: None']],
@@ -20,8 +19,7 @@ appdisp = [['a1',    'RANGE\nRADAR',    ['lambda: appdisp.close()',
 
            ['c1',    'OCK',             ['lambda: None']],
            ['c2',    'SIZE\nLISTS',     ['lambda: None']],
-           ['c3',    'LABEL',           ['lambda: appdisp.close()',
-                                         'lambda: show_basetid2("applabel", "applabel")']],
+           ['c3',    'LABEL',           ['lambda: change_tid("TID", "applabel")']],
            ['c4',    'CBM',             ['lambda: None']],
 
            ['d1',    'OCO',             ['lambda: None']],
@@ -29,19 +27,16 @@ appdisp = [['a1',    'RANGE\nRADAR',    ['lambda: appdisp.close()',
            ['d3',    'ANKB',            ['lambda: None']],
            ['d4',    'CXY',             ['lambda: None']],
 
-           ['e1',    'MAPS\nAPP',       ['lambda: appdisp.close()',
-                                         'lambda: show_basetid2("appmaps", "appmaps")']],
+           ['e1',    'MAPS\nAPP',       ['lambda: change_tid("TID", "appmaps")']],
            ['e2',    'TBS',             ['lambda: None']],
-           ['e3',    'BRIGHT\nNESS',    ['lambda: appdisp.close()',
-                                         'lambda: show_basetid2("brightness", "brightness")']],
+           ['e3',    'BRIGHT\nNESS',    ['lambda: None']],
            ['e4',    'CRM',             ['lambda: None']],
 
            ['f1',    'COR',             ['lambda: console.Console._instance.stack("EXQ COR")',
-                                         'lambda: appdisp2.close()',
-                                         'lambda: show_basetid2("appmain", "appmain")']],
+                                         'lambda: change_tid("TID", "appmain")']],
            ['f2',    '',                None],
            ['f3',    'TID\nCTRL',       ['lambda: None']],
-           ['f4',    'EXQ',             ['lambda: show_basetid2("appdisp", "appdisp")']]
+           ['f4',    'EXQ',             ['lambda: change_tid("TID", "appmain")']]
            ]
 
 
@@ -71,8 +66,7 @@ apprange = [['a1',    '16',                 ['lambda: console.Console._instance.
             ['e4',    'ARTAS1\nACC',        ['lambda: None']],
 
             ['f1',    '',                   None],
-            ['f2',    'MAIN',               ['lambda: apprange.close()',
-                                             'lambda: show_basetid2("appdisp", "appdisp")']],
+            ['f2',    'MAIN',               ['lambda: change_tid("TID", "appdisp")']],
             ['f3',    '',                   None],
             ['f4',    '',                   None]
             ]
@@ -104,40 +98,8 @@ applabel = [['a1',    'SLA\nLARGE',         ['lambda: None']],
             ['e4',    'SPEED',              ['lambda: None']],
 
             ['f1',    '',                   None],
-            ['f2',    'MAIN',               ['lambda: applabel.close()',
-                                             'lambda: show_basetid2("appdisp", "appdisp")']],
+            ['f2',    'MAIN',               ['lambda: change_tid("TID", "appdisp")']],
             ['f3',    '',                   None],
             ['f4',    'FULL\nLABEL',        ['lambda: tidcmds.exqcmd("TRACKLABEL")']]
             ]
 
-brightness = [['a1', 'TRACK',        'lambda: None'],
-              ['a2', 'BKGND',        'lambda: None'],
-              ['a3', 'TRAIL',        'lambda: None'],
-              ['a4', 'PDS1',         'lambda: None'],
-
-              ['b1', 'LABEL',        'lambda: None'],
-              ['b2', 'MAP',          'lambda: None'],
-              ['b3', 'NTZ',          'lambda: None'],
-              ['b4', 'PDS2',         'lambda: None'],
-
-              ['c1', 'SSR\nLABEL',   'lambda: None'],
-              ['c2', 'DF/RB',        'lambda: None'],
-              ['c3', 'ALS',          'lambda: None'],
-              ['c4', 'PDS3',         'lambda: None'],
-
-              ['d1', 'LIST',         'lambda: None'],
-              ['d2', 'WX\nKNMI',     'lambda: None'],
-              ['d3', '',             None],
-              ['d4', 'PDS4',         'lambda: None'],
-
-              ['e1', '',             None],
-              ['e2', 'WX\nTAR',      'lambda: None'],
-              ['e3', '',             None],
-              ['e4', 'PDS5',         'lambda: None'],
-
-              ['f1', '',             None],
-              ['f2', 'MAIN',         ['lambda: brightness.close()',
-                                      'lambda: show_basetid2("appdisp", "appdisp")']],
-              ['f3', '',             None],
-              ['f4', '',             None],
-              ]
