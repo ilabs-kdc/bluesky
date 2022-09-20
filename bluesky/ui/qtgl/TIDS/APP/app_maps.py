@@ -8,33 +8,33 @@ Date: 09-04-2022
 Changed: new maptoggle function from 'MAP #' to 'MAPTOGGLE MAP #'
 """
 
-appmaps = [['a1',    'ALS\n10NM',     ['lambda: change_tid("TID","als10nm")']],
-           ['a2',    'T-BAR',         ['lambda: change_tid("TID","tbar")']],
-           ['a3',    'VMT\nAREAS',    ['lambda: change_tid("TID", "vmt")']],
+appmaps = [['a1',    'ALS\n10NM',     ['lambda: change_tid("TID_Display","als10nm")']],
+           ['a2',    'T-BAR',         ['lambda: change_tid("TID_Display","tbar")']],
+           ['a3',    'VMT\nAREAS',    ['lambda: change_tid("TID_Display", "vmt")']],
            ['a4',    'NIGHT\nMAPS',   'lambda: None'],
 
-           ['b1',    'ALS\n20NM',     ['lambda: change_tid("TID", "als20nm")']],
-           ['b2',    'ALS\nTMA',      ['lambda: change_tid("TID", "alstma")']],
-           ['b3',    'FAV\nAREAS',    ['lambda: change_tid("TID", "favareas")']],
+           ['b1',    'ALS\n20NM',     ['lambda: change_tid("TID_Display", "als20nm")']],
+           ['b2',    'ALS\nTMA',      ['lambda: change_tid("TID_Display", "alstma")']],
+           ['b3',    'FAV\nAREAS',    ['lambda: change_tid("TID_Display", "favareas")']],
            ['b4',    'RNP\nMAPS',     'lambda: None'],
 
-           ['c1',    'PAR\nAPP',      ['lambda: change_tid("TID", "parapp")']],
+           ['c1',    'PAR\nAPP',      ['lambda: change_tid("TID_Display", "parapp")']],
            ['c2',    'NL\nGEO',       'lambda: console.Console._instance.stack("SWRAD GEO")'],
-           ['c3',    'AREAS\nRD',     ['lambda: change_tid("TID", "areasrd")']],
-           ['c4',    'AREAS\nLE',     ['lambda: change_tid("TID", "areasle")']],
+           ['c3',    'AREAS\nRD',     ['lambda: change_tid("TID_Display", "areasrd")']],
+           ['c4',    'AREAS\nLE',     ['lambda: change_tid("TID_Display", "areasle")']],
 
            ['d1',    'REF\nPOINT',    'lambda: None'],
-           ['d2',    'TWEC\nTOC',     ['lambda: change_tid("TID", "twectoc")']],
+           ['d2',    'TWEC\nTOC',     ['lambda: change_tid("TID_Display", "twectoc")']],
            ['d3',    'OCA',           'lambda: None'],
            ['d4',    'CTR\nKD',       'lambda: console.Console._instance.stack("MAPTOGGLE MAP 205")'],
 
            ['e1',    'VNR\nMAPS',     'lambda: None'],
            ['e2',    'POINTS\nFINAL', 'lambda: None'],
            ['e3',    'OCN',           'lambda: None'],
-           ['e4',    'PARA\nTMA',     ['lambda: change_tid("TID", "paratma")']],
+           ['e4',    'PARA\nTMA',     ['lambda: change_tid("TID_Display", "paratma")']],
 
            ['f1',    'COR',           'lambda: None'],
-           ['f2',    'MAIN',          ['lambda: change_tid("TID", "appdisp")']],
+           ['f2',    'MAIN',          ['lambda: change_tid("TID_Display", "appdisp")']],
            ['f3', 'TOGGLE\nVNR MAP',  ['lambda: console.Console._instance.stack("MAPTOGGLE map GMP")']],
            ['f4',    'FIC\nMAPS',     'lambda: None']]
 
@@ -65,8 +65,8 @@ parapp = [['a1',    '10 NM\n36C',    'lambda: console.Console._instance.stack("M
           ['e4',    '',              None],
 
           ['f1',    'COR',           'lambda: None'],
-          ['f2',    'MAIN',          ['lambda: change_tid("TID", "appdisp")']],
-          ['f3',    'MAPS\nAPP',     ['lambda: change_tid("TID", "appmaps")']],
+          ['f2',    'MAIN',          ['lambda: change_tid("TID_Display", "appdisp")']],
+          ['f3',    'MAPS\nAPP',     ['lambda: change_tid("TID_Display", "appmaps")']],
           ['f4',    '',              None]]
 
 
@@ -90,14 +90,14 @@ als10nm = [['a1',    '10 NM\n06',     'lambda: console.Console._instance.stack("
            ['d3',    '',              None],
            ['d4',    '',              None],
 
-           ['e1',    'ALS\n20NM',     ['lambda: change_tid("TID", "als20nm")']],
+           ['e1',    'ALS\n20NM',     ['lambda: change_tid("TID_Display", "als20nm")']],
            ['e2',    '',              None],
            ['e3',    '',              None],
            ['e4',    '',              None],
 
            ['f1',    '',              None],
-           ['f2',    'MAIN',          ['lambda: change_tid("TID", "appdisp")']],
-           ['f3',    'MAPS\nAPP',     ['lambda: change_tid("TID", "appmaps")']],
+           ['f2',    'MAIN',          ['lambda: change_tid("TID_Display", "appdisp")']],
+           ['f3',    'MAPS\nAPP',     ['lambda: change_tid("TID_Display", "appmaps")']],
            ['f4',    '',              None]]
 
 
@@ -121,14 +121,14 @@ als20nm = [['a1',    '20 NM\n06',     'lambda: console.Console._instance.stack("
            ['d3',    '',              None],
            ['d4',    '',              None],
 
-           ['e1',    'ALS\n10NM',     ['lambda: change_tid("TID", "als10nm")']],
+           ['e1',    'ALS\n10NM',     ['lambda: change_tid("TID_Display", "als10nm")']],
            ['e2',    '',              None],
            ['e3',    '',              None],
            ['e4',    '',              None],
 
            ['f1',    '',              None],
-           ['f2',    'MAIN',          ['lambda: change_tid("TID", "appdisp")']],
-           ['f3',    'MAPS\nAPP',     ['lambda: change_tid("TID", "appmaps")']],
+           ['f2',    'MAIN',          ['lambda: change_tid("TID_Display", "appdisp")']],
+           ['f3',    'MAPS\nAPP',     ['lambda: change_tid("TID_Display", "appmaps")']],
            ['f4',    '',              None]]
 
 
@@ -158,8 +158,8 @@ vmt = [['a1',    'VMT\n06',       'lambda: console.Console._instance.stack("MAPT
        ['e4',    '',              None],
 
        ['f1',    'COR',           'lambda: None'],
-       ['f2',    'MAIN',          ['lambda: change_tid("TID", "appdisp")']],
-       ['f3',    'MAPS\nAPP',     ['lambda: change_tid("TID", "appmaps")']],
+       ['f2',    'MAIN',          ['lambda: change_tid("TID_Display", "appdisp")']],
+       ['f3',    'MAPS\nAPP',     ['lambda: change_tid("TID_Display", "appmaps")']],
        ['f4',    '',              None]]
 
 
@@ -189,8 +189,8 @@ alstma = [['a1',    'KD\n03',        'lambda: console.Console._instance.stack("M
           ['e4',    '',              None],
 
           ['f1',    '',              None],
-          ['f2',    'MAIN',          ['lambda: change_tid("TID", "appdisp")']],
-          ['f3',    'MAPS\nAPP',     ['lambda: change_tid("TID", "appmaps")']],
+          ['f2',    'MAIN',          ['lambda: change_tid("TID_Display", "appdisp")']],
+          ['f3',    'MAPS\nAPP',     ['lambda: change_tid("TID_Display", "appmaps")']],
           ['f4',    '',              None]]
 
 
@@ -220,8 +220,8 @@ areasle = [['a1',    'LE\n05',        'lambda: console.Console._instance.stack("
            ['e4',    '',              None],
 
            ['f1',    '',              None],
-           ['f2',    'MAIN',          ['lambda: change_tid("TID", "appdisp")']],
-           ['f3',    'MAPS\nAPP',     ['lambda: change_tid("TID", "appmaps")']],
+           ['f2',    'MAIN',          ['lambda: change_tid("TID_Display", "appdisp")']],
+           ['f3',    'MAPS\nAPP',     ['lambda: change_tid("TID_Display", "appmaps")']],
            ['f4',    '',              None]]
 
 
@@ -251,8 +251,8 @@ areasrd = [['a1',    'ATZ\nVB',       'lambda: console.Console._instance.stack("
            ['e4',    '',              None],
 
            ['f1',    '',              None],
-           ['f2',    'MAIN',          ['lambda: change_tid("TID", "appdisp")']],
-           ['f3',    'MAPS\nAPP',     ['lambda: change_tid("TID", "appmaps")']],
+           ['f2',    'MAIN',          ['lambda: change_tid("TID_Display", "appdisp")']],
+           ['f3',    'MAPS\nAPP',     ['lambda: change_tid("TID_Display", "appmaps")']],
            ['f4',    '',              None]]
 
 
@@ -282,8 +282,8 @@ twectoc = [['a1',    'RAD\n019',      'lambda: console.Console._instance.stack("
            ['e4',    '',              None],
 
            ['f1',    '',              None],
-           ['f2',    'MAIN',          ['lambda: change_tid("TID", "appdisp")']],
-           ['f3',    'MAPS\nAPP',     ['lambda: change_tid("TID", "appmaps")']],
+           ['f2',    'MAIN',          ['lambda: change_tid("TID_Display", "appdisp")']],
+           ['f3',    'MAPS\nAPP',     ['lambda: change_tid("TID_Display", "appmaps")']],
            ['f4',    '',              None]]
 
 
@@ -313,8 +313,8 @@ paratma = [['a1',    '',              None],
            ['e4',    '',              None],
 
            ['f1',    '',              None],
-           ['f2',    'MAIN',          ['lambda: change_tid("TID", "appdisp")']],
-           ['f3',    'MAPS\nAPP',     ['lambda: change_tid("TID", "appmaps")']],
+           ['f2',    'MAIN',          ['lambda: change_tid("TID_Display", "appdisp")']],
+           ['f3',    'MAPS\nAPP',     ['lambda: change_tid("TID_Display", "appmaps")']],
            ['f4',    '',              None]]
 
 
@@ -344,8 +344,8 @@ favareas = [['a1',    'FAVA\n18R',     'lambda: console.Console._instance.stack(
             ['e4',    '',              None],
 
             ['f1',    '',              None],
-            ['f2',    'MAIN',          ['lambda: change_tid("TID", "appdisp")']],
-            ['f3',    'MAPS\nAPP',     ['lambda: change_tid("TID", "appmaps")']],
+            ['f2',    'MAIN',          ['lambda: change_tid("TID_Display", "appdisp")']],
+            ['f3',    'MAPS\nAPP',     ['lambda: change_tid("TID_Display", "appmaps")']],
             ['f4',    '',              None]]
 
 
@@ -375,7 +375,7 @@ tbar = [['a1',    'NIRSI',         'lambda: console.Console._instance.stack("MAP
         ['e4',    '',              None],
 
         ['f1',    '',              None],
-        ['f2',    'MAIN',          ['lambda: change_tid("TID", "appdisp")']],
-        ['f3',    'MAPS\nAPP',     ['lambda: change_tid("TID", "appmaps")']],
+        ['f2',    'MAIN',          ['lambda: change_tid("TID_Display", "appdisp")']],
+        ['f3',    'MAPS\nAPP',     ['lambda: change_tid("TID_Display", "appmaps")']],
         ['f4',    '',              None]
         ]

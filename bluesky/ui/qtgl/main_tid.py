@@ -5,37 +5,37 @@ Start window
 """
 
 
-start = [['a1',    '',        None],
-         ['a2',    '',        None],
-         ['a3',    '',        None],
-         ['a4',    '',        None],
-
-         ['b1',    '',        None],
-         ['b2',    '',        None],
-         ['b3',    '',        None],
-         ['b4',    '',        None],
-
-         ['c1',    '',        None],
-         ['c2',    'BASE',    ['lambda: change_tid("TID", "base")']],
-         ['c3',    'APP',     ['lambda: console.Console._instance.stack("ATCMODE APP")',
-                               'lambda: change_tid("TID","appmain")']],
-         ['c4',    '',        None],
-
-         ['d1',    '',        None],
-         ['d2',    '',        None],
-         ['d3',    'ACC',     ['lambda: console.Console._instance.stack("ATCMODE ACC")',
-                               'lambda: change_tid("TID", "accmain")']],
-         ['d4',    '',        None],
-
-         ['e1',    '',        None],
-         ['e2',    '',        None],
-         ['e3',    '',        None],
-         ['e4',    '',        None],
-
-         ['f1',    '',        None],
-         ['f2',    '',        None],
-         ['f3',    '',        None],
-         ['f4',    '',        None]]
+# start = [['a1',    '',        None],
+#          ['a2',    '',        None],
+#          ['a3',    '',        None],
+#          ['a4',    '',        None],
+# 
+#          ['b1',    '',        None],
+#          ['b2',    '',        None],
+#          ['b3',    '',        None],
+#          ['b4',    '',        None],
+# 
+#          ['c1',    '',        None],
+#          ['c2',    'BASE',    ['lambda: change_tid("TID_Display", "base")']],
+#          ['c3',    'APP',     ['lambda: console.Console._instance.stack("ATCMODE APP")',
+#                                'lambda: change_tid("TID_Display","appmain")']],
+#          ['c4',    '',        None],
+# 
+#          ['d1',    '',        None],
+#          ['d2',    '',        None],
+#          ['d3',    'ACC',     ['lambda: console.Console._instance.stack("ATCMODE ACC")',
+#                                'lambda: change_tid("TID_Function", "accmain")']],
+#          ['d4',    '',        None],
+# 
+#          ['e1',    '',        None],
+#          ['e2',    '',        None],
+#          ['e3',    '',        None],
+#          ['e4',    '',        None],
+# 
+#          ['f1',    '',        None],
+#          ['f2',    '',        None],
+#          ['f3',    '',        None],
+#          ['f4',    '',        None]]
 
 
 """
@@ -48,8 +48,8 @@ base = [  ['a1',    'UCO',     'lambda: console.process_cmdline("UCO ")'],
           ['a3',    'EFL',     'lambda: console.process_cmdline("ALT FL")'],
           ['a4',    'SPD',     'lambda: console.process_cmdline("SPD ")'],
 
-          ['b1',    'WPTS',    "lambda: change_tid('TID','wpts')"],
-          ['b2',    'MAPS',    "lambda: change_tid('TID','maps')"],
+          ['b1',    'WPTS',    "lambda: change_tid('TID_Function','wpts')"],
+          ['b2',    'MAPS',    "lambda: change_tid('TID_Function','maps')"],
           ['b3',    '',        None],
           ['b4',    '',        None],
 
@@ -76,19 +76,19 @@ base = [  ['a1',    'UCO',     'lambda: console.process_cmdline("UCO ")'],
           ]
 
 wpts =  [ ['a1',    'RIVER',   ['lambda: console.process_cmdline("RIVER")',
-                                'lambda: change_tid("TID", "base")']],
+                                'lambda: change_tid("TID_Function", "base")']],
           ['a2',    '',        None],
           ['a3',    '',        None],
           ['a4',    '',        None],
 
           ['b1',    'SUGOL',   ['lambda: console.process_cmdline("SUGOL")',
-                                'lambda: change_tid("TID", "base")']],
+                                'lambda: change_tid("TID_Function", "base")']],
           ['b2',    '',        None],
           ['b3',    '',        None],
           ['b4',    '',        None],
 
           ['c1',    'ARTIP',   ['lambda: console.process_cmdline("ARTIP")',
-                                'lambda: change_tid("TID", "base")']],
+                                'lambda: change_tid("TID_Function", "base")']],
           ['c2',    '',        None],
           ['c3',    '',        None],
           ['c4',    '',        None],
@@ -103,18 +103,18 @@ wpts =  [ ['a1',    'RIVER',   ['lambda: console.process_cmdline("RIVER")',
           ['e3',    '',        None],
           ['e4',    '',        None],
 
-          ['f1',    'BACK',    'lambda:  change_tid("TID", "base")'],
+          ['f1',    'BACK',    'lambda:  change_tid("TID_Function", "base")'],
           ['f2',    '',        None],
           ['f3',    '',        None],
           ['f4',    '',        None],
           ]
 
 maps =  [ ['a1',    '751',     ['lambda: console.Console._instance.stack("MAPTOGGLE map 751")',
-                                'lambda: change_tid("TID", "base")']],
+                                'lambda: change_tid("TID_Function", "base")']],
           ['a2',    '752',     ['lambda: console.Console._instance.stack("MAPTOGGLE map 752")',
-                                'lambda: change_tid("TID", "base")']],
+                                'lambda: change_tid("TID_Function", "base")']],
           ['a3',    '252',     ['lambda: console.Console._instance.stack("MAPTOGGLE map 252")',
-                                'lambda: change_tid("TID", "base")']],
+                                'lambda: change_tid("TID_Function", "base")']],
           ['a4',    '',        None],
 
           ['b1',    '',        None],
@@ -137,7 +137,7 @@ maps =  [ ['a1',    '751',     ['lambda: console.Console._instance.stack("MAPTOG
           ['e3',    '',        None],
           ['e4',    '',        None],
 
-          ['f1',    'BACK',    ['lambda:  change_tid("TID", "base")']],
+          ['f1',    'BACK',    ['lambda:  change_tid("TID_Function", "base")']],
           ['f2',    '',        None],
           ['f3',    '',        None],
           ['f4',    '',        None],

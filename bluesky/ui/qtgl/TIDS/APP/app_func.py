@@ -16,23 +16,23 @@ appmain = [['a1', 'UCO',            ['lambda: console.Console._instance.stack("E
            ['a4', 'REL',            ['lambda: console.Console._instance.stack("EXQ CMD REL")']],
 
            ['b1', 'HDG',            ['lambda: console.Console._instance.stack("EXQ CMD HDG")',   # tidcmds.setcmd("HDG")
-                                     'lambda: change_tid("TID", "apphdg")']],
-           ['b2', 'POS',            ['lambda: change_tid("TID", "apppos")']],
+                                     'lambda: change_tid("TID_Function", "apphdg")']],
+           ['b2', 'POS',            ['lambda: change_tid("TID_Function", "apppos")']],
            ['b3', 'PBP',            ['lambda: console.Console._instance.stack("HOLD")']],
            ['b4', 'FFW',            ['lambda: console.Console._instance.stack("FF")']],  # ACM
 
            ['c1', 'EFL',            ['lambda: console.Console._instance.stack("EXQ CMD EFL")',  # tidcmds.setcmd("EFL")
-                                     'lambda: change_tid("TID", "appefl")']],
-           ['c2', 'TFL',            ['lambda: change_tid("TID", "apptfl")']],
+                                     'lambda: change_tid("TID_Function", "appefl")']],
+           ['c2', 'TFL',            ['lambda: change_tid("TID_Function", "apptfl")']],
            ['c3', 'LBL',            ['lambda: console.Console._instance.stack("EXQ CMD TRACKLABEL")']],
            ['c4', 'ERA',            ['lambda: None']],
 
            ['d1', 'SPD',            ['lambda: console.Console._instance.stack("EXQ CMD SPD")',
-                                     'lambda: change_tid("TID", "appspd")']],
-           ['d2', 'DPL',            ['lambda: change_tid("TID", "appdpl")']],
+                                     'lambda: change_tid("TID_Function", "appspd")']],
+           ['d2', 'DPL',            ['lambda: change_tid("TID_Function", "appdpl")']],
            ['d3', 'PBR',            ['lambda: console.Console._instance.stack("OP")']],
            ['d4', 'RWY',            ['lambda: console.Console._instance.stack("EXQ CMD RWY")',
-                                     'lambda: change_tid("TID", "apprwy")']],
+                                     'lambda: change_tid("TID_Function", "apprwy")']],
 
            ['e1', 'REL',            ['lambda: console.Console._instance.stack("EXQ CMD REL")']],
            ['e2', 'FORCE\nUCO',     ['lambda: None']],
@@ -40,7 +40,7 @@ appmain = [['a1', 'UCO',            ['lambda: console.Console._instance.stack("E
            ['e4', 'UCO',            ['lambda: console.Console._instance.stack("EXQ CMD UCO")']],
 
            ['f1', 'COR',            ['lambda: console.Console._instance.stack("EXQ COR")']],  # tidcmds.cor()
-           ['f2', 'MAIN 2',         ['lambda: change_tid("TID", "appdisp")']],
+           ['f2', 'MAIN 2',         ['lambda: change_tid("TID_Function", "appdisp")']],
            ['f3', '',             None],
            ['f4', 'EXQ',            ['lambda: console.Console._instance.stack("EXQ EXQ")']]  #lambda: tidcmds.exq()']]
            ]
@@ -51,7 +51,7 @@ apphdg = [['a1', 'ARTIP',       ['lambda: console.Console._instance.stack("EXQ S
           ['a3', 'RIVER',       ['lambda: console.Console._instance.stack("EXQ SETARG RIVER")']],
           ['a4', 'RON',         ['lambda: console.Console._instance.stack("LNAV " + console.Console._instance.id_select + " ON")',
                                  'lambda: console.Console._instance.stack("VNAV " + console.Console._instance.id_select + " ON")',
-                                 'lambda: change_tid("TID", "appmain")']],
+                                 'lambda: change_tid("TID_Function", "appmain")']],
 
           # ['b1', 'YARMA',       ['lambda: console.Console._instance.stack("EXQ SETARG YARMA")']],
           # ['b2', 'HASMI',       ['lambda: console.Console._instance.stack("EXQ SETARG HASMI")']],
@@ -63,9 +63,9 @@ apphdg = [['a1', 'ARTIP',       ['lambda: console.Console._instance.stack("EXQ S
           ['b3', 'MITJA', ['lambda: console.Console._instance.stack("EXQ SETARG MITJA")']],
           ['b4', 'ADEVI', ['lambda: console.Console._instance.stack("EXQ SETARG ADEVI")']],
 
-          # ['b1', 'NIRSI', ['lambda: change_tid("TID", "nirsi")']],
-          # ['b2', 'SOKS2', ['lambda: change_tid("TID", "soks2")']],
-          # ['b3', 'GALIS', ['lambda: change_tid("TID", "galis")']],
+          # ['b1', 'NIRSI', ['lambda: change_tid("TID_Function", "nirsi")']],
+          # ['b2', 'SOKS2', ['lambda: change_tid("TID_Function", "soks2")']],
+          # ['b3', 'GALIS', ['lambda: change_tid("TID_Function", "galis")']],
           # ['b4', '', None],
 
           ['c1', '7',           ['lambda: console.Console._instance.stack("EXQ CHAR 7")']],  # tidcmds.addchar("7")
@@ -84,28 +84,28 @@ apphdg = [['a1', 'ARTIP',       ['lambda: console.Console._instance.stack("EXQ S
           ['e4', '',            None],
 
           ['f1', 'COR',         ['lambda: console.Console._instance.stack("EXQ COR")',  # tidcmds.cor()
-                                 'lambda: change_tid("TID", "appmain")']],
+                                 'lambda: change_tid("TID_Function", "appmain")']],
           ['f2', 'EFL',         ['lambda: console.Console._instance.stack("EXQ CMD EFL")',
-                                 'lambda: change_tid("TID", "appefl")']],
+                                 'lambda: change_tid("TID_Function", "appefl")']],
           ['f3', 'SPD',         ['lambda: console.Console._instance.stack("EXQ CMD SPD")',
-                                 'lambda: change_tid("TID", "appspd")']],
+                                 'lambda: change_tid("TID_Function", "appspd")']],
           ['f4', 'EXQ',         ['lambda: console.Console._instance.stack("EXQ EXQ")',  # tidcmds.exq()
-                                 'lambda: change_tid("TID", "appmain")']]
+                                 'lambda: change_tid("TID_Function", "appmain")']]
           ]
 
 
 nirsi = [['a1',    'NIRSI',   ['lambda: console.Console._instance.stack("EXQ CHCMD ARR")',
                                'lambda: console.Console._instance.stack("EXQ SETARG NIRSI")',
-                               'lambda: change_tid("TID", "apphdg")']],
+                               'lambda: change_tid("TID_Function", "apphdg")']],
          ['a2',    'GAL01',   ['lambda: console.Console._instance.stack("EXQ CHCMD ARR")',
                                'lambda: console.Console._instance.stack("EXQ SETARG NIRSI_GAL01")',
-                               'lambda: change_tid("TID", "apphdg")']],
+                               'lambda: change_tid("TID_Function", "apphdg")']],
          ['a3',    'GAL02',   ['lambda: console.Console._instance.stack("EXQ CHCMD ARR")',
                                'lambda: console.Console._instance.stack("EXQ SETARG NIRSI_GAL02")',
-                               'lambda: change_tid("TID", "apphdg")']],
+                               'lambda: change_tid("TID_Function", "apphdg")']],
          ['a4',    'AM603',   ['lambda: console.Console._instance.stack("EXQ CHCMD ARR")',
                                'lambda: console.Console._instance.stack("EXQ SETARG NIRSI_AM603")',
-                               'lambda: change_tid("TID", "apphdg")']],
+                               'lambda: change_tid("TID_Function", "apphdg")']],
 
          ['b1',    '',        None],
          ['b2',    '',        None],
@@ -127,7 +127,7 @@ nirsi = [['a1',    'NIRSI',   ['lambda: console.Console._instance.stack("EXQ CHC
          ['e3',    '',        None],
          ['e4',    '',        None],
 
-         ['f1', 'COR',        ['lambda: change_tid("TID", "apphdg")']],
+         ['f1', 'COR',        ['lambda: change_tid("TID_Function", "apphdg")']],
          ['f2',    '',        None],
          ['f3',    '',        None],
          ['f4',    '',        None]]
@@ -135,16 +135,16 @@ nirsi = [['a1',    'NIRSI',   ['lambda: console.Console._instance.stack("EXQ CHC
 
 galis = [['a1',    'GALIS',   ['lambda:console.Console._instance.stack("EXQ CHCMD ARR")',
                                'lambda: console.Console._instance.stack("EXQ SETARG GALIS")',
-                               'lambda: change_tid("TID", "apphdg")']],
+                               'lambda: change_tid("TID_Function", "apphdg")']],
          ['a2',    'GAL08',   ['lambda: console.Console._instance.stack("EXQ CHCMD ARR")',
                                'lambda: console.Console._instance.stack("EXQ SETARG GALIS_GAL08")',
-                               'lambda: change_tid("TID", "apphdg")']],
+                               'lambda: change_tid("TID_Function", "apphdg")']],
          ['a3',    'GAL09',   ['lambda: console.Console._instance.stack("EXQ CHCMD ARR")',
                                'lambda: console.Console._instance.stack("EXQ SETARG GALIS_GAL09")',
-                               'lambda: change_tid("TID", "apphdg")']],
+                               'lambda: change_tid("TID_Function", "apphdg")']],
          ['a4',    'GAL10',   ['lambda: console.Console._instance.stack("EXQ CHCMD ARR")',
                                'lambda: console.Console._instance.stack("EXQ SETARG GALIS_GAL10")',
-                               'lambda: change_tid("TID", "apphdg")']],
+                               'lambda: change_tid("TID_Function", "apphdg")']],
 
          ['b1',    '',        None],
          ['b2',    '',        None],
@@ -166,23 +166,23 @@ galis = [['a1',    'GALIS',   ['lambda:console.Console._instance.stack("EXQ CHCM
          ['e3',    '',        None],
          ['e4',    '',        None],
 
-         ['f1', 'COR',        ['lambda: change_tid("TID", "apphdg")']],
+         ['f1', 'COR',        ['lambda: change_tid("TID_Function", "apphdg")']],
          ['f2',    '',        None],
          ['f3',    '',        None],
          ['f4',    '',        None]]
 
 soks2 = [['a1',    'SOKS2',   ['lambda: console.Console._instance.stack("EXQ CHCMD ARR")',
                                'lambda: console.Console._instance.stack("EXQ SETARG SOKS2")',
-                               'lambda: change_tid("TID", "apphdg")']],
+                               'lambda: change_tid("TID_Function", "apphdg")']],
          ['a2',    'GAL03',   ['lambda: console.Console._instance.stack("EXQ CHCMD ARR")',
                                'lambda: console.Console._instance.stack("EXQ SETARG SOKS2_GAL03")',
-                               'lambda: change_tid("TID", "apphdg")']],
+                               'lambda: change_tid("TID_Function", "apphdg")']],
          ['a3',    'GAL04',   ['lambda: console.Console._instance.stack("EXQ CHCMD ARR")',
                                'lambda: console.Console._instance.stack("EXQ SETARG SOKS2_GAL04")',
-                               'lambda: change_tid("TID", "apphdg")']],
+                               'lambda: change_tid("TID_Function", "apphdg")']],
          ['a4',    'GAL05',   ['lambda: console.Console._instance.stack("EXQ CHCMD ARR")',
                                'lambda: console.Console._instance.stack("EXQ SETARG SOKS2_GAL05")',
-                               'lambda: change_tid("TID", "apphdg")']],
+                               'lambda: change_tid("TID_Function", "apphdg")']],
 
          ['b1',    '',        None],
          ['b2',    '',        None],
@@ -204,7 +204,7 @@ soks2 = [['a1',    'SOKS2',   ['lambda: console.Console._instance.stack("EXQ CHC
          ['e3',    '',        None],
          ['e4',    '',        None],
 
-         ['f1', 'COR',        ['lambda: change_tid("TID", "apphdg")']],
+         ['f1', 'COR',        ['lambda: change_tid("TID_Function", "apphdg")']],
          ['f2',    '',        None],
          ['f3',    '',        None],
          ['f4',    '',        None]]
@@ -213,7 +213,7 @@ soks2 = [['a1',    'SOKS2',   ['lambda: console.Console._instance.stack("EXQ CHC
 appefl = [['a1', '',            None],
           ['a2', '090',         ['lambda: console.Console._instance.stack("EXQ SETARG 90")']],  # tidcmds.setarg("90", 1)
           ['a3', '',            None],
-          ['a4', 'APP',         ['lambda: change_tid("TID", "ils")']],
+          ['a4', 'APP',         ['lambda: change_tid("TID_Function", "ils")']],
 
           ['b1', '130',         ['lambda: console.Console._instance.stack("EXQ SETARG 130")']],
           ['b2', '',            None],
@@ -236,53 +236,53 @@ appefl = [['a1', '',            None],
           ['e4', '',            None],
 
           ['f1', 'COR',         ['lambda: console.Console._instance.stack("EXQ COR")',
-                                 'lambda: change_tid("TID", "appmain")']],
+                                 'lambda: change_tid("TID_Function", "appmain")']],
           ['f2', 'HDG',         ['lambda: console.Console._instance.stack("EXQ CMD HDG")',
-                                 'lambda: change_tid("TID", "apphdg")']],
+                                 'lambda: change_tid("TID_Function", "apphdg")']],
           ['f3', 'SPD',         ['lambda: console.Console._instance.stack("EXQ CMD SPD")',
-                                 'lambda: change_tid("TID", "appspd")']],
+                                 'lambda: change_tid("TID_Function", "appspd")']],
           ['f4', 'EXQ',         ['lambda: console.Console._instance.stack("EXQ EXQ")',
-                                 'lambda: change_tid("TID", "appmain")']]
+                                 'lambda: change_tid("TID_Function", "appmain")']]
           ]
 
 
 ils = [['a1', '06',      ['lambda: console.Console._instance.stack("EXQ CHCMD ILS")',
                           'lambda: console.Console._instance.stack("EXQ SETARG 06")',
-                          'lambda: change_tid("TID", "appefl")']],
+                          'lambda: change_tid("TID_Function", "appefl")']],
        ['a2', '18C',     ['lambda: console.Console._instance.stack("EXQ CHCMD ILS")',
                           'lambda: console.Console._instance.stack("EXQ SETARG 18C")',
-                          'lambda: change_tid("TID", "appefl")']],
+                          'lambda: change_tid("TID_Function", "appefl")']],
        ['a3', '27',      ['lambda: console.Console._instance.stack("EXQ CHCMD ILS")',
                           'lambda: console.Console._instance.stack("EXQ SETARG 27")',
-                          'lambda: change_tid("TID", "appefl")']],
+                          'lambda: change_tid("TID_Function", "appefl")']],
        ['a4', '36R',     ['lambda: console.Console._instance.stack("EXQ CHCMD ILS")',
                           'lambda: console.Console._instance.stack("EXQ SETARG 36R")',
-                          'lambda: change_tid("TID", "appefl")']],
+                          'lambda: change_tid("TID_Function", "appefl")']],
 
        ['b1', '24',      ['lambda: console.Console._instance.stack("EXQ CHCMD ILS")',
                           'lambda: console.Console._instance.stack("EXQ SETARG 24")',
-                          'lambda: change_tid("TID", "appefl")']],
+                          'lambda: change_tid("TID_Function", "appefl")']],
        ['b2', '36C',     ['lambda: console.Console._instance.stack("EXQ CHCMD ILS")',
                           'lambda: console.Console._instance.stack("EXQ SETARG 36C")',
-                          'lambda: change_tid("TID", "appefl")']],
+                          'lambda: change_tid("TID_Function", "appefl")']],
        ['b3', '09',      ['lambda: console.Console._instance.stack("EXQ CHCMD ILS")',
                           'lambda: console.Console._instance.stack("EXQ SETARG 09")',
-                          'lambda: change_tid("TID", "appefl")']],
+                          'lambda: change_tid("TID_Function", "appefl")']],
        ['b4',    '',        None],
 
        ['c1', '18R',      ['lambda: console.Console._instance.stack("EXQ CHCMD ILS")',
                            'lambda: console.Console._instance.stack("EXQ SETARG 18R")',
-                           'lambda: change_tid("TID", "appefl")']],
+                           'lambda: change_tid("TID_Function", "appefl")']],
        ['c2', '04',       ['lambda: console.Console._instance.stack("EXQ CHCMD ILS")',
                            'lambda: console.Console._instance.stack("EXQ SETARG 04")',
-                           'lambda: change_tid("TID", "appefl")']],
+                           'lambda: change_tid("TID_Function", "appefl")']],
        ['c3',    '',        None],
        ['c4',    '',        None],
 
        ['d1',    '',        None],
        ['d2', '22',       ['lambda: console.Console._instance.stack("EXQ CHCMD ILS")',
                            'lambda: console.Console._instance.stack("EXQ SETARG 22")',
-                           'lambda: change_tid("TID", "appefl")']],
+                           'lambda: change_tid("TID_Function", "appefl")']],
        ['d3',    '',        None],
        ['d4',    '',        None],
 
@@ -291,7 +291,7 @@ ils = [['a1', '06',      ['lambda: console.Console._instance.stack("EXQ CHCMD IL
        ['e3',    '',        None],
        ['e4',    '',        None],
 
-       ['f1',    'COR',     ['lambda: change_tid("TID", "appefl")']],
+       ['f1',    'COR',     ['lambda: change_tid("TID_Function", "appefl")']],
        ['f2',    '',        None],
        ['f3',    '',        None],
        ['f4',    '',        None]]
@@ -323,11 +323,11 @@ apptfl = [['a1', '130',          ['lambda: None']],
           ['e4', '',             None],
 
           ['f1', 'COR',         ['lambda: console.Console._instance.stack("EXQ COR")',
-                                 'lambda: change_tid("TID", "appmain")']],
+                                 'lambda: change_tid("TID_Function", "appmain")']],
           ['f2', 'CLR',         ['lambda: console.Console._instance.stack("EXQ CLR")']],
           ['f3', '',             None],
           ['f4', 'EXQ',         ['lambda: console.Console._instance.stack("EXQ EXQ")',
-                                 'lambda: change_tid("TID", "appmain")']]
+                                 'lambda: change_tid("TID_Function", "appmain")']]
           ]
 
 appspd = [['a1', '250',         ['lambda: console.Console._instance.stack("EXQ SETARG 250")']],
@@ -356,13 +356,13 @@ appspd = [['a1', '250',         ['lambda: console.Console._instance.stack("EXQ S
           ['e4', '',            None],
 
           ['f1', 'COR',         ['lambda: console.Console._instance.stack("EXQ COR")',
-                                 'lambda: change_tid("TID", "appmain")']],
+                                 'lambda: change_tid("TID_Function", "appmain")']],
           ['f2', 'HDG',         ['lambda: console.Console._instance.stack("EXQ CMD HDG")',
-                                 'lambda: change_tid("TID", "apphdg")']],
+                                 'lambda: change_tid("TID_Function", "apphdg")']],
           ['f3', 'EFL',         ['lambda: console.Console._instance.stack("EXQ CMD EFL")',
-                                 'lambda: change_tid("TID", "appefl")']],
+                                 'lambda: change_tid("TID_Function", "appefl")']],
           ['f4', 'EXQ',         ['lambda: console.Console._instance.stack("EXQ EXQ")',
-                                 'lambda: change_tid("TID", "appmain")']]
+                                 'lambda: change_tid("TID_Function", "appmain")']]
           ]
 
 
@@ -372,19 +372,19 @@ apppos = [['a1', '',        None],
           ['a4', '',        None],
 
           ['b1', '',        None],
-          ['b2', '7',       ['lambda: change_tid("TID", "appmain")']],
-          ['b3', '4',       ['lambda: change_tid("TID", "appmain")']],
-          ['b4', '1',       ['lambda: change_tid("TID", "appmain")']],
+          ['b2', '7',       ['lambda: change_tid("TID_Function", "appmain")']],
+          ['b3', '4',       ['lambda: change_tid("TID_Function", "appmain")']],
+          ['b4', '1',       ['lambda: change_tid("TID_Function", "appmain")']],
 
           ['c1', '',        None],
-          ['c2', '8',       ['lambda: change_tid("TID", "appmain")']],
+          ['c2', '8',       ['lambda: change_tid("TID_Function", "appmain")']],
           ['c3', 'PLOT',    'lambda: None'],
-          ['c4', '2',       ['lambda: change_tid("TID", "appmain")']],
+          ['c4', '2',       ['lambda: change_tid("TID_Function", "appmain")']],
 
           ['d1', '',        None],
-          ['d2', '9',       ['lambda: change_tid("TID", "appmain")']],
-          ['d3', '6',       ['lambda: change_tid("TID", "appmain")']],
-          ['d4', '3',       ['lambda: change_tid("TID", "appmain")']],
+          ['d2', '9',       ['lambda: change_tid("TID_Function", "appmain")']],
+          ['d3', '6',       ['lambda: change_tid("TID_Function", "appmain")']],
+          ['d4', '3',       ['lambda: change_tid("TID_Function", "appmain")']],
 
           ['e1', '',        None],
           ['e2', '',        None],
@@ -392,7 +392,7 @@ apppos = [['a1', '',        None],
           ['e4', '',        None],
 
           ['f1', 'COR',     ['lambda: console.Console._instance.stack("EXQ COR")',
-                             'lambda: change_tid("TID", "appmain")']],
+                             'lambda: change_tid("TID_Function", "appmain")']],
           ['f2', '',        None],
           ['f3', '',        None],
           ['f4', '',        None]
@@ -456,10 +456,10 @@ appdpl = [['a1', 'FD1',         ['lambda: None']],
           ['e4', 'PRT',         ['lambda: None']],
 
           ['f1', 'COR',         ['lambda: console.Console._instance.stack("EXQ COR")']],
-          ['f2', 'ACC\nSECT',   ['lambda: change_tid("TID", "accsect")']],
-          ['f3', 'FIC\nMORE',   ['lambda: change_tid("TID", "ficmore")']],
+          ['f2', 'ACC\nSECT',   ['lambda: change_tid("TID_Function", "accsect")']],
+          ['f3', 'FIC\nMORE',   ['lambda: change_tid("TID_Function", "ficmore")']],
           ['f4', 'EXQ',         ['lambda: console.Console._instance.stack("EXQ EXQ")',
-                                 'lambda: change_tid("TID", "appmain")']]
+                                 'lambda: change_tid("TID_Function", "appmain")']]
           ]
 
 
@@ -492,7 +492,7 @@ accsect = [['a1', 'RA1',         ['lambda: None']],
            ['f2', 'APP\nTWR',    ['lambda: None']],
            ['f3', 'FIC\nMORE',   ['lambda: None']],
            ['f4', 'EXQ',         ['lambda: console.Console._instance.stack("EXQ EXQ")',
-                                  'lambda: change_tid("TID", "appmain")']]
+                                  'lambda: change_tid("TID_Function", "appmain")']]
            ]
 
 ficmore = [['a1', 'RA1',         ['lambda: None']],
@@ -524,5 +524,5 @@ ficmore = [['a1', 'RA1',         ['lambda: None']],
            ['f2', 'APP\nTWR',    ['lambda: None']],
            ['f3', 'FIC\nMORE',   ['lambda: None']],
            ['f4', 'EXQ',         ['lambda: console.Console._instance.stack("EXQ EXQ")',
-                                  'lambda: change_tid("TID", "appmain")']]
+                                  'lambda: change_tid("TID_Function", "appmain")']]
            ]
