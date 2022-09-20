@@ -5,15 +5,12 @@ Created by: Bob van Dillen
 Date: 26-1-2022
 """
 
-accdisp = [['a1',    'VIEW',            ['lambda: accdisp.close()',
-                                         'lambda: show_basetid("accview", "accview")']],
-           ['a2',    'LABEL',           ['lambda: accdisp.close()',
-                                         'lambda: show_basetid("acclabel", "acclabel")']],
+accdisp = [['a1',    'VIEW',            ['lambda: change_tid("TID", "accview")']],
+           ['a2',    'LABEL',           ['lambda: change_tid("TID", "acclabel")']],
            ['a3',    'CRO',             ['lambda: None']],
            ['a4',    'CRB',             ['lambda: None']],
 
-           ['b1',    'MAPS',            ['lambda: accdisp.close()',
-                                         'lambda: show_basetid("accmaps", "accmaps")']],
+           ['b1',    'MAPS',            ['lambda: change_tid("TID", "accmaps")']],
            ['b2',    'LISTS',           ['lambda: None']],
            ['b3',    'CBM',             ['lambda: None']],
            ['b4',    'CXY',             ['lambda: None']],
@@ -34,12 +31,10 @@ accdisp = [['a1',    'VIEW',            ['lambda: accdisp.close()',
            ['e4',    'BACK\nUP',        ['lambda: None']],
 
            ['f1',    'COR',             ['lambda: console.Console._instance.stack("EXQ COR")',
-                                         'lambda: accdisp.close()',
-                                         'lambda: show_basetid("accmain", "accmain")']],
+                                         'lambda: change_tid("TID", "accmain")']],
            ['f2',    'ACM',             None],
            ['f3',    'INFO',            ['lambda: None']],
-           ['f4',    'EXQ',             ['lambda: accdisp.close()',
-                                         'lambda: show_basetid("accmain", "accmain")']]
+           ['f4',    'EXQ',             ['lambda: change_tid("TID", "accmain")']]
            ]
 
 
@@ -69,8 +64,7 @@ accview = [['a1',    'SE5',             ['lambda: console.Console._instance.stac
            ['e4',    'PDS',             ['lambda: None']],
 
            ['f1',    '',                None],
-           ['f2',    'MAIN',            ['lambda: accview.close()',
-                                         'lambda: show_basetid("accdisp", "accdisp")']],
+           ['f2',    'MAIN',            ['lambda: change_tid("TID", "accdisp")']],
            ['f3',    '',                None],
            ['f4',    '',                None]
            ]
@@ -102,8 +96,7 @@ acclabel = [['a1',    'SLA\nLARGE',         ['lambda: None']],
             ['e4',    'FULL\nLABEL',        ['lambda: tidcmds.exqcmd("TRACKLABEL")']],
 
             ['f1',    '',                   None],
-            ['f2',    'MAIN',               ['lambda: acclabel.close()',
-                                             'lambda: show_basetid("accdisp", "accdisp")']],
+            ['f2',    'MAIN',               ['lambda: change_tid("TID", "accdisp")']],
             ['f3',    'SSR\nSMALL',         ['lambda: None']],
             ['f4',    'SSR\nX-SML',         ['lambda: None']]
             ]
