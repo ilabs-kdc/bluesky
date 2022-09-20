@@ -120,12 +120,15 @@ def load_basemap_txt(atcmode):
     # Loop over files
     for file in filename:
 
+        # Get path
+        path = findfile(file, 'scenario/LVNL/Maps')
+
         # Check if files exist
-        if not findfile(file, 'scenario/LVNL/Maps/mapid'):
+        if not path:
             continue
 
         # Open the file
-        with open(os.path.join('scenario/LVNL/Maps/mapid', file), 'r') as f:
+        with open(path, 'r') as f:
             for line in f:
                 # Edit scenario file to simple strings
                 line = line.replace('>', ' ')

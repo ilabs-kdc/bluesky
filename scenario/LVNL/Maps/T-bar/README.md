@@ -1,1 +1,0 @@
-In this folder you can add the T-Bar map scenario files.
