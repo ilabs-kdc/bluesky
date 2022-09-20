@@ -440,9 +440,9 @@ class VEMMISRead:
         """
 
         # ---------- Select the right initial commands method ----------
-        cmds, cmdst = self.initial(swdatafeed)
+        # cmds, cmdst = self.initial(swdatafeed)
         # cmds, cmdst = self.initial_tbar()
-        # cmds, cmdst = self.initial_scenario('both')
+        cmds, cmdst = self.initial_scenario('both')
         # cmds, cmdst = self.initial_route()
 
         # ---------- Sort and process ----------

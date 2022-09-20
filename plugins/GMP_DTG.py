@@ -54,8 +54,8 @@ class GMP(core.Entity):
         Args: -
         Returns: -
 
-        Created by: Bob van Dillen
-        Date: 25-2-2022
+        Created by: Ajay Kumbhar
+        Date:
         """
 
         # Check if we need to initialize
@@ -91,7 +91,7 @@ class GMP(core.Entity):
             changed_elems:  Changed elements [list]
         Returns: -
 
-        Created by: Bob van Dillen
+        Created by: Ajay Kumbhar
         Date: 25-2-2022
         """
 
@@ -106,7 +106,6 @@ class GMP(core.Entity):
                     tracklbl = nodedata.acdata.tracklbl[idx]
                     if tracklbl and dtg_route != 0. and acid == console.Console._instance.id_select:
                         rawlabel += '%-3s' % leading_zeros(dtg_route)[:3]
-                        # rawlabel += '%-3s' % 'B E'
                     else:
                         rawlabel += 3*2*' '
                 self.gmplbl.pluginlbl.update(np.array(rawlabel.encode('utf8'), dtype=np.string_))

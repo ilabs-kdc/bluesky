@@ -359,7 +359,7 @@ class MainWindow(QMainWindow):
         elif self.sender() == self.showac:
             actdata.show_traf = not actdata.show_traf
         elif self.sender() == self.showpz:
-            actdata.show_pz = not actdata.show_pz
+            actdata.show_pz = not actdata.show_pzF
         elif self.sender() == self.showapt:
             if actdata.show_apt < 3:
                 actdata.show_apt += 1

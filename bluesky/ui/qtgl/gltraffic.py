@@ -1220,7 +1220,7 @@ def initial_labelpos(data, i):
 
 def initial_micropos(data, i):
     """
-    Function: Compute the offset for the initial label position
+    Function: Compute the offset for the initial microlabel position
     Args:
         data:   aircraft data [dict]
         i:      index for data [int]
