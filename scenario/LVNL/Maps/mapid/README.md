@@ -1,1 +1,0 @@
-In this folder you can add the map scenario files from the LVNL.

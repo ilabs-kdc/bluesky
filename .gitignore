@@ -97,8 +97,5 @@ scenario/LVNL/Data/*
 !/scenario/LVNL/Data/README.md
 
 # Map data
-scenario/LVNL/Maps/mapid/*
-!/scenario/LVNL/Maps/mapid/README.md
-
-scenario/LVNL/Maps/T-bar/*
-!/scenario/LVNL/Maps/T-bar/README.md
+scenario/LVNL/Maps/*
+!/scenario/LVNL/Maps/README.md
