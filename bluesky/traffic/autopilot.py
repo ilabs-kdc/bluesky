@@ -551,6 +551,12 @@ class Autopilot(Entity, replaceable=True):
         # bs.traf.vs[idx] = vspd
         bs.traf.swvnav[idx] = False
 
+    @stack.command(name='PHASE')
+    def selphasecmd(self, idx: 'acid', phase: 'int'):
+        # print('hoi ik zie dit', phase)
+
+        bs.traf.selphase[idx] = phase
+
     @stack.command(name='HDG', aliases=("HEADING", "TURN"))
     def selhdgcmd(self, idx: 'acid', hdg: 'hdg'):  # HDG command
         """ HDG acid,hdg (deg,True or Magnetic)

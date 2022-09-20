@@ -25,7 +25,7 @@ PHASE = {"None":0,
 
 
 def phases(alt, gs, delalt, cas, vmto, vmic, vmap,
-           vmcr, vmld, bank, bphase, swhdgsel, bada, swapproach = False):
+           vmcr, vmld, bank, bphase, swhdgsel, bada, selphase, swapproach = False):
 
     # flight phases: TO (1), IC (2), CR (3), AP(4), LD(5), GD (6)
     #--> no holding phase yet
@@ -107,6 +107,8 @@ def phases(alt, gs, delalt, cas, vmto, vmic, vmap,
     #-------------------------------------------------
     # combine all phases
     phase = np.maximum.reduce([to, ic, ap, ld, cr, gd])
+
+    phase = np.where(selphase>0, selphase, phase)
 
     to2 = np.where(phase == 1)
     ic2 = np.where(phase == 2)

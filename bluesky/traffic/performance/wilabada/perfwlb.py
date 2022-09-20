@@ -169,7 +169,7 @@ class WILABADA(PerfBase):
             self.limvs_flag  = np.array([])  # A need to limit V/S detected
 
             # ESF Tables
-            self.esf_table = np.array([], dtype=object)
+            self.esf_table = np.array([], dtype=object)  #ADDED, write explanation
 
     def engchange(self, acid, engid=None):
         return False, "BADA performance model doesn't allow changing engine type"
@@ -377,7 +377,9 @@ class WILABADA(PerfBase):
         # flight phase
         self.phase, self.bank = phases(bs.traf.alt, bs.traf.gs, delalt,
             bs.traf.cas, self.vmto, self.vmic, self.vmap, self.vmcr, self.vmld,
-            bs.traf.ap.bankdef, bs.traf.bphase, bs.traf.swhdgsel, swbada, SWApproach)
+            bs.traf.ap.bankdef, bs.traf.bphase, bs.traf.swhdgsel, swbada, bs.traf.selphase, SWApproach)
+
+        # print('phases', self.phase)
 
         # AERODYNAMICS
         # Lift

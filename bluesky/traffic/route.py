@@ -150,6 +150,8 @@ class Route(Replaceable):
         # First get the appropriate ac route
         acid = bs.traf.id[acidx]
         acrte = Route._routes.get(acid)
+
+        print('args', args)
         
         #debug print ("addwptStack:",args)
         #print("active = ",self.wpname[self.iactwp])
@@ -194,6 +196,7 @@ class Route(Replaceable):
                     return False, "Error in processing value of turn speed"
 
                 return True
+
 
         # Convert to positions
         name = args[0].upper().strip()

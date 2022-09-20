@@ -146,6 +146,8 @@ class Traffic(Entity):
             self.selvs  = np.array([])  # selected vertical speed [m/s]
             self.selhdg = np.array([])  # selected heading [deg]
 
+            self.selphase = np.array([])  # ADDED selected phase
+
             # Whether to perform LNAV and VNAV
             self.swlnav    = np.array([], dtype=np.bool)
             self.swvnav    = np.array([], dtype=np.bool)
@@ -315,6 +317,8 @@ class Traffic(Entity):
         self.selspd[-n:] = self.cas[-n:]
         self.aptas[-n:]  = self.tas[-n:]
         self.selalt[-n:] = self.alt[-n:]
+
+        self.selphase[-n:] = -1 # ADDED add explanation
 
         # Display information on label
         self.label[-n:] = n*[['', '', '', 0]]
@@ -515,7 +519,7 @@ class Traffic(Entity):
         self.vs = np.where(np.isfinite(self.vs), self.vs, 0)    # fix vs nan issue
 
         #DELETE
-        # print('vs', self.vs/fpm)
+        print('vs', self.vs/fpm, self.perf.phase)
 
     def update_groundspeed(self):
         # Compute ground speed and track from heading, airspeed and wind
