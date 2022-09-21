@@ -40,7 +40,7 @@ appmain = [['a1', 'UCO',            ['lambda: console.Console._instance.stack("E
            ['e4', 'UCO',            ['lambda: console.Console._instance.stack("EXQ CMD UCO")']],
 
            ['f1', 'COR',            ['lambda: console.Console._instance.stack("EXQ COR")']],  # tidcmds.cor()
-           ['f2', 'MAIN 2',         ['lambda: change_tid("TID_Function", "appdisp")']],
+           ['f2', 'MAIN 2',         ['lambda: change_tid("TID_Function", "appmain2")']],
            ['f3', '',             None],
            ['f4', 'EXQ',            ['lambda: console.Console._instance.stack("EXQ EXQ")']]  #lambda: tidcmds.exq()']]
            ]
@@ -526,3 +526,65 @@ ficmore = [['a1', 'RA1',         ['lambda: None']],
            ['f4', 'EXQ',         ['lambda: console.Console._instance.stack("EXQ EXQ")',
                                   'lambda: change_tid("TID_Function", "appmain")']]
            ]
+
+appmain2 =  [['a1', 'UCO',          ['lambda: None']],
+             ['a2', '',             None],
+             ['a3', 'BUP',          ['lambda: None']],
+             ['a4', '',             None],
+
+             ['b1', 'BOS',          ['lambda: None']],
+             ['b2', 'EOS',          ['lambda: None']],
+             ['b3', '',             None],
+             ['b4', 'HLD',          ['lambda: None']],
+
+             ['c1', 'STR',          ['lambda: None']],
+             ['c2', '',             None],
+             ['c3', 'MLB',          ['lambda: None']],
+             ['c4', '',             None],
+
+             ['d1', 'SLC',          ['lambda: None']],
+             ['d2', 'SLB',          ['lambda: None']],
+             ['d3', 'RCL',          ['lambda: None']],
+             ['d4', '',             None],
+
+             ['e1', 'SSI',          ['lambda: None']],
+             ['e2', 'SSR',          ['lambda: None']],
+             ['e3', 'PSL\nALERT',   ['lambda: None']],
+             ['e4', '',             None],
+
+             ['f1', 'COR',          ['lambda: None']],
+             ['f2', 'MAIN 1',       ['lambda: change_tid("TID_Function", "appmain")']],
+             ['f3', '',             None],
+             ['f4', 'EXQ',          ['lambda: None']],
+             ]
+
+fuco =   [['a1', '',            None],
+          ['a2', '',            None],
+          ['a3', '',            None],
+          ['a4', '',            None],
+
+          ['b1', '',            None],
+          ['b2', 'TAKE\nUCO',   ['lambda: None']],
+          ['b3', '',            None],
+          ['b4', '',            None],
+
+          ['c1', '',            None],
+          ['c2', '',            None],
+          ['c3', '',            None],
+          ['c4', '',            None],
+
+          ['d1', '',            None],
+          ['d2', 'PREV\nUCO',   ['lambda: None']],
+          ['d3', '',            None],
+          ['d4', '',            None],
+
+          ['e1', '',            None],
+          ['e2', '',            None],
+          ['e3', '',            None],
+          ['e4', '',            None],
+
+          ['f1', 'COR',         None],
+          ['f2', '',            None],
+          ['f3', '',            None],
+          ['f4', 'EXQ',         ['lambda: change_tid("TID_Function", "appmain")']],
+          ]
