@@ -10,6 +10,7 @@ from bluesky.tools.aero import ft, nm, kts
 from bluesky.ui import palette
 from bluesky.ui.qtgl import console
 from bluesky.ui.qtgl import glhelpers as glh
+from bluesky import stack
 
 # Register settings defaults
 settings.set_variable_defaults(
@@ -480,9 +481,15 @@ class Traffic(glh.RenderObject, layer=100):
         if naircraft == 0:
             self.cpalines.set_vertex_count(0)
         else:
-            # for i in range(naircraft):
-            #     if actdata.acdata.alt[i] < actdata.translvl:
-            #         actdata.acdata.uco[i] = IP[-11:]
+            for i in range(naircraft):
+                if actdata.acdata.alt[i] < actdata.translvl:
+                    # print (actdata.acdata.rel[i])
+                    actdata.acdata.rel[i] = True
+                    # actdata.acdata.uco[i] = IP[-11:]
+                    # stack ('REL ', actdata.acdata.id[i])
+                    # cmd = 'REL' + ' ' + actdata.acdata.id[i]
+                    # stack.stack(cmd)
+                # print(actdata.acdata.rel[i])
 
             iuco = misc.get_indices(actdata.acdata.uco, IP[-11:])  #ip address
             self.lat.update(np.array(data.lat, dtype=np.float32))
@@ -1205,16 +1212,16 @@ def initial_labelpos(data, i):
     Note: Enable data.arr conditions only for GMPEOR scenario
     """
     #   #   Enable data.rwy for normal cases
-    # if data.rwy[i] in ['18R', '18R_E']:
-    #     labelpos = [-125, 0]  # -125
-    # else:
-    #     labelpos = [50, 0]
+    if data.rwy[i] in ['18R', '18R_E']:
+        labelpos = [-125, 0]  # -125
+    else:
+        labelpos = [50, 0]
 
     #   #   Enable data.arr only for GMPEOR scenario
-    if data.arr[i] in ['ATP18R', 'RIV18R', 'RIV18REOR', 'SUG18R', 'SUG18REOR']:
-        labelpos = [-150, 0]  # -125
-    else:
-        labelpos = [80, 0]  # 50  #75 for R indication
+    # if data.arr[i] in ['ATP18R', 'RIV18R', 'RIV18REOR', 'SUG18R', 'SUG18REOR']:
+    #     labelpos = [-150, 0]  # -125
+    # else:
+    #     labelpos = [80, 0]  # 50  #75 for R indication
 
     return labelpos
 
@@ -1236,15 +1243,15 @@ def initial_micropos(data, i):
     text_size = settings.text_size
 
     #   #   Enable data.rwy for normal cases
-    # if data.rwy[i] in ['18C', '18C_E']:
-    #     mlabelpos = [2 * 0.8 * text_size - ac_size, 0.5 * ac_size]
-    # else:
-    #     mlabelpos = [-8 * 0.8 * text_size - ac_size, 0.5 * ac_size]   #-3
+    if data.rwy[i] in ['18C', '18C_E']:
+        mlabelpos = [2 * 0.8 * text_size - ac_size, 0.5 * ac_size]
+    else:
+        mlabelpos = [-8 * 0.8 * text_size - ac_size, 0.5 * ac_size]   #-3
 
     #   #   Enable data.arr only for GMPEOR scenario
-    if data.arr[i] in ['ATP18C', 'ATP18CEOR', 'RIV18C', 'SUG18C']:
-        mlabelpos = [2 * 0.8 * text_size - ac_size, 0.5 * ac_size]  # 2   #0.5-y
-    else:
-        mlabelpos = [-8 * 0.8 * text_size - ac_size, 0.5 * ac_size]  # -3
+    # if data.arr[i] in ['ATP18C', 'ATP18CEOR', 'RIV18C', 'SUG18C']:
+    #     mlabelpos = [2 * 0.8 * text_size - ac_size, 0.5 * ac_size]  # 2   #0.5-y
+    # else:
+    #     mlabelpos = [-8 * 0.8 * text_size - ac_size, 0.5 * ac_size]  # -3
 
     return mlabelpos

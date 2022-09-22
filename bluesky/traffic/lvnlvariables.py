@@ -233,7 +233,7 @@ class LVNLVariables(Entity):
         bs.traf.trafdatafeed.uco(idx)
         self.uco[idx] = IP[-11:]
         self.rel[idx] = False
-        # print('UCO list', self.uco)
+        print('UCO list', self.uco)
         # print('')
 
     @stack.command(name='REL',)

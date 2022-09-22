@@ -33,13 +33,13 @@ void main()
     // color.a *= alpha;
 
     // With a dropshadow
-    float dist = calcdist(texture(tex_sampler, texcoords_fs));
-    float alpha = smoothstep(0.5 - smoothing, 0.5 + smoothing, dist);
-    vec4 text = vec4(color_fs.rgb, color_fs.a * alpha);
+     float dist = calcdist(texture(tex_sampler, texcoords_fs));
+     float alpha = smoothstep(0.5 - smoothing, 0.5 + smoothing, dist);
+     vec4 text = vec4(color_fs.rgb, color_fs.a * alpha);
 
-    float shadowDistance = calcdist(texture(tex_sampler, texcoords_fs - shadowOffset));
-    float shadowAlpha = smoothstep(0.5 - shadowSmoothing, 0.5 + shadowSmoothing, shadowDistance);
-    vec4 shadow = vec4(shadowColor.rgb, shadowColor.a * shadowAlpha);
+     float shadowDistance = calcdist(texture(tex_sampler, texcoords_fs - shadowOffset));
+     float shadowAlpha = smoothstep(0.5 - shadowSmoothing, 0.5 + shadowSmoothing, shadowDistance);
+     vec4 shadow = vec4(shadowColor.rgb, shadowColor.a * shadowAlpha);
 
-    color = mix(shadow, text, text.a);
+     color = mix(shadow, text, text.a);
 }

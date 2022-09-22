@@ -16,7 +16,7 @@ from bluesky.tools.misc import tim2txt
 from bluesky.network import get_ownip
 from bluesky.ui import palette
 from bluesky.ui.qtgl import console
-import bluesky.ui.qtgl.main_tid as tid
+import bluesky.ui.qtgl.main_tid
 from bluesky.ui.qtgl.TIDS.tid import start_tid
 from bluesky.stack import stack
 
@@ -25,8 +25,7 @@ from bluesky.ui.qtgl.docwindow import DocWindow
 from bluesky.ui.qtgl.radarwidget import RadarWidget
 from bluesky.ui.qtgl.infowindow import InfoWindow
 from bluesky.ui.qtgl.settingswindow import SettingsWindow
-# from bluesky.ui.qtgl.TID import showTID
-# from bluesky.ui.qtgl.nd import ND
+
 
 if platform.system().lower() == "windows":
     from bluesky.ui.pygame.dialog import fileopen
