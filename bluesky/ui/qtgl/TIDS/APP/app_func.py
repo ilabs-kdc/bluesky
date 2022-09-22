@@ -35,7 +35,7 @@ appmain = [['a1', 'UCO',            ['lambda: console.Console._instance.stack("E
                                      'lambda: change_tid("TID_Function", "apprwy")']],
 
            ['e1', 'REL',            ['lambda: console.Console._instance.stack("EXQ CMD REL")']],
-           ['e2', 'FORCE\nUCO',     ['lambda: None']],
+           ['e2', 'FORCE\nUCO',     ['lambda: change_tid("TID_Function", "fuco")']],
            ['e3', 'RNAV\nATTN',     ['lambda: None']],
            ['e4', 'UCO',            ['lambda: console.Console._instance.stack("EXQ CMD UCO")']],
 
