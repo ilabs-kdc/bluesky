@@ -24,7 +24,7 @@ def LOG_READER(file):
 
     NumAC = len(set(data.iloc[:,1].values))
     AllAC = list(set(data.iloc[:,1].values))
-    print(AllAC)
+
     if NumAC > 1:
         print("I assume that the data has ", len(AllAC), "aircraft.")
         data_dict = {}
