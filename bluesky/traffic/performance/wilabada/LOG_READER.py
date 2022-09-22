@@ -10,6 +10,7 @@ fpm = 0.00508
 file_1 = r"C:\Users\LVNL_ILAB3\PycharmProjects\bluesky\output\UIT.log"
 file_2 = r"C:\Users\LVNL_ILAB3\PycharmProjects\bluesky\output\AAN.log"
 file_2 = r"C:\Users\LVNL_ILAB3\PycharmProjects\bluesky\output\LOG1__20220922_11-57-30.log"
+file_3 = r"C:\Users\LVNL_ILAB3\PycharmProjects\bluesky\output\LOG1__20220922_13-58-29.log"
 
 def LOG_READER(file):
     data = pd.read_csv(file, sep=",", header = 1)
@@ -25,26 +26,49 @@ def LOG_READER(file):
     NumAC = len(set(data.iloc[:,1].values))
     AllAC = list(set(data.iloc[:,1].values))
 
+    data_dict = {}
+    for column_i in range(len(list(data.columns))):
+        data_dict[list(data.columns)[column_i]] = data.iloc[:,column_i].values
+
+    data_dict_ac = {}
+
     if NumAC > 1:
         print("I assume that the data has ", len(AllAC), "aircraft.")
-        data_dict = {}
-        for AC_i in range(len(AllAC)):
-            data_dict[AllAC[AC_i]] = {}
-            for column_i in range(len(list(data.columns))):
-                data_dict[AllAC[AC_i]][list(data.columns)[column_i]] = data.iloc[AC_i::NumAC, column_i].values
-                if list(data.columns)[column_i] == "vs":
-                    data_dict[AllAC[AC_i]]["fpm"] = data.iloc[AC_i::NumAC, column_i].values / fpm
+        for line in range(len(data_dict[list(data.columns)[0]])):
+            AC = data_dict["id"][line]
+            if AC not in data_dict_ac:
+                data_dict_ac[AC] = {}
+                for column in list(data.columns):
+                    data_dict_ac[AC][column] = []
+            for column in list(data.columns):
+                data_dict_ac[AC][column].append(data_dict[column][line])
+                if column == "vs":
+                    if "fpm" not in data_dict_ac[AC]:
+                        data_dict_ac[AC]["fpm"] = []
+                    data_dict_ac[AC]["fpm"].append(data_dict[column][line]/fpm)
+                if column == "alt":
+                    if "FL" not in data_dict_ac[AC]:
+                        data_dict_ac[AC]["FL"] = []
+                    data_dict_ac[AC]["FL"].append(data_dict[column][line]/0.3048/100)
     elif NumAC < 1:
         raise Exception("I've found no aircraft in your log.")
     else:
         print("I assume that the data has 1 aircraft.")
-        data_dict = {}
-        for column_i in range(len(list(data.columns))):
-            data_dict[list(data.columns)[column_i]] = data.iloc[:,column_i].values
-            if list(data.columns)[column_i] == "vs":
-                data_dict["fpm"] = data.iloc[:, column_i].values/fpm
+        for column in list(data.columns):
+            data_dict_ac[column] = []
+        for line in range(len(data_dict[list(data.columns)[0]])):
+            for column in list(data.columns):
+                data_dict_ac[column].append(data_dict[column][line])
+                if column == "vs":
+                    if "fpm" not in data_dict_ac:
+                        data_dict_ac["fpm"] = []
+                    data_dict_ac["fpm"].append(data_dict[column][line]/fpm)
+                if column == "alt":
+                    if "FL" not in data_dict_ac:
+                        data_dict_ac["FL"] = []
+                    data_dict_ac["FL"].append(data_dict[column][line]/0.3048/100)
 
-    return data_dict
+    return data_dict_ac
 
 print(LOG_READER(file_2))
 
