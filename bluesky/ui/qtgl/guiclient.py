@@ -416,7 +416,12 @@ class GuiClient(Client):
             if data['flag'] == 'ATCMODE':
                 data_changed.append('ATCMODE')
 
-            if data['flag'] == 'MAP':
+            elif data['flag'] == 'GUITRAFDATA':
+                data_changed.append('GUITRAFDATA')
+                sender_data.guitrafdata['cmd'] = data['args']['cmd']
+                sender_data.guitrafdata['data'] = data['args']['data']
+
+            elif data['flag'] == 'MAP':
                 # Check if file exists
                 if not findfile(data['args']+'.scn', 'scenario/LVNL/Maps'):
                     self.echo('MAPTOGGLE MAP: File not found')
@@ -508,6 +513,9 @@ class nodeData:
         self.naircraft = 0
         self.acdata = ACDataEvent()
         self.routedata = RouteDataEvent()
+
+        # GUI traffic data event
+        self.guitrafdata = {'cmd': None, 'data': None}
 
         # Per-scenario data
         self.clear_scen_data()

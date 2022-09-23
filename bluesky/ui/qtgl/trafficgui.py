@@ -14,6 +14,7 @@ class TrafficData:
     Definition: Store and process GUI traffic data
     Methods:
         actdata_changed():      Process incoming traffic data
+        set_trafficdata():      Process incoming events
         update_trafficdata():   Update the GUI traffic variables
 
     Created by: Bob van Dillen
@@ -26,15 +27,19 @@ class TrafficData:
         # Variables
         self.labelpos       = np.array([])
         self.leaderlinepos  = np.array([])
+        self.mlabel         = np.array([])
         self.rel            = np.array([])
-        self.showlabel      = np.array([])
+        self.ssrlabel       = np.array([])
+        self.tracklabel     = np.array([])
         self.uco            = np.array([])
 
         # Defaults
         self.labelpos_default       = np.array([50., 0.])
         self.leaderlinepos_default  = np.array([0., 0., 50., 0.])
+        self.mlabel_default         = False
         self.rel_default            = False
-        self.showlabel_default      = True
+        self.ssrlabel_default       = False
+        self.tracklabel_default     = True
         self.uco_default            = False
 
         bs.net.actnodedata_changed.connect(self.actdata_changed)
@@ -54,12 +59,29 @@ class TrafficData:
 
         if 'ACDATA' in changed_elems:
             self.update_trafficdata(nodedata.acdata)
+        if 'GUITRAFDATA' in changed_elems:
+            self.set_trafficdata(nodedata)
+
+    def set_trafficdata(self, data):
+        """
+        Function Process incoming events
+        Args:
+            data:   New data [class]
+        Returns: -
+
+        Created by: Bob van Dillen
+        Date: 23-9-2022
+        """
+
+        if data.guitrafdata['cmd'] == 'TRACKLABEL':
+            idx = data.acdata.id.index(data.guitrafdata['data'])
+            self.tracklabel[idx] = not self.tracklabel[idx]
 
     def update_trafficdata(self, data):
         """
         Function: Update the GUI traffic variables
         Args:
-            data: New data
+            data: New data [class]
         Returns: -
 
         Created by: Bob van Dillen

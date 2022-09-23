@@ -244,6 +244,22 @@ class ScreenIO:
         else:
             return False, 'SETATCMODE: ATC Mode not recognized'
 
+    def showlabel(self, acid):
+        """
+        Function: Show the track label
+        Args:
+            acid: Callsign [string]
+        Returns: -
+
+        Created by: Bob van Dillen
+        Date: 23-9-2022
+        """
+
+        if acid not in bs.traf.id:
+            return False, 'TRACKLABEL: Aircraft does not exist'
+        else:
+            bs.net.send_event(b'DISPLAYFLAG', dict(flag='GUITRAFDATA', args={'cmd': "TRACKLABEL", 'data': acid}))
+
     def showroute(self, acid):
         ''' Toggle show route for this aircraft '''
         self.route_acid[stack.sender()] = acid
