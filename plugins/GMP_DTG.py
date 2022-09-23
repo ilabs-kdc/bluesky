@@ -5,6 +5,7 @@ import bluesky as bs
 from bluesky import core, stack
 from bluesky.ui.qtgl import console
 from bluesky.ui.qtgl.gltraffic import Traffic, leading_zeros
+from bluesky.tools import geo
 
 
 ### Initialization function of the plugin
@@ -67,7 +68,7 @@ class GMP(core.Entity):
             self.gmplbl = Traffic()
 
             # Initialize plugin label
-            self.gmplbl.plugin_init(blocksize=(3, 2), position=(2, 8))
+            self.gmplbl.plugin_init(blocksize=(3, 1), position=(2, 8))
 
             # Update label with current data
             rawlabel = ''
@@ -107,6 +108,6 @@ class GMP(core.Entity):
                     if tracklbl and dtg_route != 0. and acid == console.Console._instance.id_select:
                         rawlabel += '%-3s' % leading_zeros(dtg_route)[:3]
                     else:
-                        rawlabel += 3*2*' '
+                        rawlabel += 3*' '
                 self.gmplbl.pluginlbl.update(np.array(rawlabel.encode('utf8'), dtype=np.string_))
 

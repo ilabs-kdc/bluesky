@@ -440,9 +440,9 @@ class VEMMISRead:
         """
 
         # ---------- Select the right initial commands method ----------
-        cmds, cmdst = self.initial(swdatafeed)
+        # cmds, cmdst = self.initial(swdatafeed)
         # cmds, cmdst = self.initial_tbar()
-        # cmds, cmdst = self.initial_scenario('both')
+        cmds, cmdst = self.initial_scenario('both')
         # cmds, cmdst = self.initial_route()
 
         # ---------- Sort and process ----------
@@ -458,7 +458,7 @@ class VEMMISRead:
         self.routedata = self.routedata.loc[self.routedata['LOCATION_TYPE'] == 'RP']
         self.routedata = self.routedata.loc[self.routedata['TIME_TYPE'] == 'ACTUAL']
         self.flightdata = pd.merge(self.flightdata, self.routedata[['LOCATION_NAME', 'FLIGHT_ID']], on='FLIGHT_ID')
-        self.flightdata.drop_duplicates(subset='FLIGHT_ID', keep='first', inplace=True)
+        # self.flightdata.drop_duplicates(subset='FLIGHT_ID', keep='first', inplace=True)
         # print(self.flightdata.keys())
 
         cmds = ["DATE " + self.datetime0.strftime('%d %m %Y %H:%M:%S')]
@@ -559,6 +559,8 @@ class VEMMISRead:
         # Create
         cmds  += list("CRE "+acid+", "+actype+", " + aclat+", "+aclon+", "+achdg+", "+acalt+", "+acspd)
         cmdst += list(self.flightdata['SIM_START'])
+
+        # print(self.flightdata.head())
 
         # Origin
         cmds  += list("ORIG "+acid+", "+acorig)

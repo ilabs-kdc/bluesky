@@ -93,7 +93,7 @@ class Traffic(glh.RenderObject, layer=100):
         self.protectedzone  = glh.Circle()
         self.ac_symbol      = glh.VertexArrayObject(glh.gl.GL_TRIANGLE_FAN)
 
-        self.acs_lvnlacc     = glh.VertexArrayObject(glh.gl.GL_LINE_LOOP)
+        self.acs_lvnlacc     = glh.VertexArrayObject(glh.gl.GL_LINE_LOOP)   # aircraft symbols lvnl
         self.acs_lvnluacc    = glh.VertexArrayObject(glh.gl.GL_LINE_LOOP)
         self.acs_lvnluapp    = glh.VertexArrayObject(glh.gl.GL_LINE_LOOP)
         self.acs_lvnlutwr    = glh.VertexArrayObject(glh.gl.GL_LINE_LOOP)
@@ -240,6 +240,34 @@ class Traffic(glh.RenderObject, layer=100):
         self.acs_lvnluapp.set_attribs(lat=self.latuapp, lon=self.lonuapp, color=self.coloruapp,
                                      instance_divisor=1)
 
+        acv_lvnlutwr = np.array([(0 * ac_size, 0.5 * ac_size),
+                                   (0.125 * ac_size, 0.484 * ac_size),
+                                   (0.25 * ac_size, 0.433 * ac_size),
+                                   (0.375 * ac_size, 0.33 * ac_size),
+                                   (0.5 * ac_size, 0 * ac_size),
+                                   (0.375 * ac_size, -0.330 * ac_size),
+                                   (0.25 * ac_size, -0.433 * ac_size),
+                                   (0.125 * ac_size, -0.484 * ac_size),
+                                   (0 * ac_size, -0.5 * ac_size),
+                                   (-0.125 * ac_size, -0.484 * ac_size),
+                                   (-0.25 * ac_size, -0.443 * ac_size),
+                                   (-0.375 * ac_size, -0.330 * ac_size),
+                                   (-0.5 * ac_size, 0 * ac_size),
+                                   (-0.375 * ac_size, 0.330 * ac_size),
+                                   (-0.25 * ac_size, 0.433 * ac_size),
+                                   (-0.125 * ac_size, 0.484 * ac_size),
+                                   (0 * ac_size, 0.5 * ac_size),
+                                   (0 * ac_size, -0.5 * ac_size),
+                                   (0 * ac_size, 0 * ac_size),
+                                   (0.5 * ac_size, 0 * ac_size),
+                                   (-0.5 * ac_size, 0 * ac_size),
+                                   (0 * ac_size, 0 * ac_size)],
+                                  dtype=np.float32)  # a circle with plus tower
+
+        self.acs_lvnlutwr.create(vertex=acv_lvnlutwr)
+        self.acs_lvnlutwr.set_attribs(lat=self.latutwr, lon=self.lonutwr, color=self.colorutwr,
+                                      instance_divisor=1)
+
         # --------------- History symbols ---------------
 
         histsymbol_size = 2
@@ -257,9 +285,7 @@ class Traffic(glh.RenderObject, layer=100):
         self.aclabels_lvnl.create(self.lbl_lvnl, self.lat, self.lon, self.color,
                                   self.lbloffset, instanced=True)
         self.ssrlabels.create(self.ssrlbl, self.lat, self.lon, self.color,
-                              (ac_size, -1.1*ac_size), instanced=True)
-        # self.microlabels.create(self.mlbl, self.lat, self.lon, self.color,
-        #                         (-3*0.8*text_size-ac_size, 0.5*ac_size), instanced=True)  # 2*0.8*text_size-ac_size (RIGHT SIDE)
+                              (ac_size, -1.1*ac_size), instanced=True)  #(+1,-)
         self.microlabels.create(self.mlbl, self.lat, self.lon, self.color,
                                 self.mlbloffset, instanced=True)
 
@@ -326,11 +352,13 @@ class Traffic(glh.RenderObject, layer=100):
         if actdata.atcmode == 'BLUESKY':
             self.ac_symbol.draw(n_instances=actdata.naircraft)
         else:
-            if actdata.atcmode == 'APP':
-                if actdata.naircraft - len(draw_uco(actdata.acdata.uco)) != 0:
-                    self.acs_lvnluacc.draw(n_instances=actdata.naircraft - len(draw_uco(actdata.acdata.uco)))
+            if actdata.atcmode == 'APP':   #additional minus statement for twr??
+                if actdata.naircraft - len(draw_uco(actdata.acdata.uco)) - len(draw_rel(actdata.acdata.rel)) != 0:
+                    self.acs_lvnluacc.draw(n_instances=actdata.naircraft - len(draw_uco(actdata.acdata.uco)) - len(draw_rel(actdata.acdata.rel)))
                 if len(draw_uco(actdata.acdata.uco)) != 0:
                     self.acs_lvnluapp.draw(n_instances=len(draw_uco(actdata.acdata.uco)))
+                if len(draw_rel(actdata.acdata.rel)) != 0:
+                    self.acs_lvnlutwr.draw(n_instances=len(draw_rel(actdata.acdata.rel)))
             elif actdata.atcmode == 'ACC':
                 self.acs_lvnlacc.draw(n_instances=actdata.naircraft)
             if self.tbar_ac is not None and self.show_tbar_ac:
@@ -481,23 +509,40 @@ class Traffic(glh.RenderObject, layer=100):
         if naircraft == 0:
             self.cpalines.set_vertex_count(0)
         else:
-            for i in range(naircraft):
-                if actdata.acdata.alt[i] < actdata.translvl:
-                    # print (actdata.acdata.rel[i])
-                    actdata.acdata.rel[i] = True
+            # for i in range(naircraft):
+            #     if actdata.acdata.alt[i] < actdata.translvl:
+            #         # print (actdata.acdata.rel[i])
+            #         # actdata.acdata.rel[i] = True
                     # actdata.acdata.uco[i] = IP[-11:]
                     # stack ('REL ', actdata.acdata.id[i])
                     # cmd = 'REL' + ' ' + actdata.acdata.id[i]
                     # stack.stack(cmd)
-                # print(actdata.acdata.rel[i])
+            # print(actdata.acdata.rel)
 
+            # itest = misc.get_indices(actdata.acdata.uco, )
+            iuacc = misc.get_indices(actdata.acdata.uco, '0')
             iuco = misc.get_indices(actdata.acdata.uco, IP[-11:])  #ip address
+            irel = misc.get_indices(actdata.acdata.rel, True)
+            # itotal = iuco+irel
+
             self.lat.update(np.array(data.lat, dtype=np.float32))
             self.lon.update(np.array(data.lon, dtype=np.float32))
-            self.latuacc.update(np.array(remove_data(data.lat, iuco), dtype=np.float32))
-            self.lonuacc.update(np.array(remove_data(data.lon, iuco), dtype=np.float32))
-            self.latuapp.update(np.array(data.lat[iuco], dtype=np.float32))
-            self.lonuapp.update(np.array(data.lon[iuco], dtype=np.float32))
+            latacc = data.lat[iuacc]
+            # latacc = remove_data(latacc, irel)
+            latapp = data.lat[iuco]
+            lattwr = data.lat[irel]
+
+            lonacc = data.lon[iuacc]
+            # lonacc = remove_data(lonacc, irel)
+            lonapp = data.lon[iuco]
+            lontwr = data.lon[irel]
+
+            self.latuacc.update(np.array(latacc, dtype=np.float32))
+            self.lonuacc.update(np.array(lonacc, dtype=np.float32))
+            self.latuapp.update(np.array(latapp, dtype=np.float32))
+            self.lonuapp.update(np.array(lonapp, dtype=np.float32))
+            self.latutwr.update(np.array(lattwr, dtype=np.float32))
+            self.lonutwr.update(np.array(lontwr, dtype=np.float32))
 
             self.hdg.update(np.array(data.trk, dtype=np.float32))
             self.alt.update(np.array(data.alt, dtype=np.float32))
@@ -505,6 +550,13 @@ class Traffic(glh.RenderObject, layer=100):
             self.rpz.update(np.array(data.rpz, dtype=np.float32))
             self.histsymblat.update(np.array(data.histsymblat, dtype=np.float32))
             self.histsymblon.update(np.array(data.histsymblon, dtype=np.float32))
+
+            # print ("Indices UCO:", iuco)
+            # print ('Indices REL:', irel)
+            # print('Latitude acc:', latacc)
+            # print('Latitude app:', latapp)
+            # print('Latitude twr:', lattwr)
+
 
             if hasattr(data, 'asasn') and hasattr(data, 'asase'):
                 self.asasn.update(np.array(data.asasn, dtype=np.float32))
@@ -626,9 +678,15 @@ class Traffic(glh.RenderObject, layer=100):
 
             self.cpalines.update(vertex=cpalines)
 
+            coloracc = color[iuacc]
+            colorapp = color[iuco]
+            colortwr = color[irel]
+
             self.color.update(color)
-            self.coloruapp.update(np.array(color[iuco], dtype=np.uint8))
-            self.coloruacc.update(np.array(remove_data(color, iuco), dtype=np.uint8))
+
+            self.coloruacc.update(np.array(coloracc, dtype=np.uint8))
+            self.coloruapp.update(np.array(colorapp, dtype=np.uint8))
+            self.colorutwr.update(np.array(colortwr, dtype=np.uint8))
 
 
             # BlueSky default label (ATC mode BLUESKY)
@@ -1181,6 +1239,11 @@ def draw_uco(uco): # for instances
     IP = socket.gethostbyname(socket.gethostname())
     uco = [i for i in uco if i == IP]
     return uco
+
+def draw_rel(rel):
+
+    rel = [i for i in rel if i == True]
+    return rel
 
 def remove_data(data,idx): # for attributes
     """

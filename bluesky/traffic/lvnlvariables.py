@@ -233,7 +233,7 @@ class LVNLVariables(Entity):
         bs.traf.trafdatafeed.uco(idx)
         self.uco[idx] = IP[-11:]
         self.rel[idx] = False
-        print('UCO list', self.uco)
+        # print('UCO list', self.uco)
         # print('')
 
     @stack.command(name='REL',)
@@ -259,7 +259,7 @@ class LVNLVariables(Entity):
         # Set UCO/REL
         self.uco[idx] = False
         self.rel[idx] = True
-        print('REL list', self.rel)
+        # print('REL list', self.rel)
 
     @stack.command(name='ARR', brief='ARR CALLSIGN ARRIVAL/STACK (ADDWPTS [ON/OFF])', aliases=('STACK',))
     def setarr(self, idx: 'acid', arr: str = '', addwpts: 'onoff' = True):
