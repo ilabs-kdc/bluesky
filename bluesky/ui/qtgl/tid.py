@@ -33,7 +33,12 @@ def start_tid(name, layout):
 
     # Load layout
     tid_load = 'bs.ui.qtgl.TIDS.' + layout
-    dlgbuttons = eval(tid_load)
+    try:
+        dlgbuttons = eval(tid_load)
+    except AttributeError:
+        bs.scr.echo("TID: Layout '"+layout+"' not found")
+        print("TID: Layout '"+layout+"' not found")
+        return
 
     # Loop over the buttons
     for i in range(len(dlgbuttons)):
@@ -79,7 +84,12 @@ def change_tid(name, layout):
 
     # Load layout
     layout_load = 'bs.ui.qtgl.TIDS.' + layout
-    dlgbuttons = eval(layout_load)
+    try:
+        dlgbuttons = eval(layout_load)
+    except AttributeError:
+        bs.scr.echo("TID: Layout '"+layout+"' not found")
+        print("TID: Layout '"+layout+"' not found")
+        return
 
     for i in range(len(dlgbuttons)):
         loop_button = 'pushButton_'+str(dlgbuttons[i][0])
