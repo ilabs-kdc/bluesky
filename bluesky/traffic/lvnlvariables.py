@@ -257,7 +257,7 @@ class LVNLVariables(Entity):
         self.ssrlbl[idx] = 'C'
 
         # Set UCO/REL
-        self.uco[idx] = False
+        self.uco[idx] = 'TOWER IN'
         self.rel[idx] = True
         # print('REL list', self.rel)
 
@@ -361,6 +361,8 @@ class LVNLVariables(Entity):
 
         if isinstance(flighttype, str):
             self.flighttype[idx] = flighttype.upper()
+            if self.flighttype[idx] == 'OUTBOUND':
+                self.uco[idx] = 'TOWER OUT'
 
     @stack.command(name='ILS', brief='ILS CALLSIGN RWY', aliases=('STACK',))
     def setils(self, idx: 'acid', rwy: str):
