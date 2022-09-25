@@ -418,8 +418,7 @@ class GuiClient(Client):
                 # Get IP-address
                 IPaddr = socket.gethostbyname(socket.gethostname())
                 # Connect the IP-address to the ATC mode
-                console.Console._instance.stack("ATCIP "+data['args']+" "+IPaddr)
-
+                bs.stack.stack("ATCIP "+data['args']+" "+IPaddr)
 
             elif data['flag'] == 'GUITRAFDATA':
                 data_changed.append('GUITRAFDATA')
