@@ -16,8 +16,7 @@ from bluesky.tools.misc import tim2txt
 from bluesky.network import get_ownip
 from bluesky.ui import palette
 from bluesky.ui.qtgl import console
-import bluesky.ui.qtgl.main_tid
-from bluesky.ui.qtgl.TIDS.tid import start_tid
+from bluesky.ui.qtgl.tid import start_tid
 from bluesky.stack import stack
 
 # Child windows

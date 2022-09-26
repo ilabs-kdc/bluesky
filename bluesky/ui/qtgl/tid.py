@@ -33,7 +33,7 @@ def start_tid(name, layout):
     uic.loadUi(os.path.join(bs.settings.gfx_path, 'TID_Base.ui'), globals()[str(name)])
 
     # Load layout
-    tid_load = 'bs.ui.qtgl.main_tid.' + layout
+    tid_load = 'bs.ui.qtgl.TIDS.' + layout
     dlgbuttons = eval(tid_load)
 
     # Loop over the buttons
@@ -92,7 +92,7 @@ def change_tid(name, layout):
     """
 
     # Load layout
-    layout_load = 'bs.ui.qtgl.main_tid.' + layout
+    layout_load = 'bs.ui.qtgl.TIDS.' + layout
     dlgbuttons = eval(layout_load)
 
     for i in range(len(dlgbuttons)):

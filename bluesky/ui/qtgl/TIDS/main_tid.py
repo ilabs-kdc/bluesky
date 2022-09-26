@@ -1,5 +1,3 @@
-from bluesky.ui.qtgl.TIDS import *
-
 """
 Start window
 """
