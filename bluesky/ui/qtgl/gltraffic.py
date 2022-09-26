@@ -621,6 +621,8 @@ class Traffic(glh.RenderObject, layer=100):
                         rawmlabel     += mlabel
                         rawssrlabel   += ssrlabel
 
+                    self.trafdata.mlabelpos[i] = initial_micropos(data, i)
+
                 # Colours
                 if inconf:
                     if actdata.ssd_conflicts:
@@ -677,11 +679,8 @@ class Traffic(glh.RenderObject, layer=100):
                 self.lbloffset.update(np.array(self.trafdata.labelpos, dtype=np.float32))
 
                 #Label position
-                self.labelpos = labelpos
-                self.id_prev = data.id
-                self.lbloffset.update(np.array(self.labelpos, dtype=np.float32))
-                self.mlabelpos = mlabelpos
-                self.mlbloffset.update(np.array(self.mlabelpos, dtype=np.float32))
+                self.lbloffset.update(np.array(self.trafdata.labelpos, dtype=np.float32))
+                self.mlbloffset.update(np.array(self.trafdata.mlabelpos, dtype=np.float32))
 
                 if self.pluginlbloffset is not None:
                     self.pluginlbloffset.update(np.array(self.trafdata.labelpos+self.pluginlabelpos,

@@ -7,7 +7,10 @@ Date: 23-99-2022
 
 import numpy as np
 import bluesky as bs
+from bluesky import settings
 
+ac_size = settings.ac_size
+text_size = settings.text_size
 
 class TrafficData:
     """
@@ -28,6 +31,7 @@ class TrafficData:
         self.labelpos       = np.array([])
         self.leaderlinepos  = np.array([])
         self.mlabel         = np.array([])
+        self.mlabelpos      = np.array([])
         self.rel            = np.array([])
         self.ssrlabel       = np.array([])
         self.tracklabel     = np.array([])
@@ -37,6 +41,7 @@ class TrafficData:
         self.labelpos_default       = np.array([50., 0.])
         self.leaderlinepos_default  = np.array([0., 0., 50., 0.])
         self.mlabel_default         = False
+        self.mlabelpos_default      = np.array([-8 * 0.8 * text_size - ac_size, 0.5 * ac_size])
         self.rel_default            = False
         self.ssrlabel_default       = False
         self.tracklabel_default     = True
