@@ -2,7 +2,7 @@
 Python file to store and process GUI traffic variables
 
 Created by: Bob van Dillen
-Date: 23-09-2022
+Date: 23-99-2022
 """
 
 import numpy as np
