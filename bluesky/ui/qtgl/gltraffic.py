@@ -3,7 +3,12 @@ import socket
 
 import numpy as np
 import itertools
+from bluesky.ui.qtgl import glhelpers as glh
+from bluesky.ui.qtgl import console
+from bluesky.ui.qtgl.trafficgui import TrafficData
+
 import bluesky as bs
+from bluesky.tools import geo, misc
 from bluesky import settings
 from bluesky.tools import geo, misc
 from bluesky.tools.aero import ft, nm, kts
@@ -45,10 +50,6 @@ class Traffic(glh.RenderObject, layer=100):
         self.asas_vmax      = settings.asas_vmax
 
         # --------------- Label position ---------------
-
-        self.id_prev        = []
-        self.labelpos       = np.array([], dtype=np.float32)
-        self.leaderlinepos  = np.array([], dtype=np.float32)
         bs.Signal('labelpos').connect(self.update_labelpos)
 
         # --------------- Aircraft data ---------------
@@ -136,6 +137,9 @@ class Traffic(glh.RenderObject, layer=100):
         self.tbar_ac = None
         self.tbar_lat = None
         self.tbar_lon = None
+
+        # --------------- Aircraft Variables ---------------
+        self.trafdata = TrafficData()
 
         bs.net.actnodedata_changed.connect(self.actdata_changed)
 
@@ -585,17 +589,6 @@ class Traffic(glh.RenderObject, layer=100):
             rawmlabel   = ''
             rawssrlabel = ''
 
-            # Label position
-            if data.id != self.id_prev:
-                idchange = True
-                idcreate = np.setdiff1d(data.id, self.id_prev).tolist()
-            else:
-                idchange = False
-                idcreate = []
-            labelpos      = np.empty((min(naircraft, MAX_NAIRCRAFT), 2), dtype=np.float32)
-            leaderlinepos = np.empty((min(naircraft, MAX_NAIRCRAFT), 4), dtype=np.float32)
-            mlabelpos     = np.empty((min(naircraft, MAX_NAIRCRAFT), 2), dtype=np.float32)
-
             # Colors
             color       = np.empty((min(naircraft, MAX_NAIRCRAFT), 4), dtype=np.uint8)
 
@@ -627,32 +620,6 @@ class Traffic(glh.RenderObject, layer=100):
                         rawlabel_lvnl += label
                         rawmlabel     += mlabel
                         rawssrlabel   += ssrlabel
-
-                    # Label position
-                    if idchange:
-                        if acid in idcreate:
-                            labelpos[i] = initial_labelpos(data, i)
-                            offsetx, offsety = labelpos[i]
-                            leaderlinepos[i] = leaderline_vertices(actdata, offsetx, offsety)
-                        else:
-                            i_prev = self.id_prev.index(acid)
-                            labelpos[i] = self.labelpos[i_prev]
-
-                            if data.tracklbl[i]:
-                                leaderlinepos[i] = leaderline_vertices(actdata, labelpos[i][0], labelpos[i][1])
-                            else:
-                                leaderlinepos[i] = [0, 0, 0, 0]
-                    else:
-                        labelpos[i] = self.labelpos[i]
-
-                        if data.tracklbl[i]:
-                            leaderlinepos[i] = leaderline_vertices(actdata, labelpos[i][0], labelpos[i][1])
-
-                        else:
-                            leaderlinepos[i] = [0, 0, 0, 0]
-
-                    # Microlabel position
-                    mlabelpos[i] = initial_micropos(data, i)
 
                 # Colours
                 if inconf:
@@ -706,6 +673,8 @@ class Traffic(glh.RenderObject, layer=100):
                 self.ssrlbl.update(np.array(rawssrlabel.encode('utf8'), dtype=np.string_))
                 # Update micro label
                 self.mlbl.update(np.array(rawmlabel.encode('utf8'), dtype=np.string_))
+                # Label position
+                self.lbloffset.update(np.array(self.trafdata.labelpos, dtype=np.float32))
 
                 #Label position
                 self.labelpos = labelpos
@@ -715,11 +684,11 @@ class Traffic(glh.RenderObject, layer=100):
                 self.mlbloffset.update(np.array(self.mlabelpos, dtype=np.float32))
 
                 if self.pluginlbloffset is not None:
-                    self.pluginlbloffset.update(np.array(self.labelpos+self.pluginlabelpos, dtype=np.float32))
-
+                    self.pluginlbloffset.update(np.array(self.trafdata.labelpos+self.pluginlabelpos,
+                                                         dtype=np.float32))
                 # Leader line update
-                self.leaderlinepos = leaderlinepos
-                self.leaderlines.update(vertex=self.leaderlinepos, lat=data.lat, lon=data.lon, color=color)
+                self.leaderlines.update(vertex=np.array(self.trafdata.leaderlinepos, dtype=np.float32),
+                                        lat=data.lat, lon=data.lon, color=color)
             
             # If there is a visible route, update the start position
             if self.route_acid in data.id:
@@ -760,18 +729,20 @@ class Traffic(glh.RenderObject, layer=100):
             dy = y - self.glsurface.prevmousepos[1]
 
             # Add cursor position change to label position
-            self.labelpos[idx][0] += dx
-            self.labelpos[idx][1] -= dy
-
-            # Update label offset
-            self.lbloffset.update(np.array(self.labelpos, dtype=np.float32))
-            if self.pluginlbloffset is not None:
-                self.pluginlbloffset.update(np.array(self.labelpos+self.pluginlabelpos, dtype=np.float32))
+            self.trafdata.labelpos[idx][0] += dx
+            self.trafdata.labelpos[idx][1] -= dy
 
             # Leader lines
-            self.leaderlinepos[idx] = leaderline_vertices(actdata, self.labelpos[idx][0], self.labelpos[idx][1])
+            self.trafdata.leaderlinepos[idx] = leaderline_vertices(actdata, self.trafdata.labelpos[idx][0],
+                                                                      self.trafdata.labelpos[idx][1])
 
-            self.leaderlines.update(vertex=self.leaderlinepos)
+            # Update label offset
+            self.lbloffset.update(np.array(self.trafdata.labelpos, dtype=np.float32))
+
+            if self.pluginlbloffset is not None:
+                self.pluginlbloffset.update(np.array(self.trafdata.labelpos+self.pluginlabelpos, dtype=np.float32))
+
+            self.leaderlines.update(vertex=np.array(self.trafdata.leaderlinepos, dtype=np.float32))
 
     def plugin_init(self, blocksize=None, position=None):
         """
@@ -807,8 +778,8 @@ class Traffic(glh.RenderObject, layer=100):
         self.pluginlabel.create(self.pluginlbl, self.lat, self.lon, self.color, self.pluginlbloffset, instanced=True)
 
         # Update position
-        if len(self.labelpos) != 0:
-            self.pluginlbloffset.update(np.array(self.labelpos+self.pluginlabelpos, dtype=np.float32))
+        if len(self.trafdata.labelpos) != 0:
+            self.pluginlbloffset.update(np.array(self.trafdata.labelpos+self.pluginlabelpos, dtype=np.float32))
 
         # Draw
         self.show_pluginlabel = True

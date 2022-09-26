@@ -415,8 +415,17 @@ class GuiClient(Client):
 
             if data['flag'] == 'ATCMODE':
                 data_changed.append('ATCMODE')
+                # Get IP-address
+                IPaddr = socket.gethostbyname(socket.gethostname())
+                # Connect the IP-address to the ATC mode
+                bs.stack.stack("ATCIP "+data['args']+" "+IPaddr)
 
-            if data['flag'] == 'MAP':
+            elif data['flag'] == 'GUITRAFDATA':
+                data_changed.append('GUITRAFDATA')
+                sender_data.guitrafdata['cmd'] = data['args']['cmd']
+                sender_data.guitrafdata['data'] = data['args']['data']
+
+            elif data['flag'] == 'MAP':
                 # Check if file exists
                 if not findfile(data['args']+'.scn', 'scenario/LVNL/Maps'):
                     self.echo('MAPTOGGLE MAP: File not found')
@@ -509,6 +518,9 @@ class nodeData:
         self.acdata = ACDataEvent()
         self.routedata = RouteDataEvent()
 
+        # GUI traffic data event
+        self.guitrafdata = {'cmd': None, 'data': None}
+
         # Per-scenario data
         self.clear_scen_data()
 
@@ -573,7 +585,7 @@ class nodeData:
         self.ssd_all       = False
         self.ssd_conflicts = False
         self.ssd_ownship   = set()
-        self.atcmode       = settings.atc_mode
+        self.atcmode       = settings.atc_mode.upper()
         self.show_maplines   = True
         # Display flags based on ATC mode
         self.set_atcmode(settings.atc_mode.upper())

@@ -99,3 +99,7 @@ scenario/LVNL/Data/*
 # Map data
 scenario/LVNL/Maps/*
 !/scenario/LVNL/Maps/README.md
+
+# TID data
+bluesky/ui/qtgl/TIDS/*
+!/bluesky/ui/qtgl/TIDS/README.md
