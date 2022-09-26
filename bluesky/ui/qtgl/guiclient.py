@@ -585,7 +585,7 @@ class nodeData:
         self.ssd_all       = False
         self.ssd_conflicts = False
         self.ssd_ownship   = set()
-        self.atcmode       = settings.atc_mode
+        self.atcmode       = settings.atc_mode.upper()
         self.show_maplines   = True
         # Display flags based on ATC mode
         self.set_atcmode(settings.atc_mode.upper())

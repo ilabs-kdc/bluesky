@@ -368,6 +368,7 @@ class ScreenIO:
 
             # Always update data
             data['arr']         = np.array(bs.traf.lvnlvars.arr)
+            data['atcip']       = bs.traf.lvnlvars.atcIP
             data['mlbl']        = np.array(bs.traf.lvnlvars.mlbl)
             data['rel']         = bs.traf.lvnlvars.rel
             data['rwy']         = np.array(bs.traf.lvnlvars.rwy)
