@@ -351,6 +351,7 @@ class ScreenIO:
             data['vmax']        = bs.traf.perf.vmax
 
             # LVNL Variables
+            data['atcip']       = bs.traf.lvnlvars.atcIP
             data['flighttype']  = bs.traf.lvnlvars.flighttype
             data['wtc']         = bs.traf.lvnlvars.wtc
             data['dtg']         = bs.traf.lvnlvars.dtg
@@ -369,8 +370,8 @@ class ScreenIO:
 
             # Always update data
             data['arr']         = np.array(bs.traf.lvnlvars.arr)
-            data['atcip']       = bs.traf.lvnlvars.atcIP
             data['mlbl']        = np.array(bs.traf.lvnlvars.mlbl)
+            data['symbol']      = np.array(bs.traf.lvnlvars.symbol)
             data['rel']         = bs.traf.lvnlvars.rel
             data['rwy']         = np.array(bs.traf.lvnlvars.rwy)
             data['selhdg']      = bs.traf.selhdg
@@ -402,6 +403,8 @@ class ScreenIO:
         data['arr']             = data['arr'].tolist()
         data['mlbl'][idata]     = np.array(bs.traf.lvnlvars.mlbl)[itraf]
         data['mlbl']            = data['mlbl'].tolist()
+        data['symbol'][idata]   = np.array(bs.traf.lvnlvars.symbol)[itraf]
+        data['symbol']          = data['symbol'].tolist()
         data['rel'][idata]      = bs.traf.lvnlvars.rel[itraf]
         data['rwy'][idata]      = np.array(bs.traf.lvnlvars.rwy)[itraf]
         data['rwy']             = data['rwy'].tolist()

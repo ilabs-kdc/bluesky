@@ -2,7 +2,7 @@
 Python file to store and process GUI traffic variables
 
 Created by: Bob van Dillen
-Date: 23-99-2022
+Date: 23-09-2022
 """
 
 import numpy as np
@@ -63,7 +63,7 @@ class TrafficData:
         """
 
         if 'ACDATA' in changed_elems:
-            self.update_trafficdata(nodedata.acdata)
+            self.update_trafficdata(nodedata)
         if 'GUITRAFDATA' in changed_elems:
             self.set_trafficdata(nodedata)
 
@@ -82,16 +82,78 @@ class TrafficData:
             idx = data.acdata.id.index(data.guitrafdata['data'])
             self.tracklabel[idx] = not self.tracklabel[idx]
 
-    def update_trafficdata(self, data):
+    def initial_labelpos(self, data, i):
+        """
+        Function: Compute the offset for the initial label position
+        Args:
+            data:   aircraft data [dict]
+            i:      index for data [int]
+        Returns:
+            labelpos:   offsets x and y [list]
+
+        Created by: Ajay Kumbhar
+        Date:
+
+        Note: Enable data.arr conditions only for GMPEOR scenario
+        """
+
+        #   #   Enable data.rwy for normal cases
+        if data.rwy[i] in ['18R', '18R_E']:
+            labelpos = np.array([-125, 0])  # -125
+        else:
+            labelpos = np.array([50, 0])
+
+        #   #   Enable data.arr only for GMPEOR scenario
+        # if data.arr[i] in ['ATP18R', 'RIV18R', 'RIV18REOR', 'SUG18R', 'SUG18REOR']:
+        #     labelpos = [-150, 0]  # -125
+        # else:
+        #     labelpos = [80, 0]  # 50  #75 for R indication
+
+        return labelpos
+
+    def initial_micropos(self, data, i):
+        """
+        Function: Compute the offset for the initial microlabel position
+        Args:
+            data:   aircraft data [dict]
+            i:      index for data [int]
+        Returns:
+            labelpos:   offsets x and y [list]
+
+        Created by: Ajay Kumbhar
+        Date:
+
+        Note: Enable data.arr conditions only for GMPEOR scenario
+        """
+        ac_size = settings.ac_size
+        text_size = settings.text_size
+
+        #   #   Enable data.rwy for normal cases
+        if data.rwy[i] in ['18C', '18C_E']:
+            mlabelpos = [2 * 0.8 * text_size - ac_size, 0.5 * ac_size]
+        else:
+            mlabelpos = [-8 * 0.8 * text_size - ac_size, 0.5 * ac_size]  # -3
+
+        #   #   Enable data.arr only for GMPEOR scenario
+        # if data.arr[i] in ['ATP18C', 'ATP18CEOR', 'RIV18C', 'SUG18C']:
+        #     mlabelpos = [2 * 0.8 * text_size - ac_size, 0.5 * ac_size]  # 2   #0.5-y
+        # else:
+        #     mlabelpos = [-8 * 0.8 * text_size - ac_size, 0.5 * ac_size]  # -3
+
+        return mlabelpos
+
+    def update_trafficdata(self, actdata):
         """
         Function: Update the GUI traffic variables
         Args:
-            data: New data [class]
+            actdata:    New data [class]
         Returns: -
 
         Created by: Bob van Dillen
         Date: 23-9-2022
         """
+
+        data = actdata.acdata
 
         # Check if aircraft are created or deleted
         if data.id != self.id_prev:
@@ -129,7 +191,15 @@ class TrafficData:
                     # Check if aircraft is created
                     if acid in idcreate:
                         # Set to default value
-                        varnext[idx] = self.__dict__[varname+'_default']
+                        if varname == 'labelpos':
+                            varnext[idx] = self.initial_labelpos(data, idx)
+                        elif varname == 'leaderlinepos':
+                            offset = self.initial_labelpos(data, idx)
+                            varnext[idx] = leaderline_vertices(actdata, offset[0], offset[1], idx)
+                        elif varname == 'mlabelpos':
+                            varnext[idx] = self.initial_micropos(data, idx)
+                        else:
+                            varnext[idx] = self.__dict__[varname+'_default']
                     else:
                         # Get previous index
                         idx_prev = self.id_prev.index(acid)
@@ -141,3 +211,64 @@ class TrafficData:
 
             # Save callsigns
             self.id_prev = data.id
+
+
+"""
+Static Functioms
+"""
+
+
+def leaderline_vertices(actdata, offsetx, offsety, i):
+    """
+    Function: Compute the vertices for the leader line
+    Args:
+        actdata:    node data [class]
+        offsetx:    label offset x pixel coordinates [int]
+        offsety:    label offset y pixel coordinates [int]
+    Returns: -
+
+    Created by: Bob van Dillen
+    Date: 23-2-2022
+    """
+
+    # Sizes
+    ac_size = settings.ac_size
+    text_size = settings.text_size
+    text_width = text_size
+    text_height = text_size * 1.2307692307692308
+
+    # APP
+    if actdata.atcmode == 'APP':
+        block_size = (4*text_height, 7*text_width)
+    # ACC
+    elif actdata.atcmode == 'ACC':
+        block_size = (4*text_height, 8*text_width)
+    # TWR
+    else:
+        block_size = (3*text_height, 8*text_width)
+
+    # Compute the angle
+    angle = np.arctan2(offsety, offsetx)
+
+    if not actdata.acdata.tracklbl[i]:
+        vertices = [0, 0, 0, 0]
+    # Label is on top of aircaft symbol
+    elif -block_size[1] <= offsetx <= 0 and -text_height <= offsety <= 3*text_height:
+        vertices = [0, 0, 0, 0]
+    # Label is to the right of the aircraft symbol
+    elif offsetx >= 0:
+        vertices = [ac_size*np.cos(angle), ac_size*np.sin(angle), offsetx, offsety]
+    # Label is above the aircraft symbol
+    elif offsetx >= -block_size[1] and offsety >= 0:
+        vertices = [ac_size*np.cos(angle), ac_size*np.sin(angle), offsetx+0.5*block_size[1], offsety-3*text_height]
+    # Label is below the aircraft symbol
+    elif offsetx >= -block_size[1] and offsety <= 0:
+        vertices = [ac_size*np.cos(angle), ac_size*np.sin(angle), offsetx+0.5*block_size[1], offsety+text_height]
+    # Label is to the left of the aircraft sym
+    elif offsetx < 0:
+        vertices = [ac_size*np.cos(angle), ac_size*np.sin(angle), offsetx+block_size[1], offsety]
+    # For safety every other situation
+    else:
+        vertices = [0, 0, 0, 0]
+
+    return vertices

@@ -440,10 +440,10 @@ class VEMMISRead:
         """
 
         # ---------- Select the right initial commands method ----------
-        # cmds, cmdst = self.initial(swdatafeed)
+        cmds, cmdst = self.initial(swdatafeed)
         # cmds, cmdst = self.initial_tbar()
-        cmds, cmdst = self.initial_scenario('both')
-        # cmds, cmdst = self.initial_route()
+        # cmds, cmdst = self.initial_scenario('both')
+        cmds, cmdst = self.initial_route()
 
         # ---------- Sort and process ----------
         command_df = pd.DataFrame({'COMMAND': cmds, 'TIME': cmdst})
@@ -457,9 +457,9 @@ class VEMMISRead:
     def initial_route(self):
         self.routedata = self.routedata.loc[self.routedata['LOCATION_TYPE'] == 'RP']
         self.routedata = self.routedata.loc[self.routedata['TIME_TYPE'] == 'ACTUAL']
-        self.flightdata = pd.merge(self.flightdata, self.routedata[['LOCATION_NAME', 'FLIGHT_ID']], on='FLIGHT_ID')
-        # self.flightdata.drop_duplicates(subset='FLIGHT_ID', keep='first', inplace=True)
+        self.routedata = pd.merge(self.routedata, self.flightdata[['FLIGHT_ID', 'SIM_START']], on='FLIGHT_ID')
         # print(self.flightdata.keys())
+        # print(self.flightdata.head())
 
         cmds = ["DATE " + self.datetime0.strftime('%d %m %Y %H:%M:%S')]
         cmdst = [0.]
@@ -477,8 +477,6 @@ class VEMMISRead:
         acflighttype = self.flightdata['FLIGHT_TYPE']
         acwtc = self.flightdata['WTC']
         acssr = self.flightdata['SSR'].astype(str)
-
-        acwpt = self.flightdata['LOCATION_NAME']
 
         # Commands
         # Create
@@ -506,20 +504,20 @@ class VEMMISRead:
         cmdst += list(self.flightdata['SIM_START'] + 0.01)
 
         # ADD WAYPOINT
-        cmds += list("ADDWPT " + acid + ", " + acwpt)
-        cmdst += list(self.flightdata['SIM_START'] + 0.01)
+        cmds += list("ADDWPT " + self.routedata['CALLSIGN'] + ", " + self.routedata['LOCATION_NAME'])
+        cmdst += list(self.routedata['SIM_START'] + 0.01)
 
         # DATAFEED
-        cmds += list("SETDATAFEED " + acid + ", VEMMIS")
-        cmdst += list(self.flightdata['SIM_START'] + 0.01)
+        # cmds += list("SETDATAFEED " + acid + ", VEMMIS")
+        # cmdst += list(self.flightdata['SIM_START'] + 0.01)
 
         # DELETE ROUTE
-        cmds += list("DELRTE " + acid)
-        cmdst += list(self.flightdata['SIM_START'] + 0.02)
+        # cmds += list("DELRTE " + acid)
+        # cmdst += list(self.flightdata['SIM_START'] + 0.02)
 
         # Delete
-        cmds += list("DEL " + self.flightdata['CALLSIGN'])
-        cmdst += list(self.flightdata['SIM_END'])
+        # cmds += list("DEL " + self.flightdata['CALLSIGN'])
+        # cmdst += list(self.flightdata['SIM_END'])
 
         return cmds, cmdst
 

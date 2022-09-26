@@ -67,6 +67,7 @@ class LVNLVariables(Entity):
             self.ssrlbl     = []                           # Show SSR label
             self.tracklbl   = np.array([], dtype=np.bool)  # Show track label
             self.uco        = np.array([], dtype=np.str)   # Under Control
+            self.symbol     = np.array([], dtype=np.str)                         # UCO symbol to draw
             self.wtc        = []                           # Wake Turbulence Category
 
     def create(self, n=1):
@@ -85,6 +86,8 @@ class LVNLVariables(Entity):
         self.autolabel[-n:] = True
         self.tracklbl[-n:]  = True
         self.mlbl[-n:]      = True   #False
+        self.symbol[-n:]    = 'ACC'
+        self.uco[-n:]       = '0'
 
     @timed_function(name='lvnlvars', dt=0.1)
     def update(self):
@@ -195,7 +198,7 @@ class LVNLVariables(Entity):
                                            bs.traf.ap.route[idx].wplat[iactwp], bs.traf.ap.route[idx].wplon[iactwp])
                 dist_wp = np.sum(bs.traf.ap.route[idx].wpdistto[iactwp+1:])
                 self.dtg_route[idx] = dist_iactwp + dist_wp
-            print('Route ',bs.traf.id[idx], bs.traf.ap.route[idx])
+            # print('Route ',bs.traf.id[idx], bs.traf.ap.route[idx].wpname)
         return
 
     @stack.command(name='UCO')
@@ -238,6 +241,15 @@ class LVNLVariables(Entity):
         bs.traf.trafdatafeed.uco(idx)
         self.uco[idx] = IP[-11:]
         self.rel[idx] = False
+
+        # Set the symbol
+        if IP[-11:] in self.atcIP['TWR']:
+            self.symbol[idx] = 'TWR'
+        elif IP[-11:] in self.atcIP['APP']:
+            self.symbol[idx] = 'APP'
+        elif IP[-11:] in self.atcIP['ACC']:
+            self.symbol[idx] = 'ACC'
+
         # print('UCO list', self.uco)
         # print('')
 
@@ -262,7 +274,25 @@ class LVNLVariables(Entity):
         self.ssrlbl[idx] = 'C'
 
         # Set UCO/REL
-        self.uco[idx] = 'TOWER IN'
+        self.uco[idx] = '0'
+
+        # Set the symbol
+        if self.flighttype[idx] == 'INBOUND':
+            if self.symbol[idx] == 'ACC':
+                self.symbol[idx] = 'APP'
+            elif self.symbol[idx] == 'APP':
+                self.symbol[idx] = 'TWR IN'
+        elif self.flighttype[idx] == 'OUTBOUND':
+            if self.symbol[idx] == 'TWR OUT':
+                self.symbol[idx] = 'APP'
+            elif self.symbol[idx] == 'APP':
+                self.symbol[idx] = 'ACC'
+        else:
+            if bs.scr.atcmode == 'APP':
+                self.symbol[idx] = 'TWR IN'
+            else:
+                self.symbol[idx] == 'ACC'
+
         self.rel[idx] = True
         # print('REL list', self.rel)
 
@@ -388,7 +418,9 @@ class LVNLVariables(Entity):
         if isinstance(flighttype, str):
             self.flighttype[idx] = flighttype.upper()
             if self.flighttype[idx] == 'OUTBOUND':
-                self.uco[idx] = 'TOWER OUT'
+                self.symbol[idx] = 'TWR OUT'
+            elif self.flighttype[idx] == 'INBOUND':
+                self.symbol[idx] = 'ACC'
 
     @stack.command(name='ILS', brief='ILS CALLSIGN RWY', aliases=('STACK',))
     def setils(self, idx: 'acid', rwy: str):

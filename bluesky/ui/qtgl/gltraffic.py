@@ -5,7 +5,7 @@ import numpy as np
 import itertools
 from bluesky.ui.qtgl import glhelpers as glh
 from bluesky.ui.qtgl import console
-from bluesky.ui.qtgl.trafficgui import TrafficData
+from bluesky.ui.qtgl.trafficgui import TrafficData, leaderline_vertices
 
 import bluesky as bs
 from bluesky.tools import geo, misc
@@ -321,7 +321,7 @@ class Traffic(glh.RenderObject, layer=100):
         self.aclabels_lvnl.create(self.lbl_lvnl, self.lat, self.lon, self.color,
                                   self.lbloffset, instanced=True)
         self.ssrlabels.create(self.ssrlbl, self.lat, self.lon, self.color,
-                              (ac_size, -1.1*ac_size), instanced=True)  #(+1,-)
+                              (ac_size, -1.1*ac_size), instanced=True)
         self.microlabels.create(self.mlbl, self.lat, self.lon, self.color,
                                 self.mlbloffset, instanced=True)
 
@@ -389,15 +389,15 @@ class Traffic(glh.RenderObject, layer=100):
         if actdata.atcmode == 'BLUESKY':
             self.ac_symbol.draw(n_instances=actdata.naircraft)
         else:
-            if actdata.atcmode == 'APP':   #additional minus statement for twr??
-                if actdata.naircraft - draw_acc_sym(actdata.acdata.uco, '0'):
-                    self.acs_lvnluacc.draw(n_instances=actdata.naircraft - draw_acc_sym(actdata.acdata.uco, '0'))
-                if draw_rest_sym(actdata.acdata.uco, IP[-11:]) != 0:
-                    self.acs_lvnluapp.draw(n_instances=draw_rest_sym(actdata.acdata.uco, IP[-11:]))
-                if draw_rest_sym(actdata.acdata.uco, 'TOWER IN') != 0:
-                    self.acs_lvnlutwr_in.draw(n_instances=draw_rest_sym(actdata.acdata.uco, 'TOWER IN'))
-                if draw_rest_sym(actdata.acdata.uco, 'TOWER OUT') != 0:
-                    self.acs_lvnlutwr_out.draw(n_instances=draw_rest_sym(actdata.acdata.uco, 'TOWER OUT'))
+            if actdata.atcmode == 'APP': 
+                if draw_track_sym(actdata.acdata.symbol, 'ACC') != 0:
+                    self.acs_lvnluacc.draw(n_instances=draw_track_sym(actdata.acdata.symbol, 'ACC'))
+                if draw_track_sym(actdata.acdata.symbol, 'APP') != 0:
+                    self.acs_lvnluapp.draw(n_instances=draw_track_sym(actdata.acdata.symbol, 'APP'))
+                if draw_track_sym(actdata.acdata.symbol, 'TWR IN') != 0:
+                    self.acs_lvnlutwr_in.draw(n_instances=draw_track_sym(actdata.acdata.symbol, 'TWR IN'))
+                if draw_track_sym(actdata.acdata.symbol, 'TWR OUT') != 0:
+                    self.acs_lvnlutwr_out.draw(n_instances=draw_track_sym(actdata.acdata.symbol, 'TWR OUT'))
             elif actdata.atcmode == 'ACC':
                 self.acs_lvnlacc.draw(n_instances=actdata.naircraft)
             if self.tbar_ac is not None and self.show_tbar_ac:
@@ -548,31 +548,16 @@ class Traffic(glh.RenderObject, layer=100):
         if naircraft == 0:
             self.cpalines.set_vertex_count(0)
         else:
-            IP_all = np.array([IP[-11:], 'TOWER IN', 'TOWER OUT'])  #except '0'
-
-            iacc = np.in1d(actdata.acdata.uco, IP_all).nonzero()[0]
-            iapp = misc.get_indices(actdata.acdata.uco, IP[-11:])
-            itwrin = misc.get_indices(actdata.acdata.uco, 'TOWER IN')
-            itwrout = misc.get_indices(actdata.acdata.uco, 'TOWER OUT')
-
             self.lat.update(np.array(data.lat, dtype=np.float32))
             self.lon.update(np.array(data.lon, dtype=np.float32))
-
-            self.latacc.update(np.array(remove_data(data.lat, iacc), dtype=np.float32))
-            self.lonacc.update(np.array(remove_data(data.lon, iacc), dtype=np.float32))
-            self.latapp.update(np.array(data.lat[iapp], dtype=np.float32))
-            self.lonapp.update(np.array(data.lon[iapp], dtype=np.float32))
-            self.lattwr_in.update(np.array(data.lat[itwrin], dtype=np.float32))
-            self.lontwr_in.update(np.array(data.lon[itwrin], dtype=np.float32))
-            self.lattwr_out.update(np.array(data.lat[itwrout], dtype=np.float32))
-            self.lontwr_out.update(np.array(data.lon[itwrout], dtype=np.float32))
-
             self.hdg.update(np.array(data.trk, dtype=np.float32))
             self.alt.update(np.array(data.alt, dtype=np.float32))
             self.tas.update(np.array(data.tas, dtype=np.float32))
             self.rpz.update(np.array(data.rpz, dtype=np.float32))
             self.histsymblat.update(np.array(data.histsymblat, dtype=np.float32))
             self.histsymblon.update(np.array(data.histsymblon, dtype=np.float32))
+
+            # print(data.symbol)
 
             if hasattr(data, 'asasn') and hasattr(data, 'asase'):
                 self.asasn.update(np.array(data.asasn, dtype=np.float32))
@@ -621,7 +606,8 @@ class Traffic(glh.RenderObject, layer=100):
                         rawmlabel     += mlabel
                         rawssrlabel   += ssrlabel
 
-                    self.trafdata.mlabelpos[i] = initial_micropos(data, i)
+                    self.trafdata.leaderlinepos[i] = leaderline_vertices(actdata, self.trafdata.labelpos[i][0],
+                                                                         self.trafdata.labelpos[i][1], i)
 
                 # Colours
                 if inconf:
@@ -655,14 +641,9 @@ class Traffic(glh.RenderObject, layer=100):
                 self.ssd.update(selssd=selssd)
 
             self.cpalines.update(vertex=cpalines)
-
-
             self.color.update(color)
-            self.coloracc.update(np.array(remove_data(color, iacc), dtype=np.uint8))
-            self.colorapp.update(np.array(color[iapp], dtype=np.uint8))
-            self.colortwr_in.update(np.array(color[itwrin], dtype=np.uint8))
-            self.colortwr_out.update(np.array(color[itwrout], dtype=np.uint8))
 
+            self.update_attributes(data, color)  # Traffic symbol Attributes
 
             # BlueSky default label (ATC mode BLUESKY)
             if actdata.atcmode == 'BLUESKY':
@@ -677,9 +658,6 @@ class Traffic(glh.RenderObject, layer=100):
                 self.mlbl.update(np.array(rawmlabel.encode('utf8'), dtype=np.string_))
                 # Label position
                 self.lbloffset.update(np.array(self.trafdata.labelpos, dtype=np.float32))
-
-                #Label position
-                self.lbloffset.update(np.array(self.trafdata.labelpos, dtype=np.float32))
                 self.mlbloffset.update(np.array(self.trafdata.mlabelpos, dtype=np.float32))
 
                 if self.pluginlbloffset is not None:
@@ -693,6 +671,26 @@ class Traffic(glh.RenderObject, layer=100):
             if self.route_acid in data.id:
                 idx = data.id.index(self.route_acid)
                 self.route.vertex.update(np.array([data.lat[idx], data.lon[idx]], dtype=np.float32))
+
+    def update_attributes(self, data, color):
+        iacc = misc.get_indices(data.symbol, 'ACC')
+        iapp = misc.get_indices(data.symbol, 'APP')
+        itwrin = misc.get_indices(data.symbol, 'TWR IN')
+        itwrout = misc.get_indices(data.symbol, 'TWR OUT')
+
+        self.latacc.update(np.array(data.lat[iacc], dtype=np.float32))
+        self.lonacc.update(np.array(data.lon[iacc], dtype=np.float32))
+        self.latapp.update(np.array(data.lat[iapp], dtype=np.float32))
+        self.lonapp.update(np.array(data.lon[iapp], dtype=np.float32))
+        self.lattwr_in.update(np.array(data.lat[itwrin], dtype=np.float32))
+        self.lontwr_in.update(np.array(data.lon[itwrin], dtype=np.float32))
+        self.lattwr_out.update(np.array(data.lat[itwrout], dtype=np.float32))
+        self.lontwr_out.update(np.array(data.lon[itwrout], dtype=np.float32))
+
+        self.coloracc.update(np.array(color[iacc], dtype=np.uint8))
+        self.colorapp.update(np.array(color[iapp], dtype=np.uint8))
+        self.colortwr_in.update(np.array(color[itwrin], dtype=np.uint8))
+        self.colortwr_out.update(np.array(color[itwrout], dtype=np.uint8))
 
     def update_labelpos(self, x, y):
         """
@@ -733,7 +731,7 @@ class Traffic(glh.RenderObject, layer=100):
 
             # Leader lines
             self.trafdata.leaderlinepos[idx] = leaderline_vertices(actdata, self.trafdata.labelpos[idx][0],
-                                                                      self.trafdata.labelpos[idx][1])
+                                                                   self.trafdata.labelpos[idx][1], idx)
 
             # Update label offset
             self.lbloffset.update(np.array(self.trafdata.labelpos, dtype=np.float32))
@@ -847,9 +845,11 @@ class Traffic(glh.RenderObject, layer=100):
         # Draw
         self.show_tbar_ac = True
 
+
 """
 Static functions
 """
+
 
 def baselabel(actdata, data, i):
     """
@@ -1148,60 +1148,7 @@ def leading_zeros(number):
         return str(round(number))
 
 
-def leaderline_vertices(actdata, offsetx, offsety):
-    """
-    Function: Compute the vertices for the leader line
-    Args:
-        actdata:    node data [class]
-        offsetx:    label offset x pixel coordinates [int]
-        offsety:    label offset y pixel coordinates [int]
-    Returns: -
-
-    Created by: Bob van Dillen
-    Date: 23-2-2022
-    """
-
-    # Sizes
-    ac_size = settings.ac_size
-    text_size = settings.text_size
-    text_width = text_size
-    text_height = text_size * 1.2307692307692308
-
-    # APP
-    if actdata.atcmode == 'APP':
-        block_size = (4*text_height, 7*text_width)
-    # ACC
-    elif actdata.atcmode == 'ACC':
-        block_size = (4*text_height, 8*text_width)
-    # TWR
-    else:
-        block_size = (3*text_height, 8*text_width)
-
-    # Compute the angle
-    angle = np.arctan2(offsety, offsetx)
-
-    # Label is on top of aircaft symbol
-    if -block_size[1] <= offsetx <= 0 and -text_height <= offsety <= 3*text_height:
-        vertices = [0, 0, 0, 0]
-    # Label is to the right of the aircraft symbol
-    elif offsetx >= 0:
-        vertices = [ac_size*np.cos(angle), ac_size*np.sin(angle), offsetx, offsety]
-    # Label is above the aircraft symbol
-    elif offsetx >= -block_size[1] and offsety >= 0:
-        vertices = [ac_size*np.cos(angle), ac_size*np.sin(angle), offsetx+0.5*block_size[1], offsety-3*text_height]
-    # Label is below the aircraft symbol
-    elif offsetx >= -block_size[1] and offsety <= 0:
-        vertices = [ac_size*np.cos(angle), ac_size*np.sin(angle), offsetx+0.5*block_size[1], offsety+text_height]
-    # Label is to the left of the aircraft sym
-    elif offsetx < 0:
-        vertices = [ac_size*np.cos(angle), ac_size*np.sin(angle), offsetx+block_size[1], offsety]
-    # For safety every other situation
-    else:
-        vertices = [0, 0, 0, 0]
-
-    return vertices
-
-def draw_acc_sym(uco, IP): # for instances
+def draw_track_sym(sym, val): # for instances
     """
     Function: Returns aircrafts that are UCO
     Args:
@@ -1212,96 +1159,22 @@ def draw_acc_sym(uco, IP): # for instances
     Created by: Ajay Kumbhar
     Date:
     """
-    uco = [i for i in uco if i != IP]
-    total = len(uco)
-    return total
-
-def draw_rest_sym(uco, IP): # for instances
-    """
-    Function: Returns aircrafts that are UCO
-    Args:
-        uco:    uco array [array with str dtype]
-    Returns:
-        uco:    uco array [array with str dtype]
-
-    Created by: Ajay Kumbhar
-    Date:
-    """
-    uco = [i for i in uco if i == IP]
-    total = len(uco)
+    sym = [i for i in sym if i == val]
+    total = len(sym)
     return total
 
 
-def remove_data(data,idx): # for attributes
-    """
-    Function: Deletes the data for flights under UCO
-    Args:
-        data:   Data Array such as lat/lon [array]
-        idx:    Index of data need to be deleted [int]
-    Returns:
-        data:   Updated Data Array such as lat/lon/color [array]
-
-    Created by: Ajay Kumbhar
-    Date:
-    """
-    data = np.delete(data, idx, axis=0)
-    return data
-
-def initial_labelpos(data, i):
-    """
-    Function: Compute the offset for the initial label position
-    Args:
-        data:   aircraft data [dict]
-        i:      index for data [int]
-    Returns:
-        labelpos:   offsets x and y [list]
-
-    Created by: Ajay Kumbhar
-    Date:
-
-    Note: Enable data.arr conditions only for GMPEOR scenario
-    """
-    #   #   Enable data.rwy for normal cases
-    if data.rwy[i] in ['18R', '18R_E']:
-        labelpos = [-125, 0]  # -125
-    else:
-        labelpos = [50, 0]
-
-    #   #   Enable data.arr only for GMPEOR scenario
-    # if data.arr[i] in ['ATP18R', 'RIV18R', 'RIV18REOR', 'SUG18R', 'SUG18REOR']:
-    #     labelpos = [-150, 0]  # -125
-    # else:
-    #     labelpos = [80, 0]  # 50  #75 for R indication
-
-    return labelpos
-
-def initial_micropos(data, i):
-    """
-    Function: Compute the offset for the initial microlabel position
-    Args:
-        data:   aircraft data [dict]
-        i:      index for data [int]
-    Returns:
-        labelpos:   offsets x and y [list]
-
-    Created by: Ajay Kumbhar
-    Date:
-
-    Note: Enable data.arr conditions only for GMPEOR scenario
-    """
-    ac_size = settings.ac_size
-    text_size = settings.text_size
-
-    #   #   Enable data.rwy for normal cases
-    if data.rwy[i] in ['18C', '18C_E']:
-        mlabelpos = [2 * 0.8 * text_size - ac_size, 0.5 * ac_size]
-    else:
-        mlabelpos = [-8 * 0.8 * text_size - ac_size, 0.5 * ac_size]   #-3
-
-    #   #   Enable data.arr only for GMPEOR scenario
-    # if data.arr[i] in ['ATP18C', 'ATP18CEOR', 'RIV18C', 'SUG18C']:
-    #     mlabelpos = [2 * 0.8 * text_size - ac_size, 0.5 * ac_size]  # 2   #0.5-y
-    # else:
-    #     mlabelpos = [-8 * 0.8 * text_size - ac_size, 0.5 * ac_size]  # -3
-
-    return mlabelpos
+# def remove_data(data,idx): # for attributes
+#     """
+#     Function: Deletes the data for flights under UCO
+#     Args:
+#         idx:    Index of data need to be deleted [int]
+#     Returns:
+#         data:   Updated Data Array such as lat/lon/color [array]
+#
+#     Created by: Ajay Kumbhar
+#     Date:
+#     """
+#     data = np.delete(data, idx, axis=0)
+#         data:   Data Array such as lat/lon [array]
+#     return data
