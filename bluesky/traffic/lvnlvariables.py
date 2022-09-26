@@ -191,6 +191,7 @@ class LVNLVariables(Entity):
                                            bs.traf.ap.route[idx].wplat[iactwp], bs.traf.ap.route[idx].wplon[iactwp])
                 dist_wp = np.sum(bs.traf.ap.route[idx].wpdistto[iactwp+1:])
                 self.dtg_route[idx] = dist_iactwp + dist_wp
+            print('Route ',bs.traf.id[idx], bs.traf.ap.route[idx])
         return
 
     @stack.command(name='UCO')
