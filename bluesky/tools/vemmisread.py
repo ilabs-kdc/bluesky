@@ -443,7 +443,6 @@ class VEMMISRead:
         cmds, cmdst = self.initial(swdatafeed)
         # cmds, cmdst = self.initial_tbar()
         # cmds, cmdst = self.initial_scenario('both')
-        cmds, cmdst = self.initial_route()
 
         # ---------- Sort and process ----------
         command_df = pd.DataFrame({'COMMAND': cmds, 'TIME': cmdst})
@@ -451,73 +450,6 @@ class VEMMISRead:
         command_df = command_df.sort_values(by=['TIME'])
         cmds = list(command_df['COMMAND'])
         cmdst = list(command_df['TIME'])
-
-        return cmds, cmdst
-
-    def initial_route(self):
-        self.routedata = self.routedata.loc[self.routedata['LOCATION_TYPE'] == 'RP']
-        self.routedata = self.routedata.loc[self.routedata['TIME_TYPE'] == 'ACTUAL']
-        self.routedata = pd.merge(self.routedata, self.flightdata[['FLIGHT_ID', 'SIM_START']], on='FLIGHT_ID')
-        # print(self.flightdata.keys())
-        # print(self.flightdata.head())
-
-        cmds = ["DATE " + self.datetime0.strftime('%d %m %Y %H:%M:%S')]
-        cmdst = [0.]
-
-        # Flight data
-        acid = self.flightdata['CALLSIGN']
-        actype = self.flightdata['ICAO_ACTYPE']
-        aclat = self.flightdata['LATITUDE'].astype(str)
-        aclon = self.flightdata['LONGITUDE'].astype(str)
-        achdg = self.flightdata['HEADING'].astype(str)
-        acalt = self.flightdata['ALTITUDE'].astype(str)
-        acspd = self.flightdata['CAS'].astype(str)
-        acorig = self.flightdata['ADEP']
-        acdest = self.flightdata['DEST']
-        acflighttype = self.flightdata['FLIGHT_TYPE']
-        acwtc = self.flightdata['WTC']
-        acssr = self.flightdata['SSR'].astype(str)
-
-        # Commands
-        # Create
-        cmds += list("CRE " + acid + ", " + actype + ", " + aclat + ", " + aclon + ", " + achdg + ", " + acalt + ", " + acspd)
-        cmdst += list(self.flightdata['SIM_START'])
-
-        # Origin
-        cmds += list("ORIG " + acid + ", " + acorig)
-        cmdst += list(self.flightdata['SIM_START'] + 0.01)
-
-        # Destination
-        cmds += list("DEST " + acid + ", " + acdest)
-        cmdst += list(self.flightdata['SIM_START'] + 0.01)
-
-        # Flight type
-        cmds += list("FLIGHTTYPE " + acid + ", " + acflighttype)
-        cmdst += list(self.flightdata['SIM_START'] + 0.01)
-
-        # WTC
-        cmds += list("WTC " + acid + ", " + acwtc)
-        cmdst += list(self.flightdata['SIM_START'] + 0.01)
-
-        # SSR Code
-        cmds += list("SSRCODE " + acid + ", " + acssr)
-        cmdst += list(self.flightdata['SIM_START'] + 0.01)
-
-        # ADD WAYPOINT
-        cmds += list("ADDWPT " + self.routedata['CALLSIGN'] + ", " + self.routedata['LOCATION_NAME'])
-        cmdst += list(self.routedata['SIM_START'] + 0.01)
-
-        # DATAFEED
-        # cmds += list("SETDATAFEED " + acid + ", VEMMIS")
-        # cmdst += list(self.flightdata['SIM_START'] + 0.01)
-
-        # DELETE ROUTE
-        # cmds += list("DELRTE " + acid)
-        # cmdst += list(self.flightdata['SIM_START'] + 0.02)
-
-        # Delete
-        # cmds += list("DEL " + self.flightdata['CALLSIGN'])
-        # cmdst += list(self.flightdata['SIM_END'])
 
         return cmds, cmdst
 
@@ -594,12 +526,12 @@ class VEMMISRead:
         cmds  += list("RWY " + inbound['CALLSIGN'] + ", " + inbound['RUNWAY_IN'])
         cmdst += list(inbound['SIM_START'] + 0.01)
 
-        # Delete route
-        cmds  += list("DELRTE "+acid)
-        cmdst += list(self.flightdata['SIM_START'] + 0.02)
-
         # Data feed dependent commands
-        if swdatafeed:
+        if swdatafeed:  # TRACK DATA    # REPLAY
+            # Delete route
+            cmds += list("DELRTE " + acid)
+            cmdst += list(self.flightdata['SIM_START'] + 0.02)
+
             datafeed = self.flightdata[['CALLSIGN', 'FLIGHT_TYPE', 'SIM_START', 'SIM_END']]
 
             # Take out flights that need to be simulated
@@ -618,6 +550,29 @@ class VEMMISRead:
             # Delete
             cmds   += list("DEL "+datafeed['CALLSIGN'])
             cmdst  += list(datafeed['SIM_END'])
+
+        else:   # ROUTE DATA    # PLAYBACK
+            # sorting required waypoint data and merging it
+            self.routedata = self.routedata.loc[self.routedata['LOCATION_TYPE'] == 'RP']
+            self.routedata = self.routedata.loc[self.routedata['TIME_TYPE'] == 'ACTUAL']
+            self.routedata = pd.merge(self.routedata, self.flightdata[['FLIGHT_ID', 'SIM_START', 'TIME_START']],
+                                      on='FLIGHT_ID')
+
+            # drop waypoints begging with 'EH'
+            # drop previous waypoints before Start Time
+            self.routedata = self.routedata[~self.routedata['LOCATION_NAME'].str.startswith('|'.join(['EH']))]
+            self.routedata['TIME'] = (self.routedata['TIME'] - self.routedata['TIME_START']).dt.total_seconds()
+            self.routedata.drop(self.routedata[self.routedata['TIME'] < 0].index, inplace=True)
+            self.routedata.reset_index(drop=True, inplace=True)
+
+            # providing the necessary offset for SIM_START
+            count = self.routedata['CALLSIGN'].eq(self.routedata['CALLSIGN'].shift())
+            self.routedata['COUNTER'] = count.groupby(count).cumsum().add(1)
+            self.routedata['SIM_START'] = self.routedata['SIM_START'] + 0.01 * self.routedata['COUNTER']
+
+            # ADD WAYPOINT
+            cmds += list("ADDWPT " + self.routedata['CALLSIGN'] + ", " + self.routedata['LOCATION_NAME'])
+            cmdst += list(self.routedata['SIM_START'] + 0.01)
 
         return cmds, cmdst
 

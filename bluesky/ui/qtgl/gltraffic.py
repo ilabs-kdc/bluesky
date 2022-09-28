@@ -643,7 +643,8 @@ class Traffic(glh.RenderObject, layer=100):
             self.cpalines.update(vertex=cpalines)
             self.color.update(color)
 
-            self.update_attributes(data, color)  # Traffic symbol Attributes
+            # Updating Traffic Symbol Attributes
+            self.update_attributes(data, color)
 
             # BlueSky default label (ATC mode BLUESKY)
             if actdata.atcmode == 'BLUESKY':
@@ -656,8 +657,9 @@ class Traffic(glh.RenderObject, layer=100):
                 self.ssrlbl.update(np.array(rawssrlabel.encode('utf8'), dtype=np.string_))
                 # Update micro label
                 self.mlbl.update(np.array(rawmlabel.encode('utf8'), dtype=np.string_))
-                # Label position
+                # Update label offset
                 self.lbloffset.update(np.array(self.trafdata.labelpos, dtype=np.float32))
+                # Update micro label offset
                 self.mlbloffset.update(np.array(self.trafdata.mlabelpos, dtype=np.float32))
 
                 if self.pluginlbloffset is not None:
@@ -673,23 +675,34 @@ class Traffic(glh.RenderObject, layer=100):
                 self.route.vertex.update(np.array([data.lat[idx], data.lon[idx]], dtype=np.float32))
 
     def update_attributes(self, data, color):
-        iacc = misc.get_indices(data.symbol, 'ACC')
-        iapp = misc.get_indices(data.symbol, 'APP')
-        itwrin = misc.get_indices(data.symbol, 'TWR IN')
-        itwrout = misc.get_indices(data.symbol, 'TWR OUT')
+        """
+        Function: Update the attributes for the track symbols
+        Args:
+            data:   aircraft data [dict]
+            color:  color attribute [list]
+        Returns: -
 
+        Created by: Ajay Kumbhar
+        Date:
+        """
+        iacc = misc.get_indices(data.symbol, 'ACC')
         self.latacc.update(np.array(data.lat[iacc], dtype=np.float32))
         self.lonacc.update(np.array(data.lon[iacc], dtype=np.float32))
+        self.coloracc.update(np.array(color[iacc], dtype=np.uint8))
+
+        iapp = misc.get_indices(data.symbol, 'APP')
         self.latapp.update(np.array(data.lat[iapp], dtype=np.float32))
         self.lonapp.update(np.array(data.lon[iapp], dtype=np.float32))
+        self.colorapp.update(np.array(color[iapp], dtype=np.uint8))
+
+        itwrin = misc.get_indices(data.symbol, 'TWR IN')
         self.lattwr_in.update(np.array(data.lat[itwrin], dtype=np.float32))
         self.lontwr_in.update(np.array(data.lon[itwrin], dtype=np.float32))
+        self.colortwr_in.update(np.array(color[itwrin], dtype=np.uint8))
+
+        itwrout = misc.get_indices(data.symbol, 'TWR OUT')
         self.lattwr_out.update(np.array(data.lat[itwrout], dtype=np.float32))
         self.lontwr_out.update(np.array(data.lon[itwrout], dtype=np.float32))
-
-        self.coloracc.update(np.array(color[iacc], dtype=np.uint8))
-        self.colorapp.update(np.array(color[iapp], dtype=np.uint8))
-        self.colortwr_in.update(np.array(color[itwrin], dtype=np.uint8))
         self.colortwr_out.update(np.array(color[itwrout], dtype=np.uint8))
 
     def update_labelpos(self, x, y):
@@ -1150,11 +1163,12 @@ def leading_zeros(number):
 
 def draw_track_sym(sym, val): # for instances
     """
-    Function: Returns aircrafts that are UCO
+    Function: Returns total number of aircrafts having given symbol
     Args:
-        uco:    uco array [array with str dtype]
+        sym:    symbol array [array with str dtype]
+        val:    symbol type [1 type][ACC/APP/TWR IN/TWR OUT]
     Returns:
-        uco:    uco array [array with str dtype]
+        total:  length of aircrafts with particular symbol
 
     Created by: Ajay Kumbhar
     Date:
@@ -1162,19 +1176,3 @@ def draw_track_sym(sym, val): # for instances
     sym = [i for i in sym if i == val]
     total = len(sym)
     return total
-
-
-# def remove_data(data,idx): # for attributes
-#     """
-#     Function: Deletes the data for flights under UCO
-#     Args:
-#         idx:    Index of data need to be deleted [int]
-#     Returns:
-#         data:   Updated Data Array such as lat/lon/color [array]
-#
-#     Created by: Ajay Kumbhar
-#     Date:
-#     """
-#     data = np.delete(data, idx, axis=0)
-#         data:   Data Array such as lat/lon [array]
-#     return data

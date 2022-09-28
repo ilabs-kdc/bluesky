@@ -57,7 +57,7 @@ class LVNLVariables(Entity):
             self.arr        = []                           # Arrival/Stack
             self.autolabel  = np.array([], dtype=np.bool)  # Auto label change
             self.dtg        = np.array([])                 # Distance to T-Bar point
-            self.dtg_route  = np.array([])                 # Route distance to go
+            self.dtg_route  = np.array([])                 # Route DTG for GMPEOR
             self.flighttype = []                           # Flight type
             self.mlbl       = np.array([], dtype=np.bool)  # Show micro label
             self.rel        = np.array([], dtype=np.bool)  # Release
@@ -67,7 +67,7 @@ class LVNLVariables(Entity):
             self.ssrlbl     = []                           # Show SSR label
             self.tracklbl   = np.array([], dtype=np.bool)  # Show track label
             self.uco        = np.array([], dtype=np.str)   # Under Control
-            self.symbol     = np.array([], dtype=np.str)                         # UCO symbol to draw
+            self.symbol     = np.array([], dtype=np.str)   # UCO symbol to draw
             self.wtc        = []                           # Wake Turbulence Category
 
     def create(self, n=1):
@@ -198,7 +198,7 @@ class LVNLVariables(Entity):
                                            bs.traf.ap.route[idx].wplat[iactwp], bs.traf.ap.route[idx].wplon[iactwp])
                 dist_wp = np.sum(bs.traf.ap.route[idx].wpdistto[iactwp+1:])
                 self.dtg_route[idx] = dist_iactwp + dist_wp
-            # print('Route ',bs.traf.id[idx], bs.traf.ap.route[idx].wpname)
+            print('Route ',bs.traf.id[idx], bs.traf.ap.route[idx].wpname)
         return
 
     @stack.command(name='UCO')
