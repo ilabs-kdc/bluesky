@@ -297,7 +297,7 @@ class Traffic(glh.RenderObject, layer=100):
                                    (0.125 * ac_size, 0.484 * ac_size),
                                    (0.25 * ac_size, 0.433 * ac_size),
                                    (0.375 * ac_size, 0.33 * ac_size),
-                                   (-0.375 * ac_size, -0.330 * ac_size),],
+                                   (-0.375 * ac_size, -0.330 * ac_size)],
                                    dtype=np.float32)  # a circle with diagonal (Tower OUT)
 
         self.acs_lvnlutwr_out.create(vertex=acv_lvnlutwr_out)
@@ -557,8 +557,6 @@ class Traffic(glh.RenderObject, layer=100):
             self.histsymblat.update(np.array(data.histsymblat, dtype=np.float32))
             self.histsymblon.update(np.array(data.histsymblon, dtype=np.float32))
 
-            # print(data.symbol)
-
             if hasattr(data, 'asasn') and hasattr(data, 'asase'):
                 self.asasn.update(np.array(data.asasn, dtype=np.float32))
                 self.asase.update(np.array(data.asase, dtype=np.float32))
@@ -608,7 +606,6 @@ class Traffic(glh.RenderObject, layer=100):
 
                     self.trafdata.leaderlinepos[i] = leaderline_vertices(actdata, self.trafdata.labelpos[i][0],
                                                                          self.trafdata.labelpos[i][1], i)
-
                 # Colours
                 if inconf:
                     if actdata.ssd_conflicts:

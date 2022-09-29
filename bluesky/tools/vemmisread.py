@@ -309,21 +309,6 @@ class VEMMISRead:
         # Add callsign to track data
         self.trackdata = pd.merge(self.tracks, self.flights[['FLIGHT_ID', 'CALLSIGN']], on='FLIGHT_ID')
 
-    # def add_route(self):
-    #     """
-    #     Function: Get Route Points and Actual Time for route data
-    #     Args: -
-    #     Returns: -
-    #
-    #     Created by: Ajay Kumbhar
-    #     Date:
-    #     """
-    #
-    #     # Just Actual Time and Route Points
-    #     self.routedata = self.routedata.loc[self.routedata['LOCATION_TYPE'] == 'RP']
-    #     self.routedata = self.routedata.loc[self.routedata['TIME_TYPE'] == 'ACTUAL']
-
-
     def sort_data(self):
         """
         Function: Sort the data by time
@@ -490,8 +475,6 @@ class VEMMISRead:
         cmds  += list("CRE "+acid+", "+actype+", " + aclat+", "+aclon+", "+achdg+", "+acalt+", "+acspd)
         cmdst += list(self.flightdata['SIM_START'])
 
-        # print(self.flightdata.head())
-
         # Origin
         cmds  += list("ORIG "+acid+", "+acorig)
         cmdst += list(self.flightdata['SIM_START'] + 0.01)
@@ -558,7 +541,7 @@ class VEMMISRead:
             self.routedata = pd.merge(self.routedata, self.flightdata[['FLIGHT_ID', 'SIM_START', 'TIME_START']],
                                       on='FLIGHT_ID')
 
-            # drop waypoints begging with 'EH'
+            # drop waypoints beginning with 'EH'
             # drop previous waypoints before Start Time
             self.routedata = self.routedata[~self.routedata['LOCATION_NAME'].str.startswith('|'.join(['EH']))]
             self.routedata['TIME'] = (self.routedata['TIME'] - self.routedata['TIME_START']).dt.total_seconds()

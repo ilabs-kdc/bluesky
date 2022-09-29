@@ -12,12 +12,12 @@ from bluesky.tools import geo
 def init_plugin():
     ''' Plugin initialisation function. '''
 
-    dtg = GMP()
+    dtg = GMPEOR()
 
     # Configuration parameters
     config = {
         # The name of your plugin
-        'plugin_name':     'GMP',
+        'plugin_name':     'GMPEOR',
 
         # The type of this plugin. For now, only simulation plugins are possible.
         'plugin_type':     'gui',
@@ -32,12 +32,12 @@ Classes
 '''
 
 
-class GMP(core.Entity):
+class GMPEOR(core.Entity):
     """
-    Definition: Class used to initialize and update DTG to T-Bar points
+    Definition: Class used to initialize and update DTG along route for GMPEOR Scenario
     Methods:
-        showdtg():      Initialize the DTG label
-        update_tbar():  Update T-Bar graphics
+        showdtg():      Initialize the DTG Route label
+        update_tbar():  Update GMP graphics
     """
 
     def __init__(self):
@@ -46,9 +46,9 @@ class GMP(core.Entity):
         self.gmplbl = None
 
         # Set update function
-        bs.net.actnodedata_changed.connect(self.update_gmp)
+        bs.net.actnodedata_changed.connect(self.update_gmpeor)
 
-    @stack.command(name='SHOWDTG',)
+    @stack.command(name='SHOW_DTG_ROUTE',)
     def showdtg(self):
         """
         Function: Initialize the DTG label
@@ -83,9 +83,9 @@ class GMP(core.Entity):
         else:
             self.gmplbl.show_pluginlabel = not self.gmplbl.show_pluginlabel
 
-    def update_gmp(self, nodeid, nodedata, changed_elems):
+    def update_gmpeor(self, nodeid, nodedata, changed_elems):
         """
-        Function: Update GMP graphics
+        Function: Update GMPEOR graphics
         Args:
             nodeid:         Node identifier []
             nodedata:       Node data [class]
@@ -93,7 +93,7 @@ class GMP(core.Entity):
         Returns: -
 
         Created by: Ajay Kumbhar
-        Date: 25-2-2022
+        Date:
         """
 
         if self.initialized:
@@ -110,4 +110,3 @@ class GMP(core.Entity):
                     else:
                         rawlabel += 3*' '
                 self.gmplbl.pluginlbl.update(np.array(rawlabel.encode('utf8'), dtype=np.string_))
-

@@ -176,15 +176,15 @@ class LVNLVariables(Entity):
 
         # --------------- RUNWAY DTG ---------------
 
-        # i_18c = misc.get_indices(self.rwy, ['18R', '18R_E'])
-        # i_18r = misc.get_indices(self.rwy, ['18C', '18C_E'])
-        #
-        # self.dtg[i_18c] = geo.kwikdist_matrix(bs.traf.lat[i_18c], bs.traf.lon[i_18c],
-        #                                          np.ones(len(i_18c)) * 52.331388888888895,
-        #                                          np.ones(len(i_18c)) * 4.74)
-        # self.dtg[i_18r] = geo.kwikdist_matrix(bs.traf.lat[i_18r], bs.traf.lon[i_18r],
-        #                                          np.ones(len(i_18r)) * 52.36027777777778,
-        #                                          np.ones(len(i_18r)) * 4.711666666666667)
+        i_18c = misc.get_indices(self.rwy, ['18R', '18R_E'])
+        i_18r = misc.get_indices(self.rwy, ['18C', '18C_E'])
+
+        self.dtg[i_18c] = geo.kwikdist_matrix(bs.traf.lat[i_18c], bs.traf.lon[i_18c],
+                                                 np.ones(len(i_18c)) * 52.331388888888895,
+                                                 np.ones(len(i_18c)) * 4.74)
+        self.dtg[i_18r] = geo.kwikdist_matrix(bs.traf.lat[i_18r], bs.traf.lon[i_18r],
+                                                 np.ones(len(i_18r)) * 52.36027777777778,
+                                                 np.ones(len(i_18r)) * 4.711666666666667)
 
         # --------------- DTG ALONG ROUTE ---------------
 
@@ -198,7 +198,7 @@ class LVNLVariables(Entity):
                                            bs.traf.ap.route[idx].wplat[iactwp], bs.traf.ap.route[idx].wplon[iactwp])
                 dist_wp = np.sum(bs.traf.ap.route[idx].wpdistto[iactwp+1:])
                 self.dtg_route[idx] = dist_iactwp + dist_wp
-            print('Route ',bs.traf.id[idx], bs.traf.ap.route[idx].wpname)
+            # print('Route ',bs.traf.id[idx], bs.traf.ap.route[idx].wpname)
         return
 
     @stack.command(name='UCO')
