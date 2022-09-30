@@ -74,7 +74,7 @@ class TrafficData:
         """
 
         if data.guitrafdata['cmd'] == 'TRACKLABEL':
-            idx = data.acdata.id.index(data.guitrafdata['data'])
+            idx = data.guitrafdata['data']
             self.tracklabel[idx] = not self.tracklabel[idx]
 
     def update_trafficdata(self, data):

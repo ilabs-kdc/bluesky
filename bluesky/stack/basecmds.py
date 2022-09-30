@@ -429,7 +429,7 @@ def initbasecmds():
         ],
         "SHOWLABEL": [
             "SHOWLABEL CALLSIGN",
-            "txt",
+            "acid",
             bs.scr.showlabel,
             "Show/hide the track label"
         ],
