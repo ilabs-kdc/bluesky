@@ -4,10 +4,10 @@ import os
 
 from PyQt5.QtWidgets import QApplication as app
 from PyQt5.QtCore import Qt, pyqtSlot, QTimer, QItemSelectionModel, QSize
-from PyQt5.QtGui import QPixmap, QIcon, QFont
+from PyQt5.QtGui import QPixmap, QIcon
 from PyQt5.QtWidgets import QMainWindow, QSplashScreen, QTreeWidgetItem, \
     QPushButton, QFileDialog, QDialog, QTreeWidget, QVBoxLayout, \
-    QDialogButtonBox, QWidget
+    QDialogButtonBox
 from PyQt5 import uic
 
 # Local imports
@@ -15,17 +15,14 @@ import bluesky as bs
 from bluesky.tools.misc import tim2txt
 from bluesky.network import get_ownip
 from bluesky.ui import palette
-from bluesky.ui.qtgl import console
-import bluesky.ui.qtgl.TID_layouts as tid
-from bluesky.ui.qtgl.TIDS.base_tid import show_basetid, tidclose
-
+from bluesky.ui.qtgl import console, tid
 
 # Child windows
 from bluesky.ui.qtgl.docwindow import DocWindow
 from bluesky.ui.qtgl.radarwidget import RadarWidget
 from bluesky.ui.qtgl.infowindow import InfoWindow
 from bluesky.ui.qtgl.settingswindow import SettingsWindow
-from bluesky.ui.qtgl.TID import showTID
+#from bluesky.ui.qtgl.TID import showTID
 # from bluesky.ui.qtgl.nd import ND
 
 if platform.system().lower() == "windows":
@@ -108,7 +105,7 @@ class MainWindow(QMainWindow):
         # self.nd = ND(shareWidget=self.radarwidget)
         self.infowin = InfoWindow()
         self.settingswin = SettingsWindow()
-        self.touchinterface = showTID()
+        #self.touchinterface = showTID()
 
         try:
             self.docwin = DocWindow(self)
@@ -392,7 +389,7 @@ class MainWindow(QMainWindow):
         elif self.sender() == self.MANUAL:
             console.process_cmdline("MANUAL")
         elif self.sender() == self.tid:
-            show_basetid('start', 'start')
+            tid.start_tid('TID', 'start')
 
     def show_file_dialog(self):
         # Due to Qt5 bug in Windows, use temporarily Tkinter

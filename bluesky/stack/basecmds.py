@@ -427,6 +427,12 @@ def initbasecmds():
             bs.sim.setseed,
             "Set seed for all functions using a randomizer (e.g.mcre,noise)",
         ],
+        "SHOWLABEL": [
+            "SHOWLABEL CALLSIGN",
+            "acid",
+            bs.scr.showlabel,
+            "Show/hide the track label"
+        ],
         "SSD": [
             "SSD ALL/CONFLICTS/OFF or SSD acid0, acid1, ...",
             "txt,[...]",

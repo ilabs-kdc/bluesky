@@ -12,6 +12,7 @@ from bluesky.ui.qtgl.customevents import ACDataEvent, RouteDataEvent
 from bluesky.network.client import Client
 from bluesky.core import Signal
 from bluesky.tools.aero import ft
+from bluesky.tools.files import findfile
 
 
 # TID test
@@ -30,7 +31,7 @@ class GuiClient(Client):
     """
     Edited by: Mitchell de Keijzer
     Date: 04-05-2022
-    Changed: Added following methods (origin base_tid.py) for multiposition purposes
+    Changed: Added following methods (origin tid.py) for multiposition purposes
         clear():            Clear variables
         update_cmdline():   Update the command line
         exq():              Execute commandline
@@ -228,7 +229,6 @@ class GuiClient(Client):
         """
 
         cmd = cmd.strip().upper()
-        print('set command:', cmd)
 
         if cmd in self.cmdslst:
             # Get index
@@ -279,9 +279,7 @@ class GuiClient(Client):
         """
 
         # Set the argument
-        print('eerst', self.argslst)
         self.argslst[self.iact][argn - 1] = arg.strip()
-        print('daarna', self.argslst)
 
         # Update command line
         self.update_cmdline()
@@ -307,9 +305,7 @@ class GuiClient(Client):
             char:   character [str]
         Returns: -
         """
-        print(self.argslst)
-        print(self.iact)
-        print(self.argslst[self.iact][-1])
+
         # Append character
         self.argslst[self.iact][-1] += char.strip()
 
@@ -330,7 +326,16 @@ class GuiClient(Client):
         super().stop_discovery()
 
     def stream(self, name, data, sender_id):
-        ''' Guiclient stream handler. '''
+        """
+        Function Guiclient stream handler.
+        Args:
+            name:       Name of the stream [bytes]
+            data:       Stream data [dict]
+            sender_id:  Sender ID [bytes]
+        Returns -
+
+        Created by: Original BlueSky version
+        """
         changed = ''
         actdata = self.get_nodedata(sender_id)
         if name == b'ACDATA':
@@ -349,7 +354,16 @@ class GuiClient(Client):
         super().stream(name, data, sender_id)
 
     def echo(self, text, flags=None, sender_id=None):
-        ''' Overloaded Client.echo function. '''
+        """
+        Function: Overloaded Client.echo function.
+        Args:
+            text:       Text to echo [str]
+            flags:      Flags [int]
+            sender_id:  Sender ID [bytes]
+
+        Created by: Original BlueSky version
+        """
+
         sender_data = self.get_nodedata(sender_id)
         sender_data.echo(text, flags)
         # If sender_id is None this is an echo command originating from the gui user, and therefore also meant for the active node
@@ -359,52 +373,92 @@ class GuiClient(Client):
 
     def event(self, name, data, sender_id):
         """
+        Function: Guiclient event handler.
+        Args:
+            name:       Name of the event [bytes]
+            data:       The data [dict]
+            sender_id:  Sender ID [bytes]
+        Returns: -
+
+        Created by: Original BlueSky version
+
         Edited by: Mitchell de Keijzer
         Date: 07-04-2022, 04-05-2022
         Changed:
             1) added the MAP flag to b'DISPLAYFLAG
             2) eventname b'TIDCOMMANDS' added
         """
+
         sender_data = self.get_nodedata(sender_id)
         data_changed = []
         if name == b'RESET':
             sender_data.clear_scen_data()
             data_changed = list(UPDATE_ALL)
+            # Clear the loaded maps
+            loaded_maps.clear()
+
         elif name == b'SHAPE':
             sender_data.update_poly_data(**data)
             data_changed.append('SHAPE')
+
         elif name == b'COLOR':
             sender_data.update_color_data(**data)
             if 'polyid' in data:
                 data_changed.append('SHAPE')
+
         elif name == b'DEFWPT':
             sender_data.defwpt(**data)
             data_changed.append('CUSTWPT')
+
         elif name == b'DISPLAYFLAG':
             sender_data.setflag(**data)
+
             if data['flag'] == 'ATCMODE':
                 data_changed.append('ATCMODE')
-            if data['flag'] == 'MAP':
+                # Get IP-address
+                IPaddr = socket.gethostbyname(socket.gethostname())
+                # Connect the IP-address to the ATC mode
+                bs.stack.stack("ATCIP "+data['args']+" "+IPaddr)
+
+            elif data['flag'] == 'GUITRAFDATA':
+                data_changed.append('GUITRAFDATA')
+                sender_data.guitrafdata['cmd'] = data['args']['cmd']
+                sender_data.guitrafdata['data'] = data['args']['data']
+
+            elif data['flag'] == 'MAP':
+                # Check if file exists
+                if not findfile(data['args']+'.scn', 'scenario/LVNL/Maps'):
+                    self.echo('MAPTOGGLE MAP: File not found')
+                    return
+
                 data_changed.append('MAP')
+
+                # Check if map is already loaded, and therefore should be deleted
                 if data['args'] in loaded_maps:
                     loaded_maps.remove(data['args'])
                     name, shape, coordinate, color = load_maplines(data['args'])
                     for d in range(len(name)):
                         sender_data.update_poly_data(name[d], shape[d], None, None)
+
+                # Load map
                 else:
                     loaded_maps.append(data['args'])
                     if sender_data.show_maplines:
                         name, shape, coordinate, color = load_maplines(data['args'])
                         for i in range(len(name)):
                             sender_data.update_poly_data(name[i], shape[i], coordinate[i], color[i])
+
         elif name == b'ECHO':
             data_changed.append('ECHOTEXT')
+
         elif name == b'PANZOOM':
             sender_data.panzoom(**data)
             data_changed.append('PANZOOM')
+
         elif name == b'SIMSTATE':
             sender_data.siminit(**data)
             data_changed = list(UPDATE_ALL)
+
         elif name == b'TIDCOMMANDS':
             sender_data.setflag(**data)
             # --- TID commands ---
@@ -463,6 +517,9 @@ class nodeData:
         self.naircraft = 0
         self.acdata = ACDataEvent()
         self.routedata = RouteDataEvent()
+
+        # GUI traffic data event
+        self.guitrafdata = {'cmd': None, 'data': None}
 
         # Per-scenario data
         self.clear_scen_data()
@@ -528,7 +585,7 @@ class nodeData:
         self.ssd_all       = False
         self.ssd_conflicts = False
         self.ssd_ownship   = set()
-        self.atcmode       = settings.atc_mode
+        self.atcmode       = settings.atc_mode.upper()
         self.show_maplines   = True
         # Display flags based on ATC mode
         self.set_atcmode(settings.atc_mode.upper())
@@ -539,6 +596,17 @@ class nodeData:
             self.update_poly_data(**shape)
 
     def panzoom(self, pan=None, zoom=None, absolute=True, screenrange=None):
+        """
+        Function: Pan or zoom the radar screen
+        Args:
+            pan:            Pan coordinates [tuple]
+            zoom:           Zoom factor [float]
+            absolute:       Absolute zoom switch [bool]
+            screenrange:    Range of the screen [float]
+        Returns: -
+
+        Created by: Original BlueSky version
+        """
         if pan:
             if absolute:
                 self.pan  = list(pan)
@@ -551,6 +619,18 @@ class nodeData:
             self.screenrange = screenrange
 
     def update_color_data(self, color, acid=None, groupid=None, polyid=None):
+        """
+        Function: Update the color
+        Args:
+            color:      Color [tuple]
+            acid:       Aircraft ID [str]
+            groupid:    Group ID [str]
+            polyid:     Polygon ID [str]
+        Returns: -
+
+        Created by: Original BlueSky version
+        """
+
         if acid:
             self.custacclr[acid] = tuple(color)
         elif groupid:
@@ -562,8 +642,20 @@ class nodeData:
                 color = tuple(color) + (255,)
                 colorbuf = np.array(len(contourbuf) // 2 * color, dtype=np.uint8)
                 self.polys[polyid] = (contourbuf, fillbuf, colorbuf)
+            # Dashed lines
+            elif polyid in self.dashed:
+                contourbuf, fillbuf, colorbuf = self.dashed.get(polyid)
+                color = tuple(color) + (255,)
+                colorbuf = np.array(len(contourbuf) // 2 * color, dtype=np.uint8)
+                self.dashed[polyid] = (contourbuf, fillbuf, colorbuf)
+            # Dotted lines
+            elif polyid in self.dotted:
+                contourbuf, fillbuf, colorbuf = self.dotted.get(polyid)
+                color = tuple(color) + (255,)
+                colorbuf = np.array(len(contourbuf) // 2 * color, dtype=np.uint8)
+                self.dotted[polyid] = (contourbuf, fillbuf, colorbuf)
             # Points
-            else:
+            elif polyid in self.points:
                 contourbuf, fillbuf, colorbuf = self.points.get(polyid)
                 color = tuple(color) + (255,)
                 colorbuf = np.array(len(contourbuf) // 2 * color, dtype=np.uint8)
@@ -575,7 +667,7 @@ class nodeData:
         Args:
             name        :   name of the line [str]
             shape       :   shape of the line (normal/dotted/dashed/point) [str]
-            coordinate  :   lat/lon coordinates [list]
+            coordinates :   lat/lon coordinates [list]
             color       :   color code [tuple]
         Returns: -
 
@@ -681,89 +773,17 @@ class nodeData:
                 self.dashed[name] = (contourbuf, fillbuf, colorbuf)
             else:
                 self.polys[name] = (contourbuf, fillbuf, colorbuf)
+
         # If no coordinates are given, it means that the shape must be switched off by deleting the shape
         else:
-            if shape == 'POINT':
+            if name in self.points:
                 del self.points[name]
-            elif shape == 'DOTTEDLINE':
+            elif name in self.dotted:
                 del self.dotted[name]
-            elif shape == 'DASHEDLINE':
+            elif name in self.dashed:
                 del self.dashed[name]
-            else:
+            elif name in self.polys:
                 del self.polys[name]
-
-    # def update_map_data(self, name, shape, coordinate, color):
-    #     """
-    #     Function: Update the data for map lines/points
-    #     Args:
-    #         name        :   name of the line [str]
-    #         shape       :   shape of the line (normal/dotted/dashed/point) [str]
-    #         coordinate  :   lat/lon coordinates [list]
-    #         color       :   color code [tuple]
-    #     Returns: -
-    #
-    #     Created by: Mitchell de Keijzer
-    #     Date: 7-4-2022
-    #     """
-    #     if coordinate is not None:
-    #         self.linemap.pop(name, None)
-    #         self.dotmap.pop(name, None)
-    #         self.dashmap.pop(name, None)
-    #         self.pointmap.pop(name, None)
-    #         if shape == 'LINE':
-    #             # Input data is list or array: [lat0,lon0,lat1,lon1,lat2,lon2,lat3,lon3,..]
-    #             newdata = np.array(coordinate, dtype=np.float32)
-    #
-    #         elif shape == 'DOTTEDLINE' or shape == 'DASHEDLINE':
-    #             newdata = np.array(coordinate, dtype=np.float32)
-    #
-    #         elif shape == 'POINT':
-    #             newdata = np.array(coordinate, dtype=np.float32)  # [lat, lon]
-    #
-    #         # Create polygon contour buffer
-    #         # Distinguish between an open and a closed contour.
-    #         # If this is a closed contour, add the first vertex again at the end
-    #         # and add a fill shape
-    #         if shape == 'DOTTEDLINE' or shape == 'DASHEDLINE':
-    #             contourbuf = np.array(newdata, dtype=np.float32)
-    #             fillbuf = np.array([], dtype=np.float32)
-    #
-    #         elif shape == 'LINE':
-    #             contourbuf = np.empty(2 * len(newdata) - 4, dtype=np.float32)
-    #             contourbuf[0::4]   = newdata[0:-2:2]  # lat
-    #             contourbuf[1::4]   = newdata[1:-2:2]  # lon
-    #             contourbuf[2::4] = newdata[2::2]  # lat
-    #             contourbuf[3::4] = newdata[3::2]  # lon
-    #             fillbuf = np.array([], dtype=np.float32)
-    #
-    #         elif shape == 'POINT':
-    #             contourbuf = np.array(newdata, dtype=np.float32)
-    #             fillbuf = np.array([], dtype=np.float32)
-    #
-    #         # Define color buffer for outline
-    #         defclr = tuple(color or palette.polys) + (255,)
-    #         colorbuf = np.array(len(contourbuf) // 2 * defclr, dtype=np.uint8)
-    #
-    #         # Store new or updated polygon by name, and concatenated with the
-    #         # other polys
-    #         if shape == 'POINT':
-    #             self.pointmap[name] = (contourbuf, fillbuf, colorbuf)
-    #         elif shape == 'DOTTEDLINE':
-    #             self.dotmap[name] = (contourbuf, fillbuf, colorbuf)
-    #         elif shape == 'DASHEDLINE':
-    #             self.dashmap[name] = (contourbuf, fillbuf, colorbuf)
-    #         else:
-    #             self.linemap[name] = (contourbuf, fillbuf, colorbuf)
-    #
-    #     else:
-    #         if shape == 'POINT':
-    #             del self.pointmap[name]
-    #         elif shape == 'DOTTEDLINE':
-    #             del self.dotmap[name]
-    #         elif shape == 'DASHEDLINE':
-    #             del self.dashmap[name]
-    #         else:
-    #             del self.linemap[name]
 
     def defwpt(self, name, lat, lon):
         self.custwplbl += name[:10].ljust(10)
@@ -875,6 +895,7 @@ class nodeData:
 
         if atcmode.upper() == 'APP':
             self.show_map = False
+            self.show_coast = False
             self.show_histsymb = True
             self.show_aptdetails = False
             self.show_wpt = 1
@@ -883,6 +904,7 @@ class nodeData:
             self.show_aptlbl = False
         elif atcmode.upper() == 'ACC':
             self.show_map = False
+            self.show_coast = False
             self.show_histsymb = True
             self.show_aptdetails = False
             self.show_wpt = 1
@@ -891,6 +913,7 @@ class nodeData:
             self.show_aptlbl = False
         elif atcmode.upper() == 'TWR':
             self.show_map = False
+            self.show_coast = False
             self.show_histsymb = False
             self.show_aptdetails = True
             self.show_wpt = 1
@@ -899,6 +922,7 @@ class nodeData:
             self.show_aptlbl = False
         else:
             self.show_map = True
+            self.show_coast = True
             self.show_histsymb = False
             self.show_aptdetails = True
             self.show_wpt = 1
