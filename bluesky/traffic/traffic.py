@@ -154,6 +154,8 @@ class Traffic(Entity):
             self.swvnavspd = np.array([], dtype=np.bool)
             self.manual = np.array([], dtype=np.bool)
 
+            self.swdescent = np.array([], dtype=np.bool)
+
             # Flight Models
             self.cd       = ConflictDetection()
             self.cr       = ConflictResolution()
@@ -519,7 +521,7 @@ class Traffic(Entity):
         self.vs = np.where(np.isfinite(self.vs), self.vs, 0)    # fix vs nan issue
 
         #DELETE
-        print('vs', self.vs/fpm, self.perf.phase)
+        #print('vs', self.vs/fpm, self.aporasas.vs/fpm, self.perf.phase)
 
     def update_groundspeed(self):
         # Compute ground speed and track from heading, airspeed and wind
@@ -535,7 +537,6 @@ class Traffic(Entity):
 
             # Meteo data is loaded in here :)
             vnwnd,vewnd = self.wind.getdata(self.lat, self.lon, self.alt)
-            # print(vnwnd)
             self.windnorth[:], self.windeast[:] = vnwnd,vewnd
             self.gsnorth  = self.tas * np.cos(np.radians(self.hdg)) + self.windnorth*applywind
             self.gseast   = self.tas * np.sin(np.radians(self.hdg)) + self.windeast*applywind

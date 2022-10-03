@@ -88,6 +88,9 @@ class WILABADA(PerfBase):
             self.cascl      = np.array([])    # climb [m/s]
             self.cascr      = np.array([])    # cruise [m/s]
             self.casdes     = np.array([])    # descent [m/s]
+            self.cascl2     = np.array([])    # climb 2 [m/s]
+            self.cascr2     = np.array([])    # cruise 2 [m/s]
+            self.casdes2    = np.array([])    # descent 2 [m/s]
 
             #reference mach numbers [-]
             self.macl       = np.array([])    # climb
@@ -214,6 +217,7 @@ class WILABADA(PerfBase):
         # Initial aircraft mass is currently reference mass.
         # BADA 3.12 also supports masses between 1.2*mmin and mmax
         self.mass[-n:] = coeff.m_ref * 1000.0
+        self.mref[-n:] = coeff.m_ref * 1000.0
         self.mmin[-n:] = coeff.m_min * 1000.0
         self.mmax[-n:] = coeff.m_max * 1000.0
         self.gw[-n:] = coeff.mass_grad * ft
@@ -255,6 +259,10 @@ class WILABADA(PerfBase):
         self.cascl[-n:] = coeff.CAScl1[0] * kts
         self.cascr[-n:] = coeff.CAScr1[0] * kts
         self.casdes[-n:] = coeff.CASdes1[0] * kts
+
+        self.cascl2[-n:] = coeff.CAScl2[0] * kts
+        self.cascr2[-n:] = coeff.CAScr2[0] * kts
+        self.casdes2[-n:] = coeff.CASdes2[0] * kts
 
         # reference mach numbers
         self.macl[-n:] = coeff.Mcl[0]
@@ -385,8 +393,6 @@ class WILABADA(PerfBase):
         self.phase, self.bank = phases(bs.traf.alt, bs.traf.gs, delalt,
             bs.traf.cas, self.vmto, self.vmic, self.vmap, self.vmcr, self.vmld,
             bs.traf.ap.bankdef, bs.traf.bphase, bs.traf.swhdgsel, swbada, bs.traf.selphase, SWApproach)
-
-        # print('phases', self.phase)
 
         # AERODYNAMICS
         # Lift
@@ -644,6 +650,17 @@ class WILABADA(PerfBase):
                 self.thrust, self.D, bs.traf.tas,
                 self.mass, self.ESF, self.phase)
 
+        # REMOVE
+        # thr_corr = np.where((self.thrust > self.maxthr-1.0), self.maxthr-1., self.thrust)
+        # newspeed = self.mass *9.81 / (thr_corr - self.D) * abs(intent_vs)*-1 /self.ESF
+        # newspeed1 = self.mass *9.81 / (0 - self.D) * abs(intent_vs)*-1 / self.ESF
+        # newspeed2 = self.mass *9.81 / (0 - 1.5*self.D) * abs(intent_vs) * -1 / self.ESF
+        # newspeed3 = (self.mass * 9.81 * intent_vs) / ( (thr_corr-self.D) - self.mass*0.5)
+        # print('nwspd', newspeed/0.5144, newspeed1/0.5144, newspeed2/0.5144, newspeed3/0.5144)
+        # print(thr_corr, self.D, thr_corr-self.D)
+        # print()
+        # print('id', bs.traf.id)
+
         # Update desired sates with values within the flight envelope
         # When CAS is limited, it needs to be converted to TAS as only this TAS is used later on!
         allowed_tas = np.where(self.limspd_flag, vcas2tas(
@@ -655,7 +672,7 @@ class WILABADA(PerfBase):
         # Autopilot selected vertical speed (V/S)
         # allowed_vs = np.where(self.limvs_flag, self.limvs, intent_vs)
         #ADDED
-        allowed_vs = np.where(intent_vs > self.limvs, self.limvs, intent_vs)
+        allowed_vs = np.where(intent_vs > abs(self.limvs), self.limvs, intent_vs)
 
         return allowed_tas, allowed_vs, allowed_alt
 

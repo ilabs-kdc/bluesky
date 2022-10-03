@@ -131,6 +131,7 @@ def phases(alt, gs, delalt, cas, vmto, vmic, vmap,
     noturn = np.array(swhdgsel) * 100.0
     bank   = np.minimum(noturn, bank)
 
+
     return (phase, bank)
 #------------------------------------------------------------------------------
 #
@@ -279,6 +280,11 @@ def calclimits(desspd, gs, to_spd, vmin, vmo, mmo, M, alt, hmaxact,
     #ADDED
     limvs = ((Thr_corrected - D) * tas) / (mass * g0) * ESF
     limvs_flag = True
+
+    #ADDED newlimitvs
+    limvs = ((Thr_corrected - D) * tas - mass*tas*0.5) / (mass * g0)
+    # print('newlimvs', newlimitvs/0.00508, limvs/0.00508)
+    # print('newlimvs', limvs/0.00508)
 
     # aircraft can only take-off as soon as their speed is above v_rotate
     # True means that current speed is below rotation speed

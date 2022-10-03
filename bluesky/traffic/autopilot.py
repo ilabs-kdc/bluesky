@@ -1,5 +1,5 @@
 """ Autopilot Implementation."""
-from math import sqrt, atan
+from math import sin, cos, radians, sqrt, atan
 import numpy as np
 try:
     from collections.abc import Collection
@@ -12,7 +12,8 @@ from bluesky.tools import geo
 from bluesky.tools.misc import degto180, angleFromCoordinate
 from bluesky.tools.position import txt2pos
 from bluesky.tools.aero import ft, nm, fpm, vcasormach2tas, vcas2tas, tas2cas, cas2tas, g0
-from bluesky.core import Entity
+from bluesky.tools.geo import latlondist
+from bluesky.core import Entity, timed_function
 from .route import Route
 from bluesky.traffic.performance.wilabada.EEI import EEI
 from bluesky.stack.simstack import pcall
@@ -38,6 +39,10 @@ class Autopilot(Entity, replaceable=True):
             self.tas = np.array([])
             self.alt = np.array([])
             self.vs  = np.array([])
+
+            # Speed Schedule #ADDED
+            self.spds = np.array([])
+            # self.swdescent = np.array([])
 
             # VNAV variables
             self.dist2vs  = np.array([])  # distance from coming waypoint to TOD
@@ -180,7 +185,7 @@ class Autopilot(Entity, replaceable=True):
                                         bs.traf.actwp.lat[i], bs.traf.actwp.lon[i])
 
             dist[i] = distnmi*nm
-            self.dist2wp[i] = distnmi
+            self.dist2wp[i] = distnmi*nm
 
             bs.traf.actwp.curlegdir[i] = qdr[i]
             bs.traf.actwp.curleglen[i] = distnmi
@@ -247,6 +252,51 @@ class Autopilot(Entity, replaceable=True):
                 if bs.traf.swvnavspd[iac] and bs.traf.actwp.spd[iac]>=0.0:
                      bs.traf.selspd[iac] = bs.traf.actwp.spd[iac]
 
+    def dismiss_command(self):
+        '''
+        Function: Find minimum time needed to decelerate to landing speed. If speed command is given and landing
+        speed cannot be met, override speed command with speed schedule speeds.
+
+        Created by: Winand Mathoera
+        Date: 26/09/2022
+        '''
+
+        # random number LOOK FOR ALTERNATIVE
+        max_decel = 0.3
+
+        # Landing speed based on BADA 3.10
+        kts = 0.5144
+        spd_landing = bs.traf.perf.vmld + 5 * kts
+
+        # Time needed to decelerate to landing speed
+        preferred_time = (bs.traf.cas - spd_landing) / max_decel
+
+        preferred_distance = bs.traf.alt / self.steepness
+        dist2vs = abs(bs.traf.alt - bs.traf.actwp.nextaltco) / self.steepness #+ bs.traf.actwp.turndist
+
+        for i,route in enumerate(self.route):
+            if len(route.wpname) == 0:
+                continue
+
+            # Find distance to destination
+            dist = latlondist(bs.traf.lat[i], bs.traf.lon[i], route.wplat[0], route.wplon[0])
+            dist2wpt = dist * 1.
+            for j in range (len(route.wplat)-1):
+                dist += latlondist(route.wplat[j], route.wplon[j], route.wplat[j+1], route.wplon[j+1])
+
+            # Estimate travel time based on current speed and final speed
+            estimated_time = dist/ ((bs.traf.tas[i] + spd_landing[i]) / 2)
+
+            ### Dismiss speed command before landing
+            if estimated_time < preferred_time[i] * 1.1 and bs.traf.swdescent[i] and not bs.traf.swvnavspd[i]:
+                bs.traf.swvnavspd[i] = True
+
+            ### Dismiss altitude command before landing
+            if dist2wpt < dist2vs[i] and bs.traf.swdescent[i] and not bs.traf.swvnav[i]:
+                print(bs.traf.id[i], 'Turned on VNAV')
+                bs.traf.swvnav[i] = True
+                self.dist2vs[i] = dist2vs[i]
+
     def update(self):
         # FMS LNAV mode:
         # qdr[deg],distinnm[nm]
@@ -267,6 +317,9 @@ class Autopilot(Entity, replaceable=True):
         #dy = (bs.traf.actwp.lat - bs.traf.lat)  #[deg lat = 60 nm]
         #dx = (bs.traf.actwp.lon - bs.traf.lon) * bs.traf.coslat #[corrected deg lon = 60 nm]
         #self.dist2wp   = 60. * nm * np.sqrt(dx * dx + dy * dy) # [m]
+
+        # ADDED Dismiss speed commands if too close to runway
+        self.dismiss_command()
 
         # VNAV logic: descend as late as possible, climb as soon as possible
         startdescent = (self.dist2wp < self.dist2vs) + (bs.traf.actwp.nextaltco > bs.traf.alt)
@@ -336,6 +389,18 @@ class Autopilot(Entity, replaceable=True):
 
         dxspdconchg = distaccel(bs.traf.tas, nexttas, bs.traf.perf.axmax)
 
+        # ADDED Update speed schedule speeds
+        self.speedschedule()
+
+
+
+        # ADDED Turn on speed schedule bool
+        usespds = (self.spds < bs.traf.actwp.spdcon)
+
+        # ADDED During descent, speed schedule can be overwritten if own speed is already slower than schedule
+        self.spds = np.where(vcasormach2tas(self.spds, bs.traf.alt) > vcasormach2tas(bs.traf.selspd, bs.traf.alt),
+            bs.traf.selspd, self.spds)
+
         # Check also whether VNAVSPD is on, if not, SPD SEL has override for next leg
         # and same for turn logic
         usenextspdcon = (self.dist2wp < dxspdconchg)*(bs.traf.actwp.nextspd>-990.) * \
@@ -360,10 +425,17 @@ class Autopilot(Entity, replaceable=True):
         bs.traf.actwp.turnfromlastwp = np.logical_and(bs.traf.actwp.turnfromlastwp,inoldturn)
 
         # Select speed: turn sped, next speed constraint, or current speed constraint
-        bs.traf.selspd = np.where(useturnspd,bs.traf.actwp.turnspd,
+        # bs.traf.selspd = np.where(useturnspd,bs.traf.actwp.turnspd,
+        #                           np.where(usenextspdcon, bs.traf.actwp.nextspd,
+        #                                    np.where((bs.traf.actwp.spdcon>=0)*bs.traf.swvnavspd,bs.traf.actwp.spd,
+        #                                                                     bs.traf.selspd)))
+
+        # ADDED
+        bs.traf.selspd = np.where(useturnspd, bs.traf.actwp.turnspd,
                                   np.where(usenextspdcon, bs.traf.actwp.nextspd,
-                                           np.where((bs.traf.actwp.spdcon>=0)*bs.traf.swvnavspd,bs.traf.actwp.spd,
-                                                                            bs.traf.selspd)))
+                                           np.where((bs.traf.actwp.spdcon >= 0) * bs.traf.swvnavspd,
+                                                    np.where(usespds, self.spds, bs.traf.actwp.spdcon),
+                                                    np.where(bs.traf.swvnavspd & bs.traf.swdescent, self.spds, bs.traf.selspd))))
 
         # Temporary override when still in old turn
         bs.traf.selspd = np.where(inoldturn*(bs.traf.actwp.oldturnspd>0.)*bs.traf.swvnavspd*bs.traf.swvnav*bs.traf.swlnav,
@@ -414,7 +486,7 @@ class Autopilot(Entity, replaceable=True):
 
         # Below crossover altitude: CAS=const, above crossover altitude: Mach = const
         self.tas = vcasormach2tas(bs.traf.selspd, bs.traf.alt)
-        # print(bs.traf.alt, bs.traf.selspd, bs.traf.cas, bs.traf.vs)
+
     def ComputeVNAV(self, idx, toalt, xtoalt, torta, xtorta):
         # debug print ("ComputeVNAV for",bs.traf.id[idx],":",toalt/ft,"ft  ",xtoalt/nm,"nm")
 
@@ -463,7 +535,7 @@ class Autopilot(Entity, replaceable=True):
         #
         #  X = waypoint with alt constraint  x = Wp without prescribed altitude
         #
-        # - Ignore and look beyond waypoints without an altidue constraint
+        # - Ignore and look beyond waypoints without an altitude constraint
         # - Climb as soon as possible after previous altitude constraint
         #   and climb as fast as possible, so arriving at alt earlier is ok
         # - Descend at the latest when necessary for next altitude constraint
@@ -473,11 +545,14 @@ class Autopilot(Entity, replaceable=True):
         # VNAV Descent mode
         if bs.traf.alt[idx] > toalt + 10. * ft:
 
+            # Turn on descent switch for speed schedule
+            bs.traf.swdescent[idx] = True
 
             #Calculate max allowed altitude at next wp (above toalt)
             bs.traf.actwp.nextaltco[idx] = min(bs.traf.alt[idx],toalt + xtoalt * self.steepness) # [m] next alt constraint
             bs.traf.actwp.xtoalt[idx]    = xtoalt # [m] distance to next alt constraint measured from next waypoint
 
+            print('nxaltco', bs.traf.actwp.nextaltco[idx])
 
             # Dist to waypoint where descent should start [m]
             self.dist2vs[idx] = bs.traf.actwp.turndist[idx] + \
@@ -511,6 +586,9 @@ class Autopilot(Entity, replaceable=True):
         # VNAV climb mode: climb as soon as possible (T/C logic)
         elif bs.traf.alt[idx] < toalt - 10. * ft:
 
+            # Turn off descent switch for speed schedule
+            bs.traf.swdescent[idx] = False
+
             # Altitude we want to climb to: next alt constraint in our route (could be further down the route)
             bs.traf.actwp.nextaltco[idx] = toalt   # [m]
             bs.traf.actwp.xtoalt[idx]    = xtoalt  # [m] distance to next alt constraint measured from next waypoint
@@ -533,6 +611,82 @@ class Autopilot(Entity, replaceable=True):
 
 
         return
+
+    def speedschedule(self):
+        '''
+        Function: Calculate the speeds corresponding to the speed schedule of BADA manual 3.10
+        For either jet/turboprop or piston aircraft
+        Only for descent currently!
+
+        Created by: Winand Mathoera
+        Date: 26/09/2022
+        '''
+
+        kts = 0.5144
+        alt = bs.traf.alt / 0.3048
+
+        # Correction for minimum landing speed
+        corr = np.sqrt(bs.traf.perf.mass / bs.traf.perf.mref)
+
+        # Calculate the speeds for each altitude segment based on either
+        # the minimum landing speed or the standard descent speed
+        l1 = corr * bs.traf.perf.vmld/kts + 5
+        l2 = corr * bs.traf.perf.vmld/kts + 10
+        l3 = corr * bs.traf.perf.vmld/kts + 20
+        l4 = corr * bs.traf.perf.vmld/kts + 50
+        l5 = np.where(bs.traf.perf.casdes / kts <= 220, bs.traf.perf.casdes / kts, 220)
+        l6 = np.where(bs.traf.perf.casdes2 / kts <= 250, bs.traf.perf.casdes2 / kts, 250)
+        l7 = bs.traf.perf.casdes2/kts
+        l8 = bs.traf.perf.mades
+
+        # Piston aircraft speeds
+        l9 = corr * bs.traf.perf.vmld / kts + 0
+        l10 = corr * bs.traf.perf.vmld / kts + 0
+        l11 = corr * bs.traf.perf.vmld / kts + 0
+        l12 = bs.traf.perf.casdes
+        l13 = bs.traf.perf.casdes2
+        l14 = bs.traf.perf.mades
+
+        # Find the segment of each aircraft and obtain correct speed for that segment
+        spds = np.where(alt<=999, 1, 0) * l1 * kts + \
+               np.logical_and(alt > 999, alt <= 1499) * l2 * kts + \
+               np.logical_and(alt > 1499, alt <= 1999) * l3 * kts + \
+               np.logical_and(alt > 1999, alt <= 2999) * l4 * kts + \
+               np.logical_and(alt > 2999, alt <= 5999) * l5 * kts + \
+               np.logical_and(alt > 5999, alt <= 9999) * l6 * kts + \
+               np.logical_and(alt > 9999, alt <= bs.traf.perf.hpdes/0.3048) * l7 * kts + \
+               np.where(alt>bs.traf.perf.hpdes/0.3048, 1, 0) * l8
+
+        # Segments for piston aircraft
+        spds_p = np.where(alt <= 499, 1, 0) * l9 *kts + \
+                 np.logical_and(alt > 499, alt <= 999) * l10 * kts + \
+                 np.logical_and(alt > 999, alt <= 1499) * l11 * kts + \
+                 np.logical_and(alt > 1499, alt <= 9999) * l12 * kts + \
+                 np.logical_and(alt > 9999, alt <= bs.traf.perf.hpdes/0.3048) * l13 * kts + \
+                 np.where(alt > bs.traf.perf.hpdes / 0.3048, 1, 0) * l14
+
+        self.spds = np.where(bs.traf.perf.piston == 1, spds_p, spds)
+
+        # l1 = corr * bs.traf.perf.vmto / kts + 5
+        # l2 = corr * bs.traf.perf.vmto / kts + 10
+        # l3 = corr * bs.traf.perf.vmto / kts + 30
+        # l4 = corr * bs.traf.perf.vmto / kts + 60
+        # l5 = corr * bs.traf.perf.vmto / kts + 80
+        # l6 = np.where(bs.traf.perf.vcl1 / kts <= 250, bs.traf.perf.vcl1, 250)
+        # l7 = bs.traf.perf.vcl2 / kts
+        # l8 = bs.traf.perf.Mcl
+        #
+        # # Find the segment of each aircraft and obtain correct speed for that segment
+        # spds = np.where(alt <= 1499, 1, 0) * l1 * kts + \
+        #        np.logical_and(alt > 1499, alt <= 2999) * l2 * kts + \
+        #        np.logical_and(alt > 2999, alt <= 3999) * l3 * kts + \
+        #        np.logical_and(alt > 3999, alt <= 4999) * l4 * kts + \
+        #        np.logical_and(alt > 4999, alt <= 5999) * l5 * kts + \
+        #        np.logical_and(alt > 5999, alt <= 9999) * l6 * kts + \
+        #        np.logical_and(alt > 9999, alt <= bs.traf.perf.hpdes / 0.3048) * l7 * kts + \
+        #        np.where(alt > bs.traf.perf.hpdes / 0.3048, 1, 0) * l8
+
+
 
     def setspeedforRTA(self, idx, torta, xtorta):
         #debug print("setspeedforRTA called, torta,xtorta =",torta,xtorta/nm)
@@ -605,11 +759,31 @@ class Autopilot(Entity, replaceable=True):
         bs.traf.swvnav[idx] = False
         self.TOsw[idx] = False
 
-    @stack.command(name='PHASE')
+    @stack.command(name='PHASE', annotations='acid,int')
     def selphasecmd(self, idx: 'acid', phase: 'int'):
         # print('hoi ik zie dit', phase)
 
         bs.traf.selphase[idx] = phase
+
+    @stack.command(name='DESCENT', annotations='acid,onoff')
+    def setdescent(self, idx: 'acid', flag: 'onoff' = None):
+
+        if not isinstance(idx, Collection):
+            if idx is None:
+                # All aircraft are targeted
+                bs.traf.swdescent = np.array(bs.traf.ntraf * [flag])
+            else:
+                # Prepare for the loop
+                idx = np.array([idx])
+
+        output = []
+        for i in idx:
+            if flag is None:
+                output.append(bs.traf.id[i] + ": DESCENT is " + ("ON" if bs.traf.swdescent[i] else "OFF"))
+            else:
+                bs.traf.swdescent[i] = flag
+        if flag is None:
+            return True, '\n'.join(output)
 
     @stack.command(name='HDG', aliases=("HEADING", "TURN"))
     def selhdgcmd(self, idx: 'acid', hdg: 'hdg'):  # HDG command
@@ -661,8 +835,6 @@ class Autopilot(Entity, replaceable=True):
         # We will convert values when needed
         bs.traf.selspd[idx] = casmach
 
-        # self.TOsw[idx] = False
-
         # Used to be: Switch off VNAV: SPD command overrides
         bs.traf.swvnavspd[idx]   = False
         return True
@@ -696,8 +868,13 @@ class Autopilot(Entity, replaceable=True):
             lon = bs.navdb.aptlon[apidx]
 
         self.dest[acidx] = wpname
+        # iwp = route.addwpt(acidx, self.dest[acidx], route.dest,
+        #                    lat, lon, 0.0, bs.traf.cas[acidx])
+
+        # ADDED
         iwp = route.addwpt(acidx, self.dest[acidx], route.dest,
-                           lat, lon, 0.0, bs.traf.cas[acidx])
+                           lat, lon, 0.0, 0.0)
+
         # If only waypoint: activate
         if (iwp == 0) or (self.orig[acidx] != "" and route.nwp == 2):
             bs.traf.actwp.lat[acidx] = route.wplat[iwp]
@@ -815,7 +992,7 @@ class Autopilot(Entity, replaceable=True):
                     actwpidx = self.route[i].iactwp
                     self.ComputeVNAV(i,self.route[i].wptoalt[actwpidx],self.route[i].wpxtoalt[actwpidx],\
                                      self.route[i].wptorta[actwpidx],self.route[i].wpxtorta[actwpidx])
-                    bs.traf.actwp.nextaltco[i] = self.route[i].wptoalt[actwpidx]
+                    # REMOVED ?                    #bs.traf.actwp.nextaltco[i] = self.route[i].wptoalt[actwpidx]
 
                 else:
                     return False, ("VNAV " + bs.traf.id[i] + ": no waypoints or destination specified")
