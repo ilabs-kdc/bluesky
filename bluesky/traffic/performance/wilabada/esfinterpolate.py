@@ -19,7 +19,6 @@ class ESFinterpolate():
 
 # def read_data(self, bada_path, actype):
 
-        print(actype)
 
         FL = []
         ESF_climb =    []

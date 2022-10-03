@@ -1,7 +1,7 @@
 00:00:00.00>cre a1 c550 52.220991,3.329041 180 fl250 250
 00:00:00.00>cre a2 b744 52.220991,3.329041 180 fl250 250
-#00:00:00.00>pcall lvnl/routes/arr/ils_18r a1
-#00:00:00.00>pcall lvnl/routes/arr/ils_18r a2
+00:00:00.00>pcall lvnl/routes/arr/ils_18r a1
+00:00:00.00>pcall lvnl/routes/arr/ils_18r a2
 00:00:00.00>a1 ALT 0
 00:00:00.00>a2 ALT 0
 #00:00:00.00>crelog log1 10

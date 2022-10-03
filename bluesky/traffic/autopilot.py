@@ -1,5 +1,5 @@
 """ Autopilot Implementation."""
-from math import sin, cos, radians, sqrt, atan
+from math import sqrt, atan
 import numpy as np
 try:
     from collections.abc import Collection
@@ -12,8 +12,11 @@ from bluesky.tools import geo
 from bluesky.tools.misc import degto180, angleFromCoordinate
 from bluesky.tools.position import txt2pos
 from bluesky.tools.aero import ft, nm, fpm, vcasormach2tas, vcas2tas, tas2cas, cas2tas, g0
-from bluesky.core import Entity, timed_function
+from bluesky.core import Entity
 from .route import Route
+from bluesky.traffic.performance.wilabada.EEI import EEI
+from bluesky.stack.simstack import pcall
+
 
 bs.settings.set_variable_defaults(fms_dt=10.5)
 
@@ -63,6 +66,8 @@ class Autopilot(Entity, replaceable=True):
             # Route objects
             self.route = []
 
+            self.EEI = EEI()
+            self.TOsw = np.array([])
     def create(self, n=1):
         super().create(n)
 
@@ -71,6 +76,7 @@ class Autopilot(Entity, replaceable=True):
         self.trk[-n:] = bs.traf.trk[-n:]
         self.alt[-n:] = bs.traf.alt[-n:]
 
+        self.TOsw[-n] = False
         # LNAV variables
         self.qdr2wp[-n:] = -999.   # Direction to waypoint from the last time passing was checked
         self.dist2wp[-n:]  = -999. # Distance to go to next waypoint [nm]
@@ -363,6 +369,37 @@ class Autopilot(Entity, replaceable=True):
         bs.traf.selspd = np.where(inoldturn*(bs.traf.actwp.oldturnspd>0.)*bs.traf.swvnavspd*bs.traf.swvnav*bs.traf.swlnav,
                                   bs.traf.actwp.oldturnspd,bs.traf.selspd)
 
+        # Another overwrite
+        speed = self.EEI.speeds(bs.traf.type, bs.traf.alt)*0.514444
+        # speed0 = self.EEI.speeds(bs.traf.type, 0)*0.514444
+        ROC = self.EEI.ROCf(bs.traf.type, bs.traf.alt)*0.3048/60
+        for i in range(len(speed)):
+            if bs.traf.alt[i] >= 100*0.3048*100:
+                self.TOsw[i] = False
+            if speed[i] != False and speed[i] != 0:
+                if bs.traf.actwp.nextspd[i]>0:
+                    print(bs.traf.actwp.nextspd[i])
+                    bs.traf.selspd[i] = np.where(self.TOsw[i], min(bs.traf.actwp.nextspd[i], speed[i]), bs.traf.selspd[i])
+                    print("Deze 1: ", bs.traf.selspd[i])
+                    if bs.traf.alt[i] > 100 * 0.3048 and bs.traf.alt[i] < 1000 * 0.3048:
+                        bs.traf.selspd[i] = np.where(self.TOsw[i],
+                                                     min(bs.traf.actwp.nextspd[i], speed[i]),
+                                                     bs.traf.selspd[i]) * 0.9
+                    if bs.traf.alt[i] > 1000 * 0.3048 and bs.traf.alt[i] < 2000 * 0.3048:
+                        bs.traf.selspd[i] = np.where(self.TOsw[i], min(bs.traf.actwp.nextspd[i], speed[i]),
+                                                     bs.traf.selspd[i]) * 0.95
+                else:
+                    print(self.TOsw[i], speed[i], bs.traf.selspd[i])
+                    bs.traf.selspd[i] = np.where(self.TOsw[i], speed[i], bs.traf.selspd[i])
+                    if bs.traf.alt[i] > 100 * 0.3048 and bs.traf.alt[i] < 1000 * 0.3048:
+                        bs.traf.selspd[i] = np.where(self.TOsw[i], speed[i], bs.traf.selspd[i]) * 0.9
+                    if bs.traf.alt[i] > 1000 * 0.3048 and bs.traf.alt[i] < 2000 * 0.3048:
+                        bs.traf.selspd[i] = np.where(self.TOsw[i], speed[i], bs.traf.selspd[i]) * 0.95
+                    print("Deze 2: ", bs.traf.selspd[i])
+            if ROC[i] != False and ROC[i] != 0:
+                self.vs[i] = np.where(self.TOsw[i], ROC[i], selvs[i])
+                bs.traf.actwp.vs[i] = np.where(self.TOsw[i], ROC[i], selvs[i])
+
 
         #debug if inoldturn[0]:
         #debug     print("inoldturn bs.traf.trk =",bs.traf.trk[0],"qdr =",qdr)
@@ -377,7 +414,7 @@ class Autopilot(Entity, replaceable=True):
 
         # Below crossover altitude: CAS=const, above crossover altitude: Mach = const
         self.tas = vcasormach2tas(bs.traf.selspd, bs.traf.alt)
-
+        # print(bs.traf.alt, bs.traf.selspd, bs.traf.cas, bs.traf.vs)
     def ComputeVNAV(self, idx, toalt, xtoalt, torta, xtorta):
         # debug print ("ComputeVNAV for",bs.traf.id[idx],":",toalt/ft,"ft  ",xtoalt/nm,"nm")
 
@@ -487,6 +524,9 @@ class Autopilot(Entity, replaceable=True):
             t2go = max(0.1, legdist+xtoalt) / max(0.01, bs.traf.gs[idx])
             bs.traf.actwp.vs[idx]  = np.maximum(self.steepness*bs.traf.gs[idx], \
                             (bs.traf.actwp.nextaltco[idx] - bs.traf.alt[idx])/ t2go) # [m/s]
+            ROC = self.EEI.ROCf(bs.traf.type, bs.traf.alt) * 0.3048 / 60
+            if ROC[idx] != False and ROC[idx] != 0:
+                bs.traf.actwp.vs[idx] = np.where(self.TOsw[idx], ROC[idx], bs.traf.actwp.vs[idx])
         # Level leg: never start V/S
         else:
             self.dist2vs[idx] = -999. # [m]
@@ -543,6 +583,19 @@ class Autopilot(Entity, replaceable=True):
             oppositevs = np.logical_and(bs.traf.selvs[idx] * delalt < 0., abs(bs.traf.selvs[idx]) > 0.01)
             bs.traf.selvs[idx[oppositevs]] = 0.
 
+    @stack.command(name='TO')
+    def TOcmd(self, idx: 'acid', SID = None):
+        """ TO acid
+
+            Select autopilot altitude command."""
+        self.TOsw[idx] = True
+        bs.traf.swvnav[idx] = False
+        id = bs.traf.id[idx]
+        if SID != None:
+            # string = "WILABADA/SID/"+SID
+            string = "LVNL/Routes/SID/"+SID
+            pcall(string, id)
+
     @stack.command(name='VS')
     def selvspdcmd(self, idx: 'acid', vspd:'vspd'):
         """ VS acid,vspd (ft/min)
@@ -550,6 +603,7 @@ class Autopilot(Entity, replaceable=True):
         bs.traf.selvs[idx] = vspd #[fpm]
         # bs.traf.vs[idx] = vspd
         bs.traf.swvnav[idx] = False
+        self.TOsw[idx] = False
 
     @stack.command(name='PHASE')
     def selphasecmd(self, idx: 'acid', phase: 'int'):
@@ -606,6 +660,8 @@ class Autopilot(Entity, replaceable=True):
         # we will maintain CAS or Mach when altitude changes
         # We will convert values when needed
         bs.traf.selspd[idx] = casmach
+
+        # self.TOsw[idx] = False
 
         # Used to be: Switch off VNAV: SPD command overrides
         bs.traf.swvnavspd[idx]   = False

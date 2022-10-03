@@ -10,9 +10,13 @@ from . import coeff_bada
 from bluesky.traffic.route import Route
 from .esfinterpolate import ESFinterpolate
 
+
+from bluesky.traffic.performance.wilabada.EEI import EEI
 # Register settings defaults
 settings.set_variable_defaults(perf_path_bada='data/performance/BADA',
                                performance_dt=1.0, verbose=False)
+
+EEI = EEI()
 
 if not coeff_bada.check(settings.perf_path_bada):
     raise ImportError('BADA performance model: Error trying to find BADA files in ' + settings.perf_path_bada + '!')
@@ -220,7 +224,10 @@ class WILABADA(PerfBase):
         # flight envelope
         # minimum speeds per phase
         self.vmto[-n:] = coeff.Vstall_to * coeff.CVmin_to * kts
-        self.vmic[-n:] = coeff.Vstall_ic * coeff.CVmin * kts
+        self.vmto[-n:] = EEI.speeds(actypes, [0.1]) * 0.514444
+        # print(self.vmto, actypes)
+        # self.vmic[-n:] = coeff.Vstall_ic * coeff.CVmin * kts
+        # self.vmic[-n:] = EEI.speeds(actypes, [0.1]) * 0.514444
         self.vmcr[-n:] = coeff.Vstall_cr * coeff.CVmin * kts
         self.vmap[-n:] = coeff.Vstall_ap * coeff.CVmin * kts
         self.vmld[-n:] = coeff.Vstall_ld * coeff.CVmin * kts

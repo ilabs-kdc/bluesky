@@ -151,7 +151,7 @@ class Route(Replaceable):
         acid = bs.traf.id[acidx]
         acrte = Route._routes.get(acid)
 
-        print('args', args)
+        # print('args', args)
         
         #debug print ("addwptStack:",args)
         #print("active = ",self.wpname[self.iactwp])
