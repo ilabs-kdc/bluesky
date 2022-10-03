@@ -47,6 +47,10 @@ class LVNLVariables(Entity):
 
         self.swautolabel = False  # Auto label change
 
+        self.atcIP = {'TWR': [],
+                      'APP': [],
+                      'ACC': []}
+
         with self.settrafarrays():
             self.arr        = []                           # Arrival/Stack
             self.autolabel  = np.array([], dtype=np.bool)  # Auto label change
@@ -213,6 +217,27 @@ class LVNLVariables(Entity):
         self.uco[idx] = False
         self.rel[idx] = True
         print('REL list', self.rel)
+
+    @stack.command(name='ATCIP', brief='ATCIP ATCMODE IP')
+    def setatcIP(self, atcmode, IP):
+        """
+        Function: Connect IP-address to ATC mode
+        Args:
+            atcmode:    ATC mode [str]
+            IP:         IP-address [str]
+        Returns: -
+
+        Created by: Bob van Dillen
+        Date: 25-9-2022
+        """
+
+        # Delete IP from previous mode
+        for mode in ['TWR', 'APP', 'ACC']:
+            if IP in self.atcIP[mode]:
+                self.atcIP[mode].remove(IP)
+
+        # Set IP
+        self.atcIP[atcmode].append(IP)
 
     @stack.command(name='ARR', brief='ARR CALLSIGN ARRIVAL/STACK (ADDWPTS [ON/OFF])', aliases=('STACK',))
     def setarr(self, idx: 'acid', arr: str = '', addwpts: 'onoff' = True):

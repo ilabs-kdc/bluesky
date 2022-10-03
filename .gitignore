@@ -95,3 +95,11 @@ ssd.obj
 # Vemmis data
 scenario/LVNL/Data/*
 !/scenario/LVNL/Data/README.md
+
+# Map data
+scenario/LVNL/Maps/*
+!/scenario/LVNL/Maps/README.md
+
+# TID data
+bluesky/ui/qtgl/TIDS/*
+!/bluesky/ui/qtgl/TIDS/README.md
