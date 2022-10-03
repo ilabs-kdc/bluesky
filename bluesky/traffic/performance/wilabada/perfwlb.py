@@ -175,8 +175,8 @@ class WILABADA(PerfBase):
             self.limvs       = np.array([])  # limit vertical speed due to thrust limitation
             self.limvs_flag  = np.array([])  # A need to limit V/S detected
 
-            # ESF Tables
-            self.esf_table = np.array([], dtype=object)  #ADDED, write explanation
+            # # ESF Tables
+            # self.esf_table = np.array([], dtype=object)  #ADDED, write explanation
 
     def engchange(self, acid, engid=None):
         return False, "BADA performance model doesn't allow changing engine type"
@@ -352,8 +352,8 @@ class WILABADA(PerfBase):
         self.gr_acc[-n:] = coeff.gr_acc
         self.gr_dec[-n:] = coeff.gr_acc ######### ik weet niet zeker of dit zomaar mag -winand
 
-        # ESF look-up table generate
-        self.esf_table[-n:] = ESFinterpolate(settings.perf_path_bada, actype)
+        # # ESF look-up table generate
+        # self.esf_table[-n:] = ESFinterpolate(settings.perf_path_bada, actype)
 
         return
 
@@ -433,7 +433,8 @@ class WILABADA(PerfBase):
         # energy share factor
         delspd = bs.traf.aporasas.tas - bs.traf.tas
         selmach = bs.traf.selspd < 2.0
-        self.ESF = esf(bs.traf.alt, bs.traf.M, climb, descent, delspd, selmach, self.esf_table)
+
+        # self.ESF = esf(bs.traf.alt, bs.traf.M, climb, descent, delspd, selmach, self.esf_table)
 
         # THRUST
         # 1. climb: max.climb thrust in ISA conditions (p. 32, BADA User Manual 3.12)
@@ -513,9 +514,13 @@ class WILABADA(PerfBase):
         # switch for given vertical speed selvs
         if (bs.traf.selvs.any()>0.) or (bs.traf.selvs.any()<0.):
             # thrust = f(selvs)
-            T = ((bs.traf.selvs!=0)*(((bs.traf.aporasas.vs*self.mass*g0)/     \
-                      (self.ESF*np.maximum(bs.traf.eps,bs.traf.tas)*cpred)) \
-                      + self.D)) + ((bs.traf.selvs==0)*T)
+            # T = ((bs.traf.selvs!=0)*(((bs.traf.aporasas.vs*self.mass*g0)/     \
+            #           (self.ESF*np.maximum(bs.traf.eps,bs.traf.tas)*cpred)) \
+            #           + self.D)) + ((bs.traf.selvs==0)*T)
+
+            T = ((bs.traf.selvs!=0) * (((bs.traf.aporasas.vs*self.mass*g0)/     \
+                      (np.maximum(bs.traf.eps,bs.traf.tas)*cpred)) \
+                      + self.D + self.mass * 0.5) ) + ((bs.traf.selvs==0)*T)
 
         # self.thrust = T
         #ADDED
