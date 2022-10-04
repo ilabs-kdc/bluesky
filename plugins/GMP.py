@@ -10,7 +10,7 @@ from bluesky.tools import geo
 
 ### Initialization function of the plugin
 def init_plugin():
-    ''' Plugin initialisation function. '''
+    # ''' Plugin initialisation function. '''
 
     dtg = GMP()
 

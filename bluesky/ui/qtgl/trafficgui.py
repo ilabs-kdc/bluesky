@@ -107,7 +107,7 @@ class TrafficData:
         # if data.arr[i] in ['ATP18R', 'RIV18R', 'RIV18REOR', 'SUG18R', 'SUG18REOR']:
         #     labelpos = [-150, 0]  # -125
         # else:
-        #     labelpos = [80, 0]  # 50  #75 for R indication
+        #     labelpos = [80, 0]  # 50
 
         return labelpos
 
