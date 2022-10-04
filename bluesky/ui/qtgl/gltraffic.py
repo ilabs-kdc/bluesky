@@ -962,8 +962,11 @@ def applabel(actdata, data, i):
     if data.mlbl[i]:
         if data.flighttype[i].upper() == 'OUTBOUND':
             mlabel += '      '+chr(30)   #30
-        elif (len(data.rwy[i]) == 3) and ((data.rwy[i] in ['18R', '18R_E']) or ((data.arr[i] in ['ATP18R', 'RIV18R', 'RIV18REOR', 'SUG18R', 'SUG18REOR']))):
-            mlabel += '%-7s' % ('    ' + data.rwy[i][:7])
+        elif (len(data.rwy[i]) == 3):
+            if ((data.rwy[i] in ['18R', '18R_E']) or ((data.arr[i] in ['ATP18R', 'RIV18R', 'RIV18REOR', 'SUG18R', 'SUG18REOR']))):
+                mlabel += '%-7s' % ('    ' + data.rwy[i][:7])
+            else:
+                mlabel += '%-7s' % ('    ' + data.rwy[i][:7])
         elif (len(data.rwy[i]) == 5) and ((data.rwy[i] in ['18R', '18R_E']) or data.arr[i] in ['ATP18R', 'RIV18R', 'RIV18REOR', 'SUG18R', 'SUG18REOR']):
             mlabel += '%-7s' % ('  '+data.rwy[i][:7])
         elif (len(data.rwy[i]) == 2):

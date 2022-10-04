@@ -1,4 +1,4 @@
-""" Add the DTG to the label for the GMP concept along the route """
+""" Add the DTG to the label for the GMPEOR concept along the route """
 
 import numpy as np
 import bluesky as bs
