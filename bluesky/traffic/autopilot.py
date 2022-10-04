@@ -268,15 +268,24 @@ class Autopilot(Entity, replaceable=True):
         kts = 0.5144
         spd_landing = bs.traf.perf.vmld + 5 * kts
 
-        # Time needed to decelerate to landing speed
-        preferred_time = (bs.traf.cas - spd_landing) / max_decel
-
-        preferred_distance = bs.traf.alt / self.steepness
-        dist2vs = abs(bs.traf.alt - bs.traf.actwp.nextaltco) / self.steepness #+ bs.traf.actwp.turndist
+        # # Time needed to decelerate to landing speed
+        # preferred_time = (bs.traf.cas - spd_landing) / max_decel
+        #
+        # preferred_distance = bs.traf.alt / self.steepness
+        # dist2vs = abs(bs.traf.alt - bs.traf.actwp.nextaltco) / self.steepness #+ bs.traf.actwp.turndist
 
         for i,route in enumerate(self.route):
             if len(route.wpname) == 0:
                 continue
+
+            if bs.traf.swvnavspd[i] == True and bs.traf.swvnav[i] == True:
+                continue
+
+            # Time needed to decelerate to landing speed
+            preferred_time = (bs.traf.cas - spd_landing) / max_decel
+
+            preferred_distance = bs.traf.alt[i] / self.steepness[i]
+            dist2vs = abs(bs.traf.alt[i] - bs.traf.actwp.nextaltco[i]) / self.steepness[i]  # + bs.traf.actwp.turndist
 
             # Find distance to destination
             dist = latlondist(bs.traf.lat[i], bs.traf.lon[i], route.wplat[0], route.wplon[0])
@@ -441,6 +450,7 @@ class Autopilot(Entity, replaceable=True):
         bs.traf.selspd = np.where(inoldturn*(bs.traf.actwp.oldturnspd>0.)*bs.traf.swvnavspd*bs.traf.swvnav*bs.traf.swlnav,
                                   bs.traf.actwp.oldturnspd,bs.traf.selspd)
 
+        """ 
         # Another overwrite
         speed = self.EEI.speeds(bs.traf.type, bs.traf.alt)*0.514444
         # speed0 = self.EEI.speeds(bs.traf.type, 0)*0.514444
@@ -450,9 +460,9 @@ class Autopilot(Entity, replaceable=True):
                 self.TOsw[i] = False
             if speed[i] != False and speed[i] != 0:
                 if bs.traf.actwp.nextspd[i]>0:
-                    print(bs.traf.actwp.nextspd[i])
+                    # print(bs.traf.actwp.nextspd[i])
                     bs.traf.selspd[i] = np.where(self.TOsw[i], min(bs.traf.actwp.nextspd[i], speed[i]), bs.traf.selspd[i])
-                    print("Deze 1: ", bs.traf.selspd[i])
+                    # print("Deze 1: ", bs.traf.selspd[i])
                     if bs.traf.alt[i] > 100 * 0.3048 and bs.traf.alt[i] < 1000 * 0.3048:
                         bs.traf.selspd[i] = np.where(self.TOsw[i],
                                                      min(bs.traf.actwp.nextspd[i], speed[i]),
@@ -461,17 +471,17 @@ class Autopilot(Entity, replaceable=True):
                         bs.traf.selspd[i] = np.where(self.TOsw[i], min(bs.traf.actwp.nextspd[i], speed[i]),
                                                      bs.traf.selspd[i]) * 0.95
                 else:
-                    print(self.TOsw[i], speed[i], bs.traf.selspd[i])
+                    # print(self.TOsw[i], speed[i], bs.traf.selspd[i])
                     bs.traf.selspd[i] = np.where(self.TOsw[i], speed[i], bs.traf.selspd[i])
                     if bs.traf.alt[i] > 100 * 0.3048 and bs.traf.alt[i] < 1000 * 0.3048:
                         bs.traf.selspd[i] = np.where(self.TOsw[i], speed[i], bs.traf.selspd[i]) * 0.9
                     if bs.traf.alt[i] > 1000 * 0.3048 and bs.traf.alt[i] < 2000 * 0.3048:
                         bs.traf.selspd[i] = np.where(self.TOsw[i], speed[i], bs.traf.selspd[i]) * 0.95
-                    print("Deze 2: ", bs.traf.selspd[i])
+                    # print("Deze 2: ", bs.traf.selspd[i])
             if ROC[i] != False and ROC[i] != 0:
                 self.vs[i] = np.where(self.TOsw[i], ROC[i], selvs[i])
                 bs.traf.actwp.vs[i] = np.where(self.TOsw[i], ROC[i], selvs[i])
-
+        """
 
         #debug if inoldturn[0]:
         #debug     print("inoldturn bs.traf.trk =",bs.traf.trk[0],"qdr =",qdr)
