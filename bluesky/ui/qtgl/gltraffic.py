@@ -293,25 +293,38 @@ class Traffic(glh.RenderObject, layer=100):
         self.acs_lvnlutwr_in.set_attribs(lat=self.lattwr_in, lon=self.lontwr_in, color=self.colortwr_in,
                                       instance_divisor=1)
 
-        acv_lvnlutwr_out = np.array([(0.375 * ac_size, 0.33 * ac_size),
-                                   (0.5 * ac_size, 0 * ac_size),
-                                   (0.375 * ac_size, -0.330 * ac_size),
-                                   (0.25 * ac_size, -0.433 * ac_size),
-                                   (0.125 * ac_size, -0.484 * ac_size),
-                                   (0 * ac_size, -0.5 * ac_size),
-                                   (-0.125 * ac_size, -0.484 * ac_size),
-                                   (-0.25 * ac_size, -0.443 * ac_size),
-                                   (-0.375 * ac_size, -0.330 * ac_size),
-                                   (-0.5 * ac_size, 0 * ac_size),
-                                   (-0.375 * ac_size, 0.330 * ac_size),
-                                   (-0.25 * ac_size, 0.433 * ac_size),
-                                   (-0.125 * ac_size, 0.484 * ac_size),
-                                   (0 * ac_size, 0.5 * ac_size),
-                                   (0.125 * ac_size, 0.484 * ac_size),
-                                   (0.25 * ac_size, 0.433 * ac_size),
-                                   (0.375 * ac_size, 0.33 * ac_size),
-                                   (-0.375 * ac_size, -0.330 * ac_size)],
-                                   dtype=np.float32)  # a circle with diagonal (Tower OUT)
+        acv_lvnlutwr_out = np.array([(-0.5 * ac_size, -0.5 * ac_size),
+                                   (0.5 * ac_size, 0.5 * ac_size),
+                                   (0.5 * ac_size, -0.5 * ac_size),
+                                   (-0.5 * ac_size, 0.5 * ac_size),
+                                   (-0.5 * ac_size, -0.5 * ac_size),
+                                   (0.5 * ac_size, -0.5 * ac_size),
+                                   (0.5 * ac_size, 0.5 * ac_size),
+                                   (-0.5 * ac_size, 0.5 * ac_size)],
+                                  dtype=np.float32)  # a square with diagonals - ACC MODE
+        self.acs_lvnlutwr_out.create(vertex=acv_lvnlutwr_out)
+        self.acs_lvnlutwr_out.set_attribs(lat=self.lattwr_out, lon=self.lontwr_out, color=self.colortwr_out,
+                                   instance_divisor=1)
+
+        # acv_lvnlutwr_out = np.array([(0.375 * ac_size, 0.33 * ac_size),
+        #                            (0.5 * ac_size, 0 * ac_size),
+        #                            (0.375 * ac_size, -0.330 * ac_size),
+        #                            (0.25 * ac_size, -0.433 * ac_size),
+        #                            (0.125 * ac_size, -0.484 * ac_size),
+        #                            (0 * ac_size, -0.5 * ac_size),
+        #                            (-0.125 * ac_size, -0.484 * ac_size),
+        #                            (-0.25 * ac_size, -0.443 * ac_size),
+        #                            (-0.375 * ac_size, -0.330 * ac_size),
+        #                            (-0.5 * ac_size, 0 * ac_size),
+        #                            (-0.375 * ac_size, 0.330 * ac_size),
+        #                            (-0.25 * ac_size, 0.433 * ac_size),
+        #                            (-0.125 * ac_size, 0.484 * ac_size),
+        #                            (0 * ac_size, 0.5 * ac_size),
+        #                            (0.125 * ac_size, 0.484 * ac_size),
+        #                            (0.25 * ac_size, 0.433 * ac_size),
+        #                            (0.375 * ac_size, 0.33 * ac_size),
+        #                            (-0.375 * ac_size, -0.330 * ac_size)],
+        #                            dtype=np.float32)  # a circle with diagonal (Tower OUT)
 
         self.acs_lvnlutwr_out.create(vertex=acv_lvnlutwr_out)
         self.acs_lvnlutwr_out.set_attribs(lat=self.lattwr_out, lon=self.lontwr_out, color=self.colortwr_out,

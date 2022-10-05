@@ -405,9 +405,9 @@ class VEMMISRead:
         # self.flightdata = self.flightdata.loc[self.flightdata['FLIGHT_TYPE'] == 'INBOUND']  # Only inbounds
         #
         # # ---------- Scenario ----------
-        self.flightdata = self.flightdata.loc[self.flightdata['DEST'] == 'EHAM']  # Only inbound EHAM
-        self.flightdata = self.flightdata.loc[(self.flightdata['RUNWAY_IN'] == '18R') |
-                                              (self.flightdata['RUNWAY_IN'] == '18C')]
+        # self.flightdata = self.flightdata.loc[self.flightdata['DEST'] == 'EHAM']  # Only inbound EHAM
+        # self.flightdata = self.flightdata.loc[(self.flightdata['RUNWAY_IN'] == '18R') |
+        #                                       (self.flightdata['RUNWAY_IN'] == '18C')]
 
         return
 
