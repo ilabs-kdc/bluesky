@@ -227,30 +227,30 @@ class Traffic(glh.RenderObject, layer=100):
         self.acs_lvnlacc.set_attribs(lat=self.lat, lon=self.lon, color=self.color,
                                    instance_divisor=1)
 
-        # acv_lvnluacc = np.array([(-0.5 * ac_size, -0.5 * ac_size),
-        #                            (0.5 * ac_size, 0.5 * ac_size),
-        #                            (0.5 * ac_size, -0.5 * ac_size),
-        #                            (-0.5 * ac_size, 0.5 * ac_size),
-        #                            (-0.5 * ac_size, -0.5 * ac_size),
-        #                            (0.5 * ac_size, -0.5 * ac_size),
-        #                            (0.5 * ac_size, 0.5 * ac_size),
-        #                            (-0.5 * ac_size, 0.5 * ac_size)],
-        #                           dtype=np.float32)  # a square with diagonals - ACC MODE
-        # self.acs_lvnluacc.create(vertex=acv_lvnluacc)
-        # self.acs_lvnluacc.set_attribs(lat=self.latacc, lon=self.lonacc, color=self.coloracc,
-        #                            instance_divisor=1)
+        acv_lvnluacc = np.array([(-0.5 * ac_size, -0.5 * ac_size),
+                                   (0.5 * ac_size, 0.5 * ac_size),
+                                   (0.5 * ac_size, -0.5 * ac_size),
+                                   (-0.5 * ac_size, 0.5 * ac_size),
+                                   (-0.5 * ac_size, -0.5 * ac_size),
+                                   (0.5 * ac_size, -0.5 * ac_size),
+                                   (0.5 * ac_size, 0.5 * ac_size),
+                                   (-0.5 * ac_size, 0.5 * ac_size)],
+                                  dtype=np.float32)  # a square with diagonals - ACC MODE
+        self.acs_lvnluacc.create(vertex=acv_lvnluacc)
+        self.acs_lvnluacc.set_attribs(lat=self.latacc, lon=self.lonacc, color=self.coloracc,
+                                   instance_divisor=1)
 
-        acv_lvnluacc = np.array([(-0.375 * ac_size, 0 * ac_size),
-                                   (-0.375 * ac_size, -0.5 * ac_size),
-                                   (-0.375 * ac_size, 0 * ac_size),
-                                   (0.375 * ac_size, 0 * ac_size),
-                                   (0.375 * ac_size, -0.5 * ac_size),
-                                   (0.375 * ac_size, 0 * ac_size),
-                                   (0.125 * ac_size, 0.5 * ac_size),
-                                   (-0.125 * ac_size, 0.5 * ac_size),
-                                   (-0.375 * ac_size, 0 * ac_size),
-                                   (0.375 * ac_size, 0 * ac_size)],
-                                    dtype=np.float32)  # A - UCO at ACC
+        # acv_lvnluacc = np.array([(-0.375 * ac_size, 0 * ac_size),
+        #                            (-0.375 * ac_size, -0.5 * ac_size),
+        #                            (-0.375 * ac_size, 0 * ac_size),
+        #                            (0.375 * ac_size, 0 * ac_size),
+        #                            (0.375 * ac_size, -0.5 * ac_size),
+        #                            (0.375 * ac_size, 0 * ac_size),
+        #                            (0.125 * ac_size, 0.5 * ac_size),
+        #                            (-0.125 * ac_size, 0.5 * ac_size),
+        #                            (-0.375 * ac_size, 0 * ac_size),
+        #                            (0.375 * ac_size, 0 * ac_size)],
+        #                             dtype=np.float32)  # A - UCO at ACC
 
         self.acs_lvnluacc.create(vertex=acv_lvnluacc)
         self.acs_lvnluacc.set_attribs(lat=self.latacc, lon=self.lonacc, color=self.coloracc,

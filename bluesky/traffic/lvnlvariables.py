@@ -85,7 +85,7 @@ class LVNLVariables(Entity):
 
         self.autolabel[-n:] = True
         self.tracklbl[-n:]  = True
-        self.mlbl[-n:]      = True   #False
+        self.mlbl[-n:]      = False   #False
         self.symbol[-n:]    = 'ACC'
         self.uco[-n:]       = '0'
 
