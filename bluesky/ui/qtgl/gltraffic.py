@@ -701,8 +701,6 @@ class Traffic(glh.RenderObject, layer=100):
         self.lattwr_out.update(np.array(data.lat[itwrout], dtype=np.float32))
         self.lontwr_out.update(np.array(data.lon[itwrout], dtype=np.float32))
         self.colortwr_out.update(np.array(color[itwrout], dtype=np.uint8))
-        print (data.symbol)
-        print (data.uco)
 
     def update_labelpos(self, x, y):
         """
