@@ -39,6 +39,7 @@ class LVNLVariables(Entity):
         setssrlabel():      Set the SSR label
         settracklabel():    Set the track label
         setwtc():           Set the wtc
+        setsymbol():        Set the symbol
 
     Created by: Bob van Dillen
     Date: 24-12-2021
@@ -281,15 +282,15 @@ class LVNLVariables(Entity):
             if self.symbol[idx] == 'ACC':
                 self.symbol[idx] = 'APP'
             elif self.symbol[idx] == 'APP':
-                self.symbol[idx] = 'TWR IN'
+                self.symbol[idx] = 'TWRIN'
         elif self.flighttype[idx] == 'OUTBOUND':
-            if self.symbol[idx] == 'TWR OUT':
+            if self.symbol[idx] == 'TWROUT':
                 self.symbol[idx] = 'APP'
             elif self.symbol[idx] == 'APP':
                 self.symbol[idx] = 'ACC'
         else:
             if bs.scr.atcmode == 'APP':
-                self.symbol[idx] = 'TWR IN'
+                self.symbol[idx] = 'TWRIN'
             else:
                 self.symbol[idx] == 'ACC'
 
@@ -419,7 +420,7 @@ class LVNLVariables(Entity):
         if isinstance(flighttype, str):
             self.flighttype[idx] = flighttype.upper()
             if self.flighttype[idx] == 'OUTBOUND':
-                self.symbol[idx] = 'TWR OUT'
+                self.symbol[idx] = 'TWROUT'
             elif self.flighttype[idx] == 'INBOUND':
                 self.symbol[idx] = 'ACC'
 
@@ -614,7 +615,7 @@ class LVNLVariables(Entity):
             self.wtc[idx] = wtc.upper()
 
     @stack.command(name='SYMBOL', brief='SYMBOL CALLSIGN MODE[ACC/APP/TWRIN/TWROUT]')
-    def setwtc(self, idx: 'acid', symbol: str = ''):
+    def setsymbol(self, idx: 'acid', symbol: str = ''):
         """
         Function: Set the wtc
         Args:
