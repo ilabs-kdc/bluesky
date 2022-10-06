@@ -86,7 +86,7 @@ class LVNLVariables(Entity):
 
         self.autolabel[-n:] = True
         self.tracklbl[-n:]  = True
-        self.mlbl[-n:]      = True   #False
+        self.mlbl[-n:]      = True
         self.symbol[-n:]    = 'ACC'
         self.uco[-n:]       = '0'
 
@@ -245,7 +245,10 @@ class LVNLVariables(Entity):
 
         # Set the symbol
         if IP[-11:] in self.atcIP['TWR']:
-            self.symbol[idx] = 'TWR'
+            if self.flighttype[idx] == 'OUTBOUND':
+                self.symbol[idx] = 'TWROUT'
+            else:
+                self.symbol[idx] = 'TWRIN'
         elif IP[-11:] in self.atcIP['APP']:
             self.symbol[idx] = 'APP'
         elif IP[-11:] in self.atcIP['ACC']:
