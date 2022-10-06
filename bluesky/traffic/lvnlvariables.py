@@ -617,14 +617,14 @@ class LVNLVariables(Entity):
     @stack.command(name='SYMBOL', brief='SYMBOL CALLSIGN MODE[ACC/APP/TWRIN/TWROUT]')
     def setsymbol(self, idx: 'acid', symbol: str = ''):
         """
-        Function: Set the wtc
+        Function: Set the symbol
         Args:
-            idx:    index for traffic arrays [int]
-            wtc:    wtc [str]
+            idx:      index for traffic arrays [int]
+            symbol:   symbol controller responsible [ACC/APP/TWRIN/TWROUT] [str]
         Returns: -
 
-        Created by: Bob van Dillen
-        Date: 21-12-2021
+        Created by: Ajay Kumbhar
+
         """
 
         if isinstance(symbol, str):
