@@ -981,6 +981,7 @@ def applabel(actdata, data, i):
         label += 8*4*' '
 
     # Micro label   #elif is tried for gmp eor
+    # print(data.rwy[i])
     if data.mlbl[i]:
         if data.flighttype[i].upper() == 'OUTBOUND':
             mlabel += '      '+chr(30)   #30
