@@ -40,6 +40,9 @@ class ScreenIO:
         # ATC Mode
         self.atcmode = bs.settings.atc_mode
 
+        # Simulation
+        self.simname = ''
+
         # Dicts of custom aircraft and group colors
         self.custacclr = dict()
         self.custgrclr = dict()
@@ -257,6 +260,19 @@ class ScreenIO:
 
         bs.net.send_event(b'DISPLAYFLAG', dict(flag='GUITRAFDATA', args={'cmd': "TRACKLABEL", 'data': idx}))
 
+    def setsimname(self, name):
+        """
+        Function: Set the simulation name
+        Args:
+            name: Simulation name [str]
+        Returns: -
+
+        Created by: Bob van Dillen
+        Date: 6-10-2022
+        """
+
+        self.simname = name
+
     def showroute(self, acid):
         ''' Toggle show route for this aircraft '''
         self.route_acid[stack.sender()] = acid
@@ -348,9 +364,12 @@ class ScreenIO:
             data['vmax']        = bs.traf.perf.vmax
 
             # LVNL Variables
+            data['simname']     = bs.scr.simname
+            data['atcip']       = bs.traf.lvnlvars.atcIP
             data['flighttype']  = bs.traf.lvnlvars.flighttype
             data['wtc']         = bs.traf.lvnlvars.wtc
-            data['dtg']         = bs.traf.lvnlvars.dtg_tbar
+            data['dtg']         = bs.traf.lvnlvars.dtg
+            data['dtg_route']   = bs.traf.lvnlvars.dtg_route
 
             # Transition level as defined in traf
             data['translvl']    = bs.traf.translvl
@@ -365,8 +384,8 @@ class ScreenIO:
 
             # Always update data
             data['arr']         = np.array(bs.traf.lvnlvars.arr)
-            data['atcip']       = bs.traf.lvnlvars.atcIP
             data['mlbl']        = np.array(bs.traf.lvnlvars.mlbl)
+            data['symbol']      = np.array(bs.traf.lvnlvars.symbol)
             data['rel']         = bs.traf.lvnlvars.rel
             data['rwy']         = np.array(bs.traf.lvnlvars.rwy)
             data['selhdg']      = bs.traf.selhdg
@@ -398,6 +417,8 @@ class ScreenIO:
         data['arr']             = data['arr'].tolist()
         data['mlbl'][idata]     = np.array(bs.traf.lvnlvars.mlbl)[itraf]
         data['mlbl']            = data['mlbl'].tolist()
+        data['symbol'][idata]   = np.array(bs.traf.lvnlvars.symbol)[itraf]
+        data['symbol']          = data['symbol'].tolist()
         data['rel'][idata]      = bs.traf.lvnlvars.rel[itraf]
         data['rwy'][idata]      = np.array(bs.traf.lvnlvars.rwy)[itraf]
         data['rwy']             = data['rwy'].tolist()

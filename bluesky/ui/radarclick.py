@@ -119,8 +119,16 @@ def radarclick(cmdline, lat, lon, acdata=None, route=None, actdata=None):
                 if clicktype == "acid":
                     idx = findnearest(lat, lon, acdata.lat, acdata.lon)
                     if idx >= 0:
+
+                        # Select the aircraft
                         if actdata and actdata.atcmode != 'BLUESKY':
-                            console.Console._instance.id_select = acdata.id[idx]
+                            # Deselect the current aircraft
+                            if console.Console._instance.id_select == acdata.id[idx]:
+                                console.Console._instance.id_select = ''
+                            # Select the aircraft
+                            else:
+                                console.Console._instance.id_select = acdata.id[idx]
+
                         else:
                             todisplay += acdata.id[idx] + " "
 

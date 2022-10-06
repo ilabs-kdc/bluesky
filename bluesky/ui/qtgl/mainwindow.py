@@ -15,15 +15,16 @@ import bluesky as bs
 from bluesky.tools.misc import tim2txt
 from bluesky.network import get_ownip
 from bluesky.ui import palette
-from bluesky.ui.qtgl import console, tid
+from bluesky.ui.qtgl import console
+from bluesky.ui.qtgl.tid import start_tid
+from bluesky.stack import stack
 
 # Child windows
 from bluesky.ui.qtgl.docwindow import DocWindow
 from bluesky.ui.qtgl.radarwidget import RadarWidget
 from bluesky.ui.qtgl.infowindow import InfoWindow
 from bluesky.ui.qtgl.settingswindow import SettingsWindow
-#from bluesky.ui.qtgl.TID import showTID
-# from bluesky.ui.qtgl.nd import ND
+
 
 if platform.system().lower() == "windows":
     from bluesky.ui.pygame.dialog import fileopen
@@ -151,7 +152,8 @@ class MainWindow(QMainWindow):
                     self.SPD:         ['fwd.svg', 'Speed Command', self.buttonClicked],
                     self.DIRECT:      ['panright', 'Direct to', self.buttonClicked],
                     self.MANUAL:      ['stop.svg', 'Set Aircraft on Manual', self.buttonClicked],
-                    self.tid:       [None, 'TID', self.buttonClicked],
+                    self.tid1:        [None, 'TID_Function', self.buttonClicked],
+                    self.tid2:        [None, 'TID_Display', self.buttonClicked],
                     }
 
         for b in buttons.items():
@@ -355,7 +357,7 @@ class MainWindow(QMainWindow):
         elif self.sender() == self.showac:
             actdata.show_traf = not actdata.show_traf
         elif self.sender() == self.showpz:
-            actdata.show_pz = not actdata.show_pz
+            actdata.show_pz = not actdata.show_pzF
         elif self.sender() == self.showapt:
             if actdata.show_apt < 3:
                 actdata.show_apt += 1
@@ -388,8 +390,22 @@ class MainWindow(QMainWindow):
             console.process_cmdline("DIRECT")
         elif self.sender() == self.MANUAL:
             console.process_cmdline("MANUAL")
-        elif self.sender() == self.tid:
-            tid.start_tid('TID', 'start')
+        elif self.sender() == self.tid1:
+            if actdata.atcmode == 'APP':
+                stack('ATCMODE APP')
+                start_tid('TID_Function', 'appmain')
+            elif actdata.atcmode == 'ACC':
+                stack('ATCMODE ACC')
+                start_tid('TID_Function', 'accmain')
+            else:
+                start_tid('TID_Function', 'base')
+        elif self.sender() == self.tid2:
+            if actdata.atcmode == 'APP':
+                stack('ATCMODE APP')
+                start_tid('TID_Display', 'appdisp')
+            elif actdata.atcmode == 'ACC':
+                stack('ATCMODE ACC')
+                start_tid('TID_Display', 'accdisp')
 
     def show_file_dialog(self):
         # Due to Qt5 bug in Windows, use temporarily Tkinter

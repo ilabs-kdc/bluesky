@@ -127,9 +127,10 @@ class VEMMISRead:
         self.tracks = self.tracks.dropna(subset=['TIME', 'X', 'Y', 'MODE_C', 'SPEED', 'HEADING',
                                                  'FLIGHT_ID', 'T_START', 'T_END'])
 
-        # Flight times data
+        # Flight times data # ROUTE
         self.flighttimes = self.flighttimes.dropna(subset=['FLIGHT_ID', 'LOCATION_TYPE',
                                                            'LOCATION_NAME', 'TIME_TYPE', 'TIME'])
+
 
     def convert_data(self):
         """
@@ -212,6 +213,7 @@ class VEMMISRead:
 
             # Apply start time
             self.tracks = self.tracks.loc[self.tracks['ACTUAL_TIME'] >= self.time0]
+            self.flighttimes = self.flighttimes.loc[self.flighttimes['TIME'] >= self.time0]    #added -AJAY
 
             self.datetime0 = self.time0
         else:
@@ -399,11 +401,10 @@ class VEMMISRead:
         Created by: Bob van Dillen
         Date: 24-5-2022
         """
-
-        # ---------- T-Bar ----------
+        # # ---------- T-Bar ----------
         # self.flightdata = self.flightdata.loc[self.flightdata['FLIGHT_TYPE'] == 'INBOUND']  # Only inbounds
-
-        # ---------- Scenario ----------
+        #
+        # # ---------- Scenario ----------
         # self.flightdata = self.flightdata.loc[self.flightdata['DEST'] == 'EHAM']  # Only inbound EHAM
         # self.flightdata = self.flightdata.loc[(self.flightdata['RUNWAY_IN'] == '18R') |
         #                                       (self.flightdata['RUNWAY_IN'] == '18C')]
@@ -424,9 +425,12 @@ class VEMMISRead:
         """
 
         # ---------- Select the right initial commands method ----------
-        cmds, cmdst = self.initial(swdatafeed)
-        # cmds, cmdst = self.initial_tbar()
-        # cmds, cmdst = self.initial_scenario('C')
+        if bs.scr.simname == 'TBAR':
+            cmds, cmdst = self.initial_tbar()
+        elif bs.scr.simname == 'GMP':
+            cmds, cmdst = self.initial_scenario('both')
+        else:
+            cmds, cmdst = self.initial(swdatafeed)
 
         # ---------- Sort and process ----------
         command_df = pd.DataFrame({'COMMAND': cmds, 'TIME': cmdst})
@@ -449,6 +453,9 @@ class VEMMISRead:
 
         Created by: Bob van Dillen
         Date: 20-1-2022
+
+        Edited by: Ajay Kumbhar
+        Edit: Add the route data for Playback mode (else condition) | Add RUNWAY commands to enable MicroLabel
         """
 
         # Initial commands
@@ -494,22 +501,26 @@ class VEMMISRead:
         cmds  += list("SSRCODE "+acid+", "+acssr)
         cmdst += list(self.flightdata['SIM_START'] + 0.01)
 
-        # SID
-        outbound = self.flightdata.dropna(subset=['SID'])
-        cmds    += list("SID "+outbound['CALLSIGN']+", "+outbound['SID']+", OFF")
-        cmdst   += list(outbound['SIM_START'] + 0.01)
+        # SID   # RUNWAY_OUT
+        outbound = self.flightdata.dropna(subset=['SID', 'RUNWAY_OUT'])
+        cmds  += list("SID "+outbound['CALLSIGN']+", "+outbound['SID']+", OFF")
+        cmdst += list(outbound['SIM_START'] + 0.01)
+        cmds  += list("RWY " + outbound['CALLSIGN'] + ", " + outbound['RUNWAY_OUT'])
+        cmdst += list(outbound['SIM_START'] + 0.01)
 
-        # ARR
-        inbound = self.flightdata.dropna(subset=['STACK'])
-        cmds   += list("ARR "+inbound['CALLSIGN']+", "+inbound['STACK']+", OFF")
-        cmdst  += list(inbound['SIM_START'] + 0.01)
-
-        # Delete route
-        cmds  += list("DELRTE "+acid)
-        cmdst += list(self.flightdata['SIM_START'] + 0.02)
+        # ARR   # RUNWAY_IN
+        inbound = self.flightdata.dropna(subset=['STACK', 'RUNWAY_IN'])
+        cmds  += list("ARR "+inbound['CALLSIGN']+", "+inbound['STACK']+", OFF")
+        cmdst += list(inbound['SIM_START'] + 0.01)
+        cmds  += list("RWY " + inbound['CALLSIGN'] + ", " + inbound['RUNWAY_IN'])
+        cmdst += list(inbound['SIM_START'] + 0.01)
 
         # Data feed dependent commands
-        if swdatafeed:
+        if swdatafeed:  # TRACK DATA    # REPLAY
+            # Delete route
+            cmds += list("DELRTE " + acid)
+            cmdst += list(self.flightdata['SIM_START'] + 0.02)
+
             datafeed = self.flightdata[['CALLSIGN', 'FLIGHT_TYPE', 'SIM_START', 'SIM_END']]
 
             # Take out flights that need to be simulated
@@ -528,6 +539,29 @@ class VEMMISRead:
             # Delete
             cmds   += list("DEL "+datafeed['CALLSIGN'])
             cmdst  += list(datafeed['SIM_END'])
+
+        else:   # ROUTE DATA    # PLAYBACK
+            # sorting required waypoint data and merging it
+            self.routedata = self.routedata.loc[self.routedata['LOCATION_TYPE'] == 'RP']
+            self.routedata = self.routedata.loc[self.routedata['TIME_TYPE'] == 'ACTUAL']
+            self.routedata = pd.merge(self.routedata, self.flightdata[['FLIGHT_ID', 'SIM_START', 'TIME_START']],
+                                      on='FLIGHT_ID')
+
+            # drop waypoints beginning with 'EH'
+            # drop previous waypoints before Start Time
+            self.routedata = self.routedata[~self.routedata['LOCATION_NAME'].str.startswith('|'.join(['EH']))]
+            self.routedata['TIME'] = (self.routedata['TIME'] - self.routedata['TIME_START']).dt.total_seconds()
+            self.routedata.drop(self.routedata[self.routedata['TIME'] < 0].index, inplace=True)
+            self.routedata.reset_index(drop=True, inplace=True)
+
+            # providing the necessary offset for SIM_START
+            count = self.routedata['CALLSIGN'].eq(self.routedata['CALLSIGN'].shift())
+            self.routedata['COUNTER'] = count.groupby(count).cumsum().add(1)
+            self.routedata['SIM_START'] = self.routedata['SIM_START'] + 0.01 * self.routedata['COUNTER']
+
+            # ADD WAYPOINT
+            cmds += list("ADDWPT " + self.routedata['CALLSIGN'] + ", " + self.routedata['LOCATION_NAME'])
+            cmdst += list(self.routedata['SIM_START'] + 0.01)
 
         return cmds, cmdst
 
@@ -737,7 +771,7 @@ class VEMMISRead:
         sugol = setsim.loc[setsim['STACK'] == 'SUGOL']
         river = setsim.loc[setsim['STACK'] == 'RIVER']
 
-        # if runway == 'both':
+        # if runway == 'both':   #IF CONDITION COMMENT
         #
         #     cmds += list("SETSIM " + self.flightdata['CALLSIGN'])
         #     cmdst += list(self.flightdata['TMA_ENTRY_SIMTIME'] + 0.01)
@@ -747,28 +781,41 @@ class VEMMISRead:
         #     sugol = self.flightdata.loc[self.flightdata['STACK'] == 'SUGOL']
         #     river = self.flightdata.loc[self.flightdata['STACK'] == 'RIVER']
 
-        cmds += list("SETROUTE " + artip['CALLSIGN'] + ' ATP18C')
+        #SETROUTE  #ARR
+        cmds  += list("ARR " + artip['CALLSIGN'] + ' ATP18C')
         cmdst += list(artip['TMA_ENTRY_SIMTIME'] + 0.01)
+        cmds  += list("RWY " + artip['CALLSIGN'] + " 18C")
+        cmdst += list(artip['SIM_START'] + 0.01)
 
-        cmds += list("SETROUTE " + sugol['CALLSIGN'] + ' SUG18R')
+        cmds  += list("ARR " + sugol['CALLSIGN'] + ' SUG18R')
         cmdst += list(sugol['TMA_ENTRY_SIMTIME'] + 0.01)
+        cmds  += list("RWY " + sugol['CALLSIGN'] + " 18R")
+        cmdst += list(sugol['SIM_START'] + 0.01)
 
         if runway == 'R':
-            cmds += list("SETROUTE " + river['CALLSIGN'] + ' RIV18R')
+            cmds  += list("ARR " + river['CALLSIGN'] + ' RIV18R')
+            cmdst += list(river['TMA_ENTRY_SIMTIME'] + 0.01)
+            cmds  += list("RWY " + river['CALLSIGN'] + " 18R")
+            cmdst += list(river['SIM_START'] + 0.01)
         if runway == 'C':
-            cmds += list("SETROUTE " + river['CALLSIGN'] + ' RIV18C')
+            cmds  += list("ARR " + river['CALLSIGN'] + ' RIV18C')
+            cmdst += list(river['TMA_ENTRY_SIMTIME'] + 0.01)
+            cmds  += list("RWY " + river['CALLSIGN'] + " 18C")
+            cmdst += list(river['SIM_START'] + 0.01)
         if runway == 'both':
-            cmds += list("SETROUTE " + river['CALLSIGN'] + ' RIV18R')
-        cmdst += list(river['TMA_ENTRY_SIMTIME'] + 0.01)
+            cmds  += list("ARR " + river['CALLSIGN'] + ' RIV18R')
+            cmdst += list(river['TMA_ENTRY_SIMTIME'] + 0.01)
+            cmds  += list("RWY " + river['CALLSIGN'] + " 18R")
+            cmdst += list(river['SIM_START'] + 0.01)
 
         # Delete
         if runway == 'R':
             delete = self.flightdata.loc[self.flightdata['RUNWAY_IN'] == '18C']
-            cmds += list("DEL " + delete['CALLSIGN'])
+            cmds  += list("DEL " + delete['CALLSIGN'])
             cmdst += list(delete['SIM_END'])
         if runway == 'C':
             delete = self.flightdata.loc[self.flightdata['RUNWAY_IN'] == '18R']
-            cmds += list("DEL " + delete['CALLSIGN'])
+            cmds  += list("DEL " + delete['CALLSIGN'])
             cmdst += list(delete['SIM_END'])
 
         return cmds, cmdst

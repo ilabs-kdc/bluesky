@@ -3,13 +3,14 @@ This python file is used to start, change and close the TID
 
 Created by: Jan Post
 """
+import socket
 
 import bluesky as bs
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QDialog
 from PyQt5.QtGui import QFont
 from PyQt5 import uic
-from bluesky.ui.qtgl import console
+from bluesky.ui.qtgl import console, gui
 from bluesky.ui.qtgl.TIDS import *
 from bluesky.tools import misc
 import platform
@@ -25,6 +26,8 @@ def start_tid(name, layout):
     Returns: -
 
     Created by: Jan Post
+    Edited by: Ajay Kumbhar
+    Edit: Implement dual TID | Set the necessary offset for iLabs2 PC
     """
 
     # Create Dialog
@@ -65,8 +68,21 @@ def start_tid(name, layout):
     # Window settings
     globals()[str(name)].setWindowTitle(name)
     globals()[str(name)].setWindowModality(Qt.WindowModal)
-    globals()[str(name)].showMaximized()
-    globals()[str(name)].setWindowFlag(Qt.WindowMinMaxButtonsHint)
+
+    if (name == 'TID_Function' and socket.gethostbyname(socket.gethostname()) == '192.168.0.6'):
+        globals()[str(name)].setGeometry(500, 200, 300, 250)
+        globals()[str(name)].move(2500, 2500)
+        globals()[str(name)].showMaximized()
+        globals()[str(name)].setWindowFlags(Qt.WindowMinMaxButtonsHint | Qt.FramelessWindowHint)
+    elif (name == 'TID_Display' and socket.gethostbyname(socket.gethostname()) == '192.168.0.6'):
+        globals()[str(name)].setGeometry(500, 200, 300, 250)
+        globals()[str(name)].move(0, 2500)
+        globals()[str(name)].showMaximized()
+        globals()[str(name)].setWindowFlags(Qt.WindowMinMaxButtonsHint | Qt.FramelessWindowHint)
+    else:
+        globals()[str(name)].showMaximized()
+        globals()[str(name)].setWindowFlag(Qt.WindowMinMaxButtonsHint)
+
     globals()[str(name)].exec()
 
 
