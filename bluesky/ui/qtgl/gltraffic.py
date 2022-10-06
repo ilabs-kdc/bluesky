@@ -626,6 +626,8 @@ class Traffic(glh.RenderObject, layer=100):
                         rawmlabel     += mlabel
                         rawssrlabel   += ssrlabel
 
+
+                    self.trafdata.mlabelpos[i] = initial_micropos(actdata.acdata, i)
                     self.trafdata.leaderlinepos[i] = leaderline_vertices(actdata, self.trafdata.labelpos[i][0],
                                                                          self.trafdata.labelpos[i][1], i)
                 # Colours
@@ -985,8 +987,11 @@ def applabel(actdata, data, i):
     if data.mlbl[i]:
         if data.flighttype[i].upper() == 'OUTBOUND':
             mlabel += '      '+chr(30)   #30
-        elif (len(data.rwy[i]) == 3) and ((data.rwy[i] in ['18R', '18R_E']) or ((data.arr[i] in ['ATP18R', 'RIV18R', 'RIV18REOR', 'SUG18R', 'SUG18REOR']))):
-            mlabel += '%-7s' % ('    ' + data.rwy[i][:7])
+        elif (len(data.rwy[i]) == 3):
+            if data.rwy[i] in ['18C', '18C_E'] or data.arr[i] in ['ATP18C', 'ATP18CEOR', 'RIV18C', 'SUG18C']:
+                mlabel += '%-7s' % data.rwy[i][:7]
+            else:
+                mlabel += '%-7s' % ('    ' + data.rwy[i][:7])
         elif (len(data.rwy[i]) == 5) and ((data.rwy[i] in ['18R', '18R_E']) or data.arr[i] in ['ATP18R', 'RIV18R', 'RIV18REOR', 'SUG18R', 'SUG18REOR']):
             mlabel += '%-7s' % ('  '+data.rwy[i][:7])
         elif (len(data.rwy[i]) == 2):
@@ -1196,3 +1201,26 @@ def draw_track_sym(sym, val): # for instances
     sym = [i for i in sym if i == val]
     total = len(sym)
     return total
+
+def initial_micropos(data, i):
+    """
+    Function: Compute the offset for the initial microlabel position
+    Args:
+        data:   aircraft data [dict]
+        i:      index for data [int]
+    Returns:
+        labelpos:   offsets x and y [list]
+
+    Created by: Ajay Kumbhar
+    Date:
+    """
+    ac_size = settings.ac_size
+    text_size = settings.text_size
+
+    #   #   Enable data.rwy for normal cases
+    if data.rwy[i] in ['18C', '18C_E'] or data.arr[i] in ['ATP18C', 'ATP18CEOR', 'RIV18C', 'SUG18C']:
+        mlabelpos = [2 * 0.8 * text_size - ac_size, 0.5 * ac_size]
+    else:
+        mlabelpos = [-8 * 0.8 * text_size - ac_size, 0.5 * ac_size]  # -3
+
+    return mlabelpos
