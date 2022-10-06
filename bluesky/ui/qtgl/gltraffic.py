@@ -416,10 +416,10 @@ class Traffic(glh.RenderObject, layer=100):
                     self.acs_lvnluacc.draw(n_instances=draw_track_sym(actdata.acdata.symbol, 'ACC'))
                 if draw_track_sym(actdata.acdata.symbol, 'APP') != 0:
                     self.acs_lvnluapp.draw(n_instances=draw_track_sym(actdata.acdata.symbol, 'APP'))
-                if draw_track_sym(actdata.acdata.symbol, 'TWR IN') != 0:
-                    self.acs_lvnlutwr_in.draw(n_instances=draw_track_sym(actdata.acdata.symbol, 'TWR IN'))
-                if draw_track_sym(actdata.acdata.symbol, 'TWR OUT') != 0:
-                    self.acs_lvnlutwr_out.draw(n_instances=draw_track_sym(actdata.acdata.symbol, 'TWR OUT'))
+                if draw_track_sym(actdata.acdata.symbol, 'TWRIN') != 0:
+                    self.acs_lvnlutwr_in.draw(n_instances=draw_track_sym(actdata.acdata.symbol, 'TWRIN'))
+                if draw_track_sym(actdata.acdata.symbol, 'TWROUT') != 0:
+                    self.acs_lvnlutwr_out.draw(n_instances=draw_track_sym(actdata.acdata.symbol, 'TWROUT'))
             elif actdata.atcmode == 'ACC':
                 self.acs_lvnlacc.draw(n_instances=actdata.naircraft)
             if self.tbar_ac is not None and self.show_tbar_ac:
@@ -716,12 +716,12 @@ class Traffic(glh.RenderObject, layer=100):
         self.lonapp.update(np.array(data.lon[iapp], dtype=np.float32))
         self.colorapp.update(np.array(color[iapp], dtype=np.uint8))
 
-        itwrin = misc.get_indices(data.symbol, 'TWR IN')
+        itwrin = misc.get_indices(data.symbol, 'TWRIN')
         self.lattwr_in.update(np.array(data.lat[itwrin], dtype=np.float32))
         self.lontwr_in.update(np.array(data.lon[itwrin], dtype=np.float32))
         self.colortwr_in.update(np.array(color[itwrin], dtype=np.uint8))
 
-        itwrout = misc.get_indices(data.symbol, 'TWR OUT')
+        itwrout = misc.get_indices(data.symbol, 'TWROUT')
         self.lattwr_out.update(np.array(data.lat[itwrout], dtype=np.float32))
         self.lontwr_out.update(np.array(data.lon[itwrout], dtype=np.float32))
         self.colortwr_out.update(np.array(color[itwrout], dtype=np.uint8))
@@ -1184,7 +1184,6 @@ def leading_zeros(number):
         return '0'+str(round(number))
     else:
         return str(round(number))
-
 
 def draw_track_sym(sym, val): # for instances
     """

@@ -26,6 +26,8 @@ def start_tid(name, layout):
     Returns: -
 
     Created by: Jan Post
+    Edited by: Ajay Kumbhar
+    Edit: Implement dual TID | Set the necessary offset for iLabs2 PC
     """
 
     # Create Dialog

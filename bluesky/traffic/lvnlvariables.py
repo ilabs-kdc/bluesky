@@ -612,3 +612,19 @@ class LVNLVariables(Entity):
 
         if isinstance(wtc, str):
             self.wtc[idx] = wtc.upper()
+
+    @stack.command(name='SYMBOL', brief='SYMBOL CALLSIGN MODE[ACC/APP/TWRIN/TWROUT]')
+    def setwtc(self, idx: 'acid', symbol: str = ''):
+        """
+        Function: Set the wtc
+        Args:
+            idx:    index for traffic arrays [int]
+            wtc:    wtc [str]
+        Returns: -
+
+        Created by: Bob van Dillen
+        Date: 21-12-2021
+        """
+
+        if isinstance(symbol, str):
+            self.symbol[idx] = symbol.upper()
