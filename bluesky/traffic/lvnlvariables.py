@@ -627,7 +627,6 @@ class LVNLVariables(Entity):
         Returns: -
 
         Created by: Ajay Kumbhar
-
         """
 
         if isinstance(symbol, str):
