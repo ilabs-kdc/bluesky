@@ -402,7 +402,7 @@ class VEMMISRead:
         Date: 24-5-2022
         """
         # # ---------- T-Bar ----------
-        # self.flightdata = self.flightdata.loc[self.flightdata['FLIGHT_TYPE'] == 'INBOUND']  # Only inbounds
+        self.flightdata = self.flightdata.loc[self.flightdata['FLIGHT_TYPE'] == 'OUTBOUND']  # Only inbounds
         #
         # # ---------- Scenario ----------
         # self.flightdata = self.flightdata.loc[self.flightdata['DEST'] == 'EHAM']  # Only inbound EHAM
