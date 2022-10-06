@@ -227,16 +227,6 @@ class Traffic(glh.RenderObject, layer=100):
         self.acs_lvnlacc.set_attribs(lat=self.lat, lon=self.lon, color=self.color,
                                    instance_divisor=1)
 
-        # acv_lvnluacc = np.array([(-0.5 * ac_size, -0.5 * ac_size),
-        #                            (0.5 * ac_size, 0.5 * ac_size),
-        #                            (0.5 * ac_size, -0.5 * ac_size),
-        #                            (-0.5 * ac_size, 0.5 * ac_size),
-        #                            (-0.5 * ac_size, -0.5 * ac_size),
-        #                            (0.5 * ac_size, -0.5 * ac_size),
-        #                            (0.5 * ac_size, 0.5 * ac_size),
-        #                            (-0.5 * ac_size, 0.5 * ac_size)],
-        #                           dtype=np.float32)  # a square with diagonals - ACC MODE
-
         acv_lvnluacc = np.array([(-0.375 * ac_size, 0 * ac_size),
                                    (-0.375 * ac_size, -0.5 * ac_size),
                                    (-0.375 * ac_size, 0 * ac_size),
@@ -289,18 +279,6 @@ class Traffic(glh.RenderObject, layer=100):
         self.acs_lvnlutwr_in.create(vertex=acv_lvnlutwr_in)
         self.acs_lvnlutwr_in.set_attribs(lat=self.lattwr_in, lon=self.lontwr_in, color=self.colortwr_in,
                                       instance_divisor=1)
-
-        # acv_lvnlutwr_out = np.array([(-0.375 * ac_size, 0 * ac_size),
-        #                            (-0.375 * ac_size, -0.5 * ac_size),
-        #                            (-0.375 * ac_size, 0 * ac_size),
-        #                            (0.375 * ac_size, 0 * ac_size),
-        #                            (0.375 * ac_size, -0.5 * ac_size),
-        #                            (0.375 * ac_size, 0 * ac_size),
-        #                            (0.125 * ac_size, 0.5 * ac_size),
-        #                            (-0.125 * ac_size, 0.5 * ac_size),
-        #                            (-0.375 * ac_size, 0 * ac_size),
-        #                            (0.375 * ac_size, 0 * ac_size)],
-        #                             dtype=np.float32)  # A - UCO at ACC
 
         acv_lvnlutwr_out = np.array([(0.375 * ac_size, 0.33 * ac_size),
                                    (0.5 * ac_size, 0 * ac_size),
