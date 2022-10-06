@@ -40,6 +40,9 @@ class ScreenIO:
         # ATC Mode
         self.atcmode = bs.settings.atc_mode
 
+        # Simulation
+        self.simname = ''
+
         # Dicts of custom aircraft and group colors
         self.custacclr = dict()
         self.custgrclr = dict()
@@ -244,6 +247,19 @@ class ScreenIO:
         else:
             return False, 'SETATCMODE: ATC Mode not recognized'
 
+    def setsimname(self, name):
+        """
+        Function: Set the simulation name
+        Args:
+            name: Simulation name [str]
+        Returns: -
+
+        Created by: Bob van Dillen
+        Date: 6-10-2022
+        """
+
+        self.simname = name
+
     def showlabel(self, acid):
         """
         Function: Show the track label
@@ -351,6 +367,7 @@ class ScreenIO:
             data['vmax']        = bs.traf.perf.vmax
 
             # LVNL Variables
+            data['simname']     = bs.scr.simname
             data['atcip']       = bs.traf.lvnlvars.atcIP
             data['flighttype']  = bs.traf.lvnlvars.flighttype
             data['wtc']         = bs.traf.lvnlvars.wtc

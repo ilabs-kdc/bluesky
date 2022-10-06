@@ -97,17 +97,18 @@ class TrafficData:
         Note: Enable data.arr conditions only for GMPEOR scenario
         """
 
-        #   #   Enable data.rwy for normal cases
-        # if data.rwy[i] in ['18R', '18R_E']:
-        #     labelpos = np.array([-125, 0])  # -125
-        # else:
-        #     labelpos = np.array([50, 0])
-
-        #   #   Enable data.arr only for GMPEOR scenario
-        if data.arr[i] in ['ATP18R', 'RIV18R', 'RIV18REOR', 'SUG18R', 'SUG18REOR']:
-            labelpos = [-150, 0]  # -125
+        #   Enable data.arr only for GMPEOR scenario
+        if data.simname == 'GMPEOR':
+            if data.arr[i] in ['ATP18R', 'RIV18R', 'RIV18REOR', 'SUG18R', 'SUG18REOR']:
+                labelpos = [-150, 0]  # -125
+            else:
+                labelpos = [80, 0]  # 50
         else:
-            labelpos = [80, 0]  # 50
+            #   #   Enable data.rwy for normal cases
+            if data.rwy[i] in ['18R', '18R_E']:
+                labelpos = np.array([-125, 0])  # -125
+            else:
+                labelpos = np.array([50, 0])
 
         return labelpos
 
@@ -122,24 +123,14 @@ class TrafficData:
 
         Created by: Ajay Kumbhar
         Date:
-
-        Note: Enable data.arr conditions only for GMPEOR scenario
         """
         ac_size = settings.ac_size
         text_size = settings.text_size
 
-        #   #   Enable data.rwy for normal cases
-        # print(data.rwy)
         if data.rwy[i] in ['18C', '18C_E'] or data.arr[i] in ['ATP18C', 'ATP18CEOR', 'RIV18C', 'SUG18C']:
             mlabelpos = [2 * 0.8 * text_size - ac_size, 0.5 * ac_size]
         else:
             mlabelpos = [-8 * 0.8 * text_size - ac_size, 0.5 * ac_size]  # -3
-
-        #   #   Enable data.arr only for GMPEOR scenario
-        # if data.arr[i] in ['ATP18C', 'ATP18CEOR', 'RIV18C', 'SUG18C']:
-        #     mlabelpos = [2 * 0.8 * text_size - ac_size, 0.5 * ac_size]  # 2   #0.5-y
-        # else:
-        #     mlabelpos = [-8 * 0.8 * text_size - ac_size, 0.5 * ac_size]  # -3
 
         return mlabelpos
 

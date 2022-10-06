@@ -427,6 +427,12 @@ def initbasecmds():
             bs.sim.setseed,
             "Set seed for all functions using a randomizer (e.g.mcre,noise)",
         ],
+        "SETSIMNAME": [
+            "SETSIMNAME SIMNAME",
+            "txt",
+            bs.scr.setsimname,
+            "Set the simulation name"
+        ],
         "SHOWLABEL": [
             "SHOWLABEL CALLSIGN",
             "txt",

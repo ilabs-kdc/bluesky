@@ -425,9 +425,12 @@ class VEMMISRead:
         """
 
         # ---------- Select the right initial commands method ----------
-        # cmds, cmdst = self.initial(swdatafeed)
-        # cmds, cmdst = self.initial_tbar()
-        cmds, cmdst = self.initial_scenario('both')
+        if bs.scr.simname == 'TBAR':
+            cmds, cmdst = self.initial_tbar()
+        elif bs.scr.simname == 'GMP':
+            cmds, cmdst = self.initial_scenario('both')
+        else:
+            cmds, cmdst = self.initial(swdatafeed)
 
         # ---------- Sort and process ----------
         command_df = pd.DataFrame({'COMMAND': cmds, 'TIME': cmdst})
