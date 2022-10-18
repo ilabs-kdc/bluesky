@@ -188,6 +188,11 @@ class Traffic(Entity):
             # LVNL Variables
             self.lvnlvars = LVNLVariables()  # Variables used by LVNL
 
+            # Temporary
+            self.esf = np.array([])
+            self.thrust = np.array([])
+            self.drag = np.array([])
+
         # Default bank angles per flight phase
         self.bphase = np.deg2rad(np.array([15, 35, 35, 35, 15, 45]))
 

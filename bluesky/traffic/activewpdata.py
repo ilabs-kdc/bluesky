@@ -31,6 +31,9 @@ class ActiveWaypoint(Entity, replaceable=True):
             self.curlegdir  = np.array([])    # [deg] direction to active waypoint upon activation
             self.curleglen  = np.array([])    # [deg] direction to active waypoint upon activation
 
+            self.altconst   = np.array([], dtype=np.bool)    # Indicate if waypoint is altitude constrained
+            self.tempaltconst = np.array([], dtype=np.bool)    # switch to remember previous altitude constraint
+
     def create(self, n=1):
         super().create(n)
         # LNAV route navigation
@@ -53,6 +56,9 @@ class ActiveWaypoint(Entity, replaceable=True):
         self.swlastwp[-n:]   = False    # Switch indicating active waypoint is last waypoint
         self.curlegdir[-n:]  = -999.0   # [deg] direction to active waypoint upon activation
         self.curleglen[-n:]  = -999.0   # [nm] distance to active waypoint upon activation
+
+        self.altconst[-n:]   = True
+        self.tempaltconst[-n:] = -999
   
     def Reached(self, qdr, dist, flyby, flyturn, turnradnm,swlastwp):
         # Calculate distance before waypoint where to start the turn

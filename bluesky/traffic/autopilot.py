@@ -1,5 +1,5 @@
 """ Autopilot Implementation."""
-from math import sin, cos, radians, sqrt, atan
+from math import sin, cos, radians, sqrt, atan, floor, ceil, tan
 import numpy as np
 try:
     from collections.abc import Collection
@@ -15,8 +15,10 @@ from bluesky.tools.aero import ft, nm, fpm, vcasormach2tas, vcas2tas, tas2cas, c
 from bluesky.tools.geo import latlondist
 from bluesky.core import Entity, timed_function
 from .route import Route
+from bluesky.traffic.performance.wilabada.performance import esf_d, PHASE
 from bluesky.traffic.performance.wilabada.EEI import EEI
 from bluesky.stack.simstack import pcall
+from .descent import find_gamma
 
 
 bs.settings.set_variable_defaults(fms_dt=10.5)
@@ -47,6 +49,7 @@ class Autopilot(Entity, replaceable=True):
             # VNAV variables
             self.dist2vs  = np.array([])  # distance from coming waypoint to TOD
             self.dist2accel = np.array([]) # Distance to go to acceleration(decelaration) for turn next waypoint [nm]
+            self.dist2vscount = np.array([]) #ADDED
 
             self.swvnavvs = np.array([])  # whether to use given VS or not
             self.vnavvs   = np.array([])  # vertical speed in VNAV
@@ -73,6 +76,12 @@ class Autopilot(Entity, replaceable=True):
 
             self.EEI = EEI()
             self.TOsw = np.array([])
+
+            # Descent path switch
+            self.dpswitch = np.array([])
+            self.geo = np.array([])
+            self.steepnessv2 = np.array([])
+
     def create(self, n=1):
         super().create(n)
 
@@ -82,6 +91,10 @@ class Autopilot(Entity, replaceable=True):
         self.alt[-n:] = bs.traf.alt[-n:]
 
         self.TOsw[-n] = False
+        self.dpswitch[-n:] = True
+        self.geo[-n:] = False
+        self.steepnessv2[-n:] = self.steepness
+
         # LNAV variables
         self.qdr2wp[-n:] = -999.   # Direction to waypoint from the last time passing was checked
         self.dist2wp[-n:]  = -999. # Distance to go to next waypoint [nm]
@@ -91,6 +104,7 @@ class Autopilot(Entity, replaceable=True):
         # VNAV Variables
         self.dist2vs[-n:] = -999.
         self.dist2accel[-n:] = -999.  # Distance to go to acceleration(decelaration) for turn next waypoint [nm]
+        self.dist2vscount [-n:] = -999.
 
         # Traffic performance data
         #(temporarily default values)
@@ -138,6 +152,21 @@ class Autopilot(Entity, replaceable=True):
 
             # Get next wp, if there still is one
             if not bs.traf.actwp.swlastwp[i]:
+
+                r = self.route[i]
+                print(333333333333333333333333333333333333)
+                print()
+                print('New wpt data', r.wpalt[r.iactwp], r.wpname[r.iactwp])
+                print('Alt nu', round(bs.traf.alt[i]/ft/100,3))
+                if r.wpalt[r.iactwp] > -999:
+                    # bs.traf.actwp.altconst[i] = True
+                    self.dpswitch[i] = True
+                else:
+                    # bs.traf.actwp.altconst[i] = False
+                    self.dpswitch[i] = False
+
+                if self.dist2vscount[i] > 0: self.dist2vscount[i] -= 1
+
                 lat, lon, alt, bs.traf.actwp.nextspd[i], bs.traf.actwp.xtoalt[i], toalt, \
                     bs.traf.actwp.xtorta[i], bs.traf.actwp.torta[i], \
                     lnavon, flyby, flyturn, turnrad, turnspd,\
@@ -168,7 +197,7 @@ class Autopilot(Entity, replaceable=True):
             bs.traf.actwp.flyby[i] = int(flyby)
 
             # User has entered an altitude for this waypoint
-            if alt >= -0.01:
+            if alt >= -0.01 and not bs.traf.actwp.tempaltconst[i]:
                 bs.traf.actwp.nextaltco[i] = alt  # [m]
 
             #if not bs.traf.swlnav[i]:
@@ -261,19 +290,6 @@ class Autopilot(Entity, replaceable=True):
         Date: 26/09/2022
         '''
 
-        # random number LOOK FOR ALTERNATIVE
-        max_decel = 0.3
-
-        # Landing speed based on BADA 3.10
-        kts = 0.5144
-        spd_landing = bs.traf.perf.vmld + 5 * kts
-
-        # # Time needed to decelerate to landing speed
-        # preferred_time = (bs.traf.cas - spd_landing) / max_decel
-        #
-        # preferred_distance = bs.traf.alt / self.steepness
-        # dist2vs = abs(bs.traf.alt - bs.traf.actwp.nextaltco) / self.steepness #+ bs.traf.actwp.turndist
-
         for i,route in enumerate(self.route):
             if len(route.wpname) == 0:
                 continue
@@ -281,11 +297,18 @@ class Autopilot(Entity, replaceable=True):
             if bs.traf.swvnavspd[i] == True and bs.traf.swvnav[i] == True:
                 continue
 
-            # Time needed to decelerate to landing speed
-            preferred_time = (bs.traf.cas - spd_landing) / max_decel
+            # random number LOOK FOR ALTERNATIVE
+            max_decel = 0.3
 
-            preferred_distance = bs.traf.alt[i] / self.steepness[i]
-            dist2vs = abs(bs.traf.alt[i] - bs.traf.actwp.nextaltco[i]) / self.steepness[i]  # + bs.traf.actwp.turndist
+            # Landing speed based on BADA 3.10
+            kts = 0.5144
+            spd_landing = bs.traf.perf.vmld + 5 * kts
+
+            # Time needed to decelerate to landing speed
+            preferred_time = (bs.traf.cas[i] - spd_landing) / max_decel
+
+            preferred_distance = bs.traf.alt[i] / self.steepness
+            dist2vs = abs(bs.traf.alt[i] - bs.traf.actwp.nextaltco[i]) / self.steepness  # + bs.traf.actwp.turndist
 
             # Find distance to destination
             dist = latlondist(bs.traf.lat[i], bs.traf.lon[i], route.wplat[0], route.wplon[0])
@@ -301,10 +324,10 @@ class Autopilot(Entity, replaceable=True):
                 bs.traf.swvnavspd[i] = True
 
             ### Dismiss altitude command before landing
-            if dist2wpt < dist2vs[i] and bs.traf.swdescent[i] and not bs.traf.swvnav[i]:
+            if dist2wpt < dist2vs and bs.traf.swdescent[i] and not bs.traf.swvnav[i]:
                 print(bs.traf.id[i], 'Turned on VNAV')
                 bs.traf.swvnav[i] = True
-                self.dist2vs[i] = dist2vs[i]
+                self.dist2vs[i] = dist2vs
 
     def update(self):
         # FMS LNAV mode:
@@ -328,8 +351,34 @@ class Autopilot(Entity, replaceable=True):
         #self.dist2wp   = 60. * nm * np.sqrt(dx * dx + dy * dy) # [m]
 
         # ADDED Dismiss speed commands if too close to runway
-        self.dismiss_command()
+        # self.dismiss_command()
 
+        # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+        bs.traf.actwp.tempaltconst = np.where(self.dist2vscount < 1, False, bs.traf.actwp.tempaltconst)
+
+        startdescent = (self.dist2wp < self.dist2vs) * (self.dist2vscount < 1) # What happens during climb?
+        # print('start',self.dist2vs/nm,  (self.dist2wp < self.dist2vs), (self.dist2vscount < 1), startdescent)
+        # if (self.dist2vscount < 1): print('start', self.dist2wp, self.dist2vs)
+
+        self.swvnavvs = bs.traf.swvnav * np.where(bs.traf.swlnav, startdescent,
+                                                  self.dist2wp <= np.maximum(185.2, bs.traf.actwp.turndist))
+        bs.traf.actwp.vs = np.where(self.geo, self.steepnessv2*bs.traf.gs, -999)
+
+        self.vnavvs = np.where(self.swvnavvs, bs.traf.actwp.vs, self.vnavvs)
+        selvs = np.where(abs(bs.traf.selvs) > 0.1, bs.traf.selvs, self.vsdef)  # m/s
+        self.vs = np.where(self.swvnavvs, self.vnavvs, selvs)
+        self.alt = np.where(self.swvnavvs, bs.traf.actwp.nextaltco, bs.traf.selalt)
+        # When descending or climbing in VNAV also update altitude command of select/hold mode
+        bs.traf.selalt = np.where(self.swvnavvs, bs.traf.actwp.nextaltco, bs.traf.selalt)
+
+        # print('selalt', bs.traf.actwp.nextaltco, bs.traf.selalt)
+
+
+
+        """ 
         # VNAV logic: descend as late as possible, climb as soon as possible
         startdescent = (self.dist2wp < self.dist2vs) + (bs.traf.actwp.nextaltco > bs.traf.alt)
 
@@ -362,6 +411,10 @@ class Autopilot(Entity, replaceable=True):
 
         # When descending or climbing in VNAV also update altitude command of select/hold mode
         bs.traf.selalt = np.where(self.swvnavvs,bs.traf.actwp.nextaltco,bs.traf.selalt)
+        """
+        # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
         # LNAV commanded track angle
         self.trk = np.where(bs.traf.swlnav, self.qdr2wp, self.trk)
@@ -404,7 +457,7 @@ class Autopilot(Entity, replaceable=True):
 
 
         # ADDED Turn on speed schedule bool
-        usespds = (self.spds < bs.traf.actwp.spdcon)
+        usespds = (self.spds < bs.traf.actwp.spdcon) #or bs.traf.actwp.spdcon < 0)
 
         # ADDED During descent, speed schedule can be overwritten if own speed is already slower than schedule
         self.spds = np.where(vcasormach2tas(self.spds, bs.traf.alt) > vcasormach2tas(bs.traf.selspd, bs.traf.alt),
@@ -450,7 +503,7 @@ class Autopilot(Entity, replaceable=True):
         bs.traf.selspd = np.where(inoldturn*(bs.traf.actwp.oldturnspd>0.)*bs.traf.swvnavspd*bs.traf.swvnav*bs.traf.swlnav,
                                   bs.traf.actwp.oldturnspd,bs.traf.selspd)
 
-        """ 
+        """
         # Another overwrite
         speed = self.EEI.speeds(bs.traf.type, bs.traf.alt)*0.514444
         # speed0 = self.EEI.speeds(bs.traf.type, 0)*0.514444
@@ -555,43 +608,47 @@ class Autopilot(Entity, replaceable=True):
         # VNAV Descent mode
         if bs.traf.alt[idx] > toalt + 10. * ft:
 
+            r = self.route[idx]
+            icurr = r.iactwp  # index of active waypoint
+
+            print('kom ik wel bij alle punten? ik ben nu bij :', r.wpname[icurr])
+            print('wat zijn mn bools? :', bs.traf.actwp.altconst[idx], self.dpswitch[idx])
+
+            # if bs.traf.actwp.altconst[idx] and self.dpswitch[idx]:
+            if self.dpswitch[idx]:
+                self.descentpath(idx)
+                self.dpswitch[idx] = False
+
             # Turn on descent switch for speed schedule
             bs.traf.swdescent[idx] = True
 
-            #Calculate max allowed altitude at next wp (above toalt)
-            bs.traf.actwp.nextaltco[idx] = min(bs.traf.alt[idx],toalt + xtoalt * self.steepness) # [m] next alt constraint
-            bs.traf.actwp.xtoalt[idx]    = xtoalt # [m] distance to next alt constraint measured from next waypoint
-
-            print('nxaltco', bs.traf.actwp.nextaltco[idx])
-
-            # Dist to waypoint where descent should start [m]
-            self.dist2vs[idx] = bs.traf.actwp.turndist[idx] + \
-                               np.abs(bs.traf.alt[idx] - bs.traf.actwp.nextaltco[idx]) / self.steepness
-            #print("self.dist2vs=",self.dist2vs)
-
-            # Flat earth distance to next wp
-            dy = (bs.traf.actwp.lat[idx] - bs.traf.lat[idx])   # [deg lat = 60. nm]
-            dx = (bs.traf.actwp.lon[idx] - bs.traf.lon[idx]) * bs.traf.coslat[idx] # [corrected deg lon = 60. nm]
-            legdist = 60. * nm * np.sqrt(dx * dx + dy * dy)  # [m]
-
-
-            # If the descent is urgent, descend with maximum steepness
-            if legdist < self.dist2vs[idx]: # [m]
-                self.alt[idx] = bs.traf.actwp.nextaltco[idx]  # dial in altitude of next waypoint as calculated
-
-                t2go         = max(0.1, legdist + xtoalt) / max(0.01, bs.traf.gs[idx])
-                bs.traf.actwp.vs[idx]  = (bs.traf.actwp.nextaltco[idx] - bs.traf.alt[idx]) / t2go
-
-            else:
-                # Calculate V/S using self.steepness,
-                # protect against zero/invalid ground speed value
-#                if bs.sim.simt>11.99:
-#                    print("bs.traf.tas.shape =",bs.traf.tas.shape)
-#                    print("bs.traf.gs.shape =", bs.traf.gs.shape)
-#                    print("bs.traf.actwp.vs.shape =", bs.traf.actwp.vs.shape)
-
-                bs.traf.actwp.vs[idx] = -self.steepness * (bs.traf.gs[idx] +
-                      (bs.traf.gs[idx] < 0.2 * bs.traf.tas[idx]) * bs.traf.tas[idx])
+            # #Calculate max allowed altitude at next wp (above toalt)
+            # bs.traf.actwp.nextaltco[idx] = min(bs.traf.alt[idx],toalt + xtoalt * self.steepness) # [m] next alt constraint
+            # bs.traf.actwp.xtoalt[idx]    = xtoalt # [m] distance to next alt constraint measured from next waypoint
+            #
+            # # Dist to waypoint where descent should start [m]
+            # self.dist2vs[idx] = bs.traf.actwp.turndist[idx] + \
+            #                    np.abs(bs.traf.alt[idx] - bs.traf.actwp.nextaltco[idx]) / (self.steepness)
+            #
+            # # Flat earth distance to next wp
+            # dy = (bs.traf.actwp.lat[idx] - bs.traf.lat[idx])   # [deg lat = 60. nm]
+            # dx = (bs.traf.actwp.lon[idx] - bs.traf.lon[idx]) * bs.traf.coslat[idx] # [corrected deg lon = 60. nm]
+            # legdist = 60. * nm * np.sqrt(dx * dx + dy * dy)  # [m]
+            #
+            #
+            # # If the descent is urgent, descend with maximum steepness
+            # if legdist < self.dist2vs[idx]: # [m]
+            #     self.alt[idx] = bs.traf.actwp.nextaltco[idx]  # dial in altitude of next waypoint as calculated
+            #
+            #     t2go         = max(0.1, legdist + xtoalt) / max(0.01, bs.traf.gs[idx])
+            #     bs.traf.actwp.vs[idx]  = (bs.traf.actwp.nextaltco[idx] - bs.traf.alt[idx]) / t2go
+            #
+            # else:
+            #     # Calculate V/S using self.steepness,
+            #     # protect against zero/invalid ground speed value
+            #
+            #     bs.traf.actwp.vs[idx] = -self.steepness * (bs.traf.gs[idx] +
+            #           (bs.traf.gs[idx] < 0.2 * bs.traf.tas[idx]) * bs.traf.tas[idx])
 
         # VNAV climb mode: climb as soon as possible (T/C logic)
         elif bs.traf.alt[idx] < toalt - 10. * ft:
@@ -621,6 +678,165 @@ class Autopilot(Entity, replaceable=True):
 
 
         return
+
+    def descentpath(self, idx):
+        '''
+        Function: Calculate the descent path of an aircraft to determine the top of descent.
+        Ordinary waypoint: waypoint without altitude constraint
+        Restricted waypoint: waypoint with an altitude constraint ( AT, AT/BELOW, AT/ABOVE)
+        Created by: Winand Mathoera
+        Date: 12/10/2022
+        '''
+
+        print()
+        print('Path calculations')
+
+        # Altitude segments and corresponding gamma angles
+        segments, gammatas, vsegm, extradist = find_gamma(idx, bs.traf.alt[idx], bs.traf.tas[idx])
+
+        r = self.route[idx]
+
+        ilast = len(r.wpalt) - 1    # index of last waypoint
+        icurr = r.iactwp            # index of active waypoint
+
+        print('My active wpt is: ', r.wpname[icurr])
+
+        # indexes of altitude constrained waypoints
+        ialtconst = [index for index,i in enumerate(r.wpalt) if i > -999 and index >= icurr]
+
+
+        # Last waypoint altitude; destination = 0
+        altlast = 0
+
+        for i in reversed(ialtconst):
+            self.route[idx].wptoalt[i] = altlast  # set toalt at waypoint
+
+            for j in range(i+1, ilast):
+                self.route[idx].wptoalt[j] = 0
+
+            # distance from given altitude restricted waypoint to next alt restricted waypoint
+            wpdist = sum([latlondist(r.wplat[k], r.wplon[k], r.wplat[k + 1], r.wplon[k + 1]) for k in
+             range(i, ilast)])
+
+            altconst = r.wpalt[i]   # altitude constraint of given waypoint
+
+            # predicted altitude needed to travel between the two waypoints
+            alt_req = self.descentaltitude(idx, gammatas, altlast, wpdist) + altlast
+
+            # Depending on the altitude restriction, approve predicted altitude or restrict to constraint
+            if r.wpaltres[i] == 'AT' or r.wpaltres[i] == '':
+                altlast = altconst
+
+            elif r.wpaltres[i] == 'BELOW':
+                if alt_req <= altconst: altlast = alt_req
+                else: altlast = altconst
+
+            elif r.wpaltres[i] == 'ABOVE':
+                if alt_req >= altconst: altlast = alt_req
+                else: altlast = altconst
+
+            print(round(altlast/ft/100,3), ' FL at ', r.wpname[i])
+
+            ilast = i   # set latest altitude constraint waypoint as start point for new loop
+
+
+        ### Aircraft find top of descent distance to next ordinary waypoint
+
+        # Distance from next ordinary waypoint to first restricted waypoint
+        wpdist_list = [latlondist(r.wplat[k], r.wplon[k], r.wplat[k + 1], r.wplon[k + 1]) for k in
+                      range(icurr, ilast)]
+        wpdist = sum(wpdist_list)
+
+        # Distance from aircraft to next ordinary waypoint
+        ac_wptdist = latlondist(bs.traf.lat[idx], bs.traf.lon[idx], r.wplat[icurr], r.wplon[icurr])
+
+        # Distance from a/c to first restricted waypoint
+        ac_dist = wpdist + ac_wptdist
+
+        # Predicted distance needed to reach altitude of restricted waypoint
+        descent_distance = self.descentdistance(gammatas, altlast, bs.traf.alt[idx])
+
+        # Add additional distance from deceleration segments
+        descent_distance += sum(extradist)
+
+        # If required descent distance is greater than available, use geo descent
+        if descent_distance > ac_dist:
+            self.dist2vs[idx] = 99999.*nm   # descent now
+            self.geo[idx] = True            # Geometric descent, with following steepness
+            self.steepnessv2[idx] = (bs.traf.alt[idx]-altlast) / ac_dist
+        else:
+            # Other wise find distance to top of descent
+            dist2vs = descent_distance - wpdist
+            dist2vscount = 0
+
+            # Count the number of ordinary waypoints before the top of descent occurs
+            for k in wpdist_list:
+                if dist2vs >= 0: break
+                dist2vs += k
+                dist2vscount += 1
+                bs.traf.actwp.tempaltconst[idx] = True  # Do not reset alt constraint when passing ordinary waypoints
+
+            self.dist2vs[idx] = dist2vs # bs.traf.actwp.turndist[idx] +  turndistance nakijken
+            self.dist2vscount[idx] = dist2vscount
+            self.geo[idx] = False
+
+        bs.traf.actwp.nextaltco[idx] = altlast
+
+        return
+
+
+
+    def descentaltitude(self, idx, gammatas, altlast, wpdist):
+        # calculate altitude reached within given distance using nominal descent rates (gammaTAS)
+
+        start_break = len(gammatas)
+
+        start = ceil(altlast / (100 * ft))  # index in gammatas
+        start_rem = (100* ft) - altlast % (100 * ft)  # remainder in start - 1
+
+        dist = (start_rem) / gammatas[start - 1]
+        alt = start_rem
+
+        if dist > wpdist:
+            if wpdist > 0:
+                return wpdist * gammatas[start - 1] # Altitude for close wpt
+            else:
+                return 0
+
+        while dist < wpdist:
+            add_dist = (100 * ft) / gammatas[start]
+
+            if dist + add_dist > wpdist:
+                add_alt = (wpdist - dist) * gammatas[start]
+                alt += add_alt
+                return alt
+
+            dist += add_dist
+            alt += 100 * ft
+            start += 1
+
+            if start >= start_break: return bs.traf.alt[idx] - altlast
+
+        return alt
+
+
+    def descentdistance(self, gammatas, altlast, altconst):
+        # calculate distance needed to travel between two different altitudes using nominal descent rates (gammaTAS)
+
+        start = ceil(altlast / (100 * ft)) # index in gammatas
+        start_rem = (100 * ft) - altlast % (100 * ft) # remainder in start - 1
+
+        # from start
+        # add rem*angle anders hele segm*angle
+
+        end = floor(altconst / (100 * ft)) # index in gamma tas
+        end_rem = altconst % (100 * ft) # remainder in end + 0
+
+        dist = sum([(100 * ft) / gammatas[i] for i in range(start, end)])
+        dist += (start_rem) / gammatas[start - 1]
+        dist += (end_rem) / gammatas[end]
+
+        return dist
 
     def speedschedule(self):
         '''

@@ -8,7 +8,7 @@ from bluesky.traffic.performance.wilabada.performance import esf, phases, calcli
 from bluesky import settings
 from . import coeff_bada
 from bluesky.traffic.route import Route
-from .esfinterpolate import ESFinterpolate
+from .esfinterpolate import ESFinterpolate, gammaTAS
 
 
 from bluesky.traffic.performance.wilabada.EEI import EEI
@@ -176,7 +176,8 @@ class WILABADA(PerfBase):
             self.limvs_flag  = np.array([])  # A need to limit V/S detected
 
             # # ESF Tables
-            # self.esf_table = np.array([], dtype=object)  #ADDED, write explanation
+            self.esf_table = np.array([], dtype=object)  #ADDED, write explanation
+            self.gamma_table = np.array([], dtype=object)  # ADDED, write explanation
 
     def engchange(self, acid, engid=None):
         return False, "BADA performance model doesn't allow changing engine type"
@@ -353,7 +354,8 @@ class WILABADA(PerfBase):
         self.gr_dec[-n:] = coeff.gr_acc ######### ik weet niet zeker of dit zomaar mag -winand
 
         # # ESF look-up table generate
-        # self.esf_table[-n:] = ESFinterpolate(settings.perf_path_bada, actype)
+        self.esf_table[-n:] = ESFinterpolate(settings.perf_path_bada, actype)
+        self.gamma_table[-n:] = gammaTAS(settings.perf_path_bada, actype)
 
         return
 
@@ -413,7 +415,7 @@ class WILABADA(PerfBase):
         # phase LD
         # in case landing coefficients in OPF-Files are set to zero:
         #Use cruise values instead
-        cdld = np.where(self.cd0ld !=0, self.cd0ld+self.cd2ld*(cl*cl), cdph)
+        cdld = np.where(self.cd0ld !=0, self.cd0ld+ self.gear +self.cd2ld*(cl*cl), cdph)
 
         # now combine phases
         cd = (self.phase==PHASE['TO'])*cdph + (self.phase==PHASE["IC"])*cdph + (self.phase==PHASE["CR"])*cdph \
@@ -434,7 +436,7 @@ class WILABADA(PerfBase):
         delspd = bs.traf.aporasas.tas - bs.traf.tas
         selmach = bs.traf.selspd < 2.0
 
-        # self.ESF = esf(bs.traf.alt, bs.traf.M, climb, descent, delspd, selmach, self.esf_table)
+        self.ESF = esf(bs.traf.alt, bs.traf.M, climb, descent, delspd, selmach, self.esf_table)
 
         # THRUST
         # 1. climb: max.climb thrust in ISA conditions (p. 32, BADA User Manual 3.12)
@@ -514,13 +516,13 @@ class WILABADA(PerfBase):
         # switch for given vertical speed selvs
         if (bs.traf.selvs.any()>0.) or (bs.traf.selvs.any()<0.):
             # thrust = f(selvs)
-            # T = ((bs.traf.selvs!=0)*(((bs.traf.aporasas.vs*self.mass*g0)/     \
-            #           (self.ESF*np.maximum(bs.traf.eps,bs.traf.tas)*cpred)) \
-            #           + self.D)) + ((bs.traf.selvs==0)*T)
+            T = ((bs.traf.selvs!=0)*(((bs.traf.aporasas.vs*self.mass*g0)/     \
+                      (self.ESF*np.maximum(bs.traf.eps,bs.traf.tas)*cpred)) \
+                      + self.D)) + ((bs.traf.selvs==0)*T)
 
-            T = ((bs.traf.selvs!=0) * (((bs.traf.aporasas.vs*self.mass*g0)/     \
-                      (np.maximum(bs.traf.eps,bs.traf.tas)*cpred)) \
-                      + self.D + self.mass * 0.5) ) + ((bs.traf.selvs==0)*T)
+            # T = ((bs.traf.selvs!=0) * (((bs.traf.aporasas.vs*self.mass*g0)/     \
+            #           (np.maximum(bs.traf.eps,bs.traf.tas)*cpred)) \
+            #           + self.D + self.mass * 0.5) ) + ((bs.traf.selvs==0)*T)
 
         # self.thrust = T
         #ADDED
@@ -655,6 +657,10 @@ class WILABADA(PerfBase):
                 self.thrust, self.D, bs.traf.tas,
                 self.mass, self.ESF, self.phase)
 
+        bs.traf.esf = self.ESF
+        bs.traf.thrust = self.thrust
+        bs.traf.drag = self.D
+
         # REMOVE
         # thr_corr = np.where((self.thrust > self.maxthr-1.0), self.maxthr-1., self.thrust)
         # newspeed = self.mass *9.81 / (thr_corr - self.D) * abs(intent_vs)*-1 /self.ESF
@@ -676,8 +682,14 @@ class WILABADA(PerfBase):
 
         # Autopilot selected vertical speed (V/S)
         # allowed_vs = np.where(self.limvs_flag, self.limvs, intent_vs)
-        #ADDED
-        allowed_vs = np.where(intent_vs > abs(self.limvs), self.limvs, intent_vs)
+        #nog niet voor climb let op!!
+        allowed_vs = np.where(abs(intent_vs)>990, 1.05*self.limvs, np.where(intent_vs<=1.6*abs(self.limvs), intent_vs, self.limvs*1.6))
+
+        # # TEMPORARY
+        # allowed_vs = self.limvs
+        # print(' FL:', bs.traf.alt/0.3048/100,' CAS:', vtas2cas(allowed_tas, bs.traf.alt)/0.5144,' Mass:', self.mass,
+        #       ' T:',self.thrust, ' D:',self.D, ' ESF:',self.ESF, ' ROD:',self.limvs/0.00508,
+        #       ' TDC:',(self.thrust-self.D),' gamma:',np.degrees(np.arctan(self.limvs/allowed_tas)), ' phase:', self.phase)
 
         return allowed_tas, allowed_vs, allowed_alt
 

@@ -7,6 +7,48 @@ ff_descent = 'I6, 1X, I3, 1X, I6, 1X, F7.3, 1X, I7, 2(1X, F8.2), 1X, F7.2, 1X, I
 
 FL_index = 0
 ESF_index = 12
+gamma_index = 15
+
+class gammaTAS():
+
+    def __init__(self, bada_path, actype):
+        self.FL = 0
+        self.gamma = 0
+        self.nomdist = 0
+
+        FL = []
+        gamma = []
+        nomdist = []
+
+        data_file = bada_path + '/' + actype + '__.PTD'
+        data = pd.read_csv(data_file)['BADA PERFORMANCE FILE RESULTS']
+        reader = ff.FortranRecordReader(ff_descent)
+
+        table_count = 0
+        descent = False
+
+        for i, line in enumerate(data):
+            if descent:
+                if '.' not in line:
+                    descent = False
+                    continue
+
+                data_points = reader.read(line)
+                FL.append(float(data_points[FL_index]) * 100 * 0.3048)
+                gamma.append(float(data_points[gamma_index]))
+
+            if 'FL[-]' in line:
+                table_count += 1
+                if table_count == 4:
+                    descent = True
+
+        for i in range(len(FL) - 1):
+            nomdist.append( abs( (FL[i+1] - FL[i])/np.tan(np.radians(gamma[i]))))
+
+
+        self.FL = np.array(FL)
+        self.gamma = np.array(gamma)
+        self.nomdist = np.array(nomdist)
 
 
 

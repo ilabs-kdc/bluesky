@@ -197,6 +197,16 @@ class AcidselectArg(Parser):
         refdata.acidx = idx
         return idx, argstring
 
+class WpaltresArg(Parser):
+    ''' Argument parser for altitude restriction commands. '''
+
+    def parse(self, argstring):
+        arg, argstring = re_getarg.match(argstring).groups()
+        restr = arg.upper()
+        if restr == 'AT' or restr == 'BELOW' or restr == 'ABOVE':
+            return restr, argstring
+        raise ArgumentError(f'{restr} not AT, BELOW or ABOVE')
+
 class WpinrouteArg(Parser):
     ''' Argument parser for waypoints in an aircraft route. '''
     def parse(self, argstring):
@@ -326,6 +336,7 @@ argparsers = {
     'bool': Parser(txt2bool),
     'acid': AcidArg(),
     'acidselect': AcidselectArg(),
+    'wpaltres': WpaltresArg(),
     'wpinroute': WpinrouteArg(),
     'wpt': WptArg(),
     'latlon': PosArg(),
