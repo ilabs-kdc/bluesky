@@ -1072,10 +1072,6 @@ def acclabel(actdata, data, i):
                     mlabel += '%-7s' % chr(31)
                 else:
                     mlabel += '%-7s' % ('      ' + chr(31))
-            elif (len(data.rwy[i]) == 5) and ((data.rwy[i] in ['18R', '18R_E']) or data.arr[i] in ['ATP18R', 'RIV18R', 'RIV18REOR', 'SUG18R', 'SUG18REOR']):
-                mlabel += '%-7s' % ('      ' + chr(31))
-            elif (len(data.rwy[i]) == 2):
-                mlabel += '%-7s' % ('      ' + chr(31))
         else:
             mlabel += 7*' '
     else:
