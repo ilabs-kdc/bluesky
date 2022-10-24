@@ -1072,6 +1072,8 @@ def acclabel(actdata, data, i):
                     mlabel += '%-7s' % chr(31)
                 else:
                     mlabel += '%-7s' % ('      ' + chr(31))
+            else:
+                mlabel += '%-7s' % ('      ' + chr(31))
         else:
             mlabel += 7*' '
     else:
