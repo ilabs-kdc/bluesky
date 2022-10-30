@@ -1,1 +1,1 @@
-Put the TID csv files in this folder
+  Put the TID XML files in this folder
