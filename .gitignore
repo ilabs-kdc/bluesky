@@ -92,6 +92,12 @@ ssd.obj
 *-checkpoint.ipynb
 .ropeproject/config.py
 
+# LVNL
+
+# Scenarios
+scenario/LVNL/*
+!/scenario/LVNL/README.md
+
 # Vemmis data
 scenario/LVNL/Data/*
 !/scenario/LVNL/Data/README.md
@@ -100,8 +106,10 @@ scenario/LVNL/Data/*
 scenario/LVNL/Maps/*
 !/scenario/LVNL/Maps/README.md
 
+# Routes
+scenario/LVNL/Routes/*
+!/scenario/LVNL/Routes/README.md
+
 # TID data
-bluesky/ui/qtgl/TIDS/*
-!/bluesky/ui/qtgl/TIDS/README.md
 data/graphics/tids/*
 !/data/graphics/tids/README.md
