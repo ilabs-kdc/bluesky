@@ -16,7 +16,7 @@ from bluesky.tools.misc import tim2txt
 from bluesky.network import get_ownip
 from bluesky.ui import palette
 from bluesky.ui.qtgl import console
-from bluesky.ui.qtgl.tid import start_tid
+from bluesky.ui.qtgl.tidgui import TIDGui
 from bluesky.stack import stack
 
 # Child windows
@@ -106,6 +106,8 @@ class MainWindow(QMainWindow):
         # self.nd = ND(shareWidget=self.radarwidget)
         self.infowin = InfoWindow()
         self.settingswin = SettingsWindow()
+        self.ftid = TIDGui("Function-TID")
+        self.dtid = TIDGui("Display-TID")
         #self.touchinterface = showTID()
 
         try:
@@ -393,19 +395,19 @@ class MainWindow(QMainWindow):
         elif self.sender() == self.tid1:
             if actdata.atcmode == 'APP':
                 stack('ATCMODE APP')
-                start_tid('TID_Function', 'appmain')
+                self.ftid.start("appmain")
             elif actdata.atcmode == 'ACC':
                 stack('ATCMODE ACC')
-                start_tid('TID_Function', 'accmain')
+                self.ftid.start("accmain")
             else:
-                start_tid('TID_Function', 'base')
+                self.ftid.start("base")
         elif self.sender() == self.tid2:
             if actdata.atcmode == 'APP':
                 stack('ATCMODE APP')
-                start_tid('TID_Display', 'appdisp')
+                self.dtid.start('appdisp')
             elif actdata.atcmode == 'ACC':
                 stack('ATCMODE ACC')
-                start_tid('TID_Display', 'accdisp')
+                self.dtid.start('accdisp')
 
     def show_file_dialog(self):
         # Due to Qt5 bug in Windows, use temporarily Tkinter

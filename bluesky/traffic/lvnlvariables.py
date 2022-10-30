@@ -319,8 +319,8 @@ class LVNLVariables(Entity):
                 self.atcIP[mode].remove(IP)
 
         # Set IP
-        self.atcIP[atcmode].append(IP)
-        # print(self.atcIP)
+        if atcmode != 'BLUESKY':
+            self.atcIP[atcmode].append(IP)
 
     @stack.command(name='ARR', brief='ARR CALLSIGN ARRIVAL/STACK (ADDWPTS [ON/OFF])', aliases=('STACK',))
     def setarr(self, idx: 'acid', arr: str = '', addwpts: 'onoff' = True):
