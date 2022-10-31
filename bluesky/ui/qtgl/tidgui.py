@@ -271,8 +271,16 @@ class TIDGui(QDialog):
 
             # Loop over buttons
             for btn in layout:
-                btnlst = [btn.attrib['id'],
-                          btn.attrib['text'].replace('*n*', '\n').replace('*gt*', '>').replace('*lt*', '<')]
+                btnlst = [btn.attrib['id']]
+
+                # New line and tab
+                btn.attrib['text'] = btn.attrib['text'].replace('*n*', '\n').replace('*t*', '\t')
+                # > and <
+                btn.attrib['text'] = btn.attrib['text'].replace('*gt*', '>').replace('*lt*', '<')
+                # Ampersand
+                btn.attrib['text'] = btn.attrib['text'].replace('*amp*', '&')
+
+                btnlst.append(btn.attrib['text'])
 
                 # Functions
                 funclst = []
