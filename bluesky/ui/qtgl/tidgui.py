@@ -228,8 +228,7 @@ class TIDGui(QDialog):
         Date: 29-10-2022
         """
 
-        folder = 'C:\\Users\\bvand\\PycharmProjects\\bluesky\\data\\graphics\\tids'
-        # folder = os.path.join(bs.settings.data_path, 'tids')
+        folder = os.path.join(bs.settings.gfx_path, 'tids')
 
         with cachefile.openfile('tidlayouts.p', tiddb_version) as cache:
             try:
