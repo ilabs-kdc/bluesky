@@ -374,7 +374,7 @@ if bs.gui_type == 'qtgl':
 
         def update(self, value):
             if self.dialog:
-                self.dialog.setValue(value)
+                self.dialog.setValue(int(value))
                 QApplication.processEvents()
             else:
                 print('Progress: %.2f%% done' % value)
