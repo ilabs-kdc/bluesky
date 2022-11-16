@@ -186,8 +186,8 @@ class LVNLVariables(Entity):
         bs.traf.trafdatafeed.uco(idx)
         self.uco[idx] = IP[-11:]
         self.rel[idx] = False
-        print('UCO list', self.uco)
-        print('')
+        # print('UCO list', self.uco)
+        # print('')
 
     @stack.command(name='REL',)
     def setrelcmd(self, idx: 'acid'):
@@ -381,6 +381,28 @@ class LVNLVariables(Entity):
             acid = bs.traf.id[idx]
             cmd = 'PCALL LVNL/Routes/SID/'+sid.upper()+' '+acid
             stack.stack(cmd)
+
+    @stack.command(name='SIDTO', brief='SID CALLSIGN SID')
+    def setsid_TO(self, idx: 'acid', sid: str = '', addwpts: 'onoff' = True):
+        """
+        Function: Set the TO SID
+        Args:
+            idx:    index for traffic arrays [int]
+            sid:    SID [str]
+        Returns: -
+
+        Created by: Bob van Dillen, Mitchell de Keijzer
+        Edited by: Lars Dijkstra
+        Changes: this command now defaults to the WILABADA SID folder.
+        """
+
+        self.sid[idx] = sid.upper()
+
+        if addwpts:
+            acid = bs.traf.id[idx]
+            cmd = 'PCALL WILABADA/SID_2019/'+sid.upper()+' '+acid
+            stack.stack(cmd)
+
 
     @stack.command(name='SSRCODE', brief='SSRCODE CALLSIGN SSR')
     def setssr(self, idx: 'acid', ssr: float):

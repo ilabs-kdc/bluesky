@@ -1,5 +1,5 @@
 
-810 Version - data cycle 2013.10, build 20131334, metadata NavXP810.  Copyright © 2013, Robin A. Peel (robin@x-plane.com).   This data is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.  You should have received a copy of the GNU General Public License along with this program ("AptNavGNULicence.txt"); if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+810 Version - data cycle 2013.10, build 20131334, metadata NavXP810.  Copyright ï¿½ 2013, Robin A. Peel (robin@x-plane.com).   This data is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.  You should have received a copy of the GNU General Public License along with this program ("AptNavGNULicence.txt"); if not, write to the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 2  38.08777778 -077.32491667      0   396  50    0.0 APH  A P HILL NDB
 2  57.08382000  009.68009300      0   398  25    0.0 GL   AALBORG NDB
@@ -26815,6 +26815,13 @@
 14 54.905277777777776 9.993333333333332 0 0 0 0.0 ALS "VOR ALSIE"
 14 52.899166666666666 14.306666666666667 0 0 0 0.0 ALUKA "ROUTEPUNT POLEN"
 14 59.39083333333333 4.969444444444445 0 0 0 0.0 ALUVA "ROUTEPUNT NOORWEGEN"
+14 52.27697500 4.70567778 0 0 0 0.0 EH095 "AREA NAV POINT"
+14 52.27406944 4.67279444 0 0 0 0.0 EH096 "AREA NAV POINT"
+14 52.32078056 4.64211944 0 0 0 0.0 EH097 "AREA NAV POINT"
+14 52.260112 4.687125 0 0 0 0.0 EH125 "AREA NAV POINT"
+14 52.16027778 4.75722222 0 0 0 0.0 EH039 "AREA NAV POINT"
+14 52.24102843384583 4.6916230384281805 0 0 0 0.0 EH126 "AREA NAV POINT"
+14 52.228582694650854 4.7106782352261325 0 0 0 0.0 EH127 "AREA NAV POINT"
 14 52.275277777777774 4.7011111111111115 0 0 0 0.0 AM001 "AREA NAV POINT"
 14 52.17361111111111 4.746111111111111 0 0 0 0.0 AM003 "AREA NAV POINT"
 14 51.98861111111111 4.817777777777778 0 0 0 0.0 AM004 "AREA NAV POINT"
@@ -26847,6 +26854,13 @@
 14 52.257777777777775 4.774444444444445 0 0 0 0.0 AM037 "AREA NAV POINT"
 14 52.169999999999995 4.960833333333333 0 0 0 0.0 AM038 "AREA NAV POINT"
 14 52.10666666666667 4.4675 0 0 0 0.0 AM040 "AREA NAV POINT"
+14 52.25583333 4.85030556 0 0 0 0.0 AM047 "AREA NAV POINT"
+14 52.27697500 4.70567778 0 0 0 0.0 AM095 "AREA NAV POINT"
+14 52.26008611 4.68711944 0 0 0 0.0 AM125 "AREA NAV POINT"
+14 52.24103056 4.69161944 0 0 0 0.0 AM156 "AREA NAV POINT"
+14 52.22827222 4.71109722 0 0 0 0.0 AM157 "AREA NAV POINT"
+14 52.27404444 4.67279444 0 0 0 0.0 AM096 "AREA NAV POINT"
+14 52.32078056 4.32078056 0 0 0 0.0 AM097 "AREA NAV POINT"
 14 52.32277777777778 4.426666666666667 0 0 0 0.0 AM041 "AREA NAV POINT"
 14 52.29555555555555 4.9622222222222225 0 0 0 0.0 AM042 "AREA NAV POINT"
 14 52.42527777777777 5.131666666666666 0 0 0 0.0 AM043 "AREA NAV POINT"

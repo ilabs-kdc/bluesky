@@ -192,9 +192,10 @@ class Traffic(Entity):
             self.esf = np.array([])
             self.thrust = np.array([])
             self.drag = np.array([])
+            self.trkmiles = np.array([])
 
         # Default bank angles per flight phase
-        self.bphase = np.deg2rad(np.array([15, 35, 35, 35, 15, 45]))
+        self.bphase = np.deg2rad(np.array([15, 25, 25, 25, 15, 45]))
 
     def reset(self):
         ''' Clear all traffic data upon simulation reset. '''
@@ -274,6 +275,8 @@ class Traffic(Entity):
         self.lat[-n:]  = aclat
         self.lon[-n:]  = aclon
         self.alt[-n:]  = acalt
+
+        self.trkmiles[-n:] = 0
 
         if isinstance(achdg, str):
             if achdg.upper() in bs.navdb.wpid:
@@ -550,6 +553,8 @@ class Traffic(Entity):
 
             self.trk = np.logical_not(applywind)*self.hdg + \
                        applywind*np.degrees(np.arctan2(self.gseast, self.gsnorth)) % 360.
+
+        self.trkmiles += self.gs * bs.sim.simdt
 
         self.work += (self.perf.thrust * bs.sim.simdt * np.sqrt(self.gs * self.gs + self.vs * self.vs))
 

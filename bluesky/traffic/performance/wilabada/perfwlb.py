@@ -9,9 +9,7 @@ from bluesky import settings
 from . import coeff_bada
 from bluesky.traffic.route import Route
 from .esfinterpolate import ESFinterpolate, gammaTAS
-
-
-from bluesky.traffic.performance.wilabada.EEI import EEI
+from bluesky.traffic.performance.wilabada.ESTIMATOR import EEI
 # Register settings defaults
 settings.set_variable_defaults(perf_path_bada='data/performance/BADA',
                                performance_dt=1.0, verbose=False)
@@ -19,7 +17,7 @@ settings.set_variable_defaults(perf_path_bada='data/performance/BADA',
 EEI = EEI()
 
 if not coeff_bada.check(settings.perf_path_bada):
-    raise ImportError('BADA performance model: Error trying to find BADA files in ' + settings.perf_path_bada + '!')
+    raise ImportError('WILABADA performance model: Error trying to find BADA files in ' + settings.perf_path_bada + '!')
 
 class WILABADA(PerfBase):
     """
@@ -207,8 +205,7 @@ class WILABADA(PerfBase):
                     print("Aircraft is using default B747-400 performance.")
                     self.warned = True
             else:
-                print("Flight " + bs.traf.id[
-                                  -n:] + " has an unknown aircraft type, " + actype + ", BlueSky then uses default B747-400 performance.")
+                print("Flight " + bs.traf.id[-n:][-1] + " has an unknown aircraft type, " + actype + ", BlueSky then uses default B747-400 performance.")
 
         # designate aicraft to its aircraft type
         self.jet[-n:] = 1 if coeff.engtype == 'Jet' else 0
@@ -229,11 +226,9 @@ class WILABADA(PerfBase):
         # flight envelope
         # minimum speeds per phase
         self.vmto[-n:] = coeff.Vstall_to * coeff.CVmin_to * kts
-        self.vmto[-n:] = EEI.speeds(actypes, [0.1]) * 0.514444
-        # print(self.vmto, actypes)
         # self.vmic[-n:] = coeff.Vstall_ic * coeff.CVmin * kts
         # self.vmic[-n:] = EEI.speeds(actypes, [0.1]) * 0.514444
-        self.vmcr[-n:] = coeff.Vstall_cr * coeff.CVmin * kts
+        self.vmcr[-n:] = coeff.Vstall_cr * coeff.CVmin * kts*0
         self.vmap[-n:] = coeff.Vstall_ap * coeff.CVmin * kts
         self.vmld[-n:] = coeff.Vstall_ld * coeff.CVmin * kts
         self.vmin[-n:] = 0.0
@@ -354,8 +349,8 @@ class WILABADA(PerfBase):
         self.gr_dec[-n:] = coeff.gr_acc ######### ik weet niet zeker of dit zomaar mag -winand
 
         # # ESF look-up table generate
-        self.esf_table[-n:] = ESFinterpolate(settings.perf_path_bada, actype)
-        self.gamma_table[-n:] = gammaTAS(settings.perf_path_bada, actype)
+        # self.esf_table[-n:] = ESFinterpolate(settings.perf_path_bada, actype)
+        # self.gamma_table[-n:] = gammaTAS(settings.perf_path_bada, actype)
 
         return
 
@@ -623,7 +618,7 @@ class WILABADA(PerfBase):
         # define acceleration: aircraft taxiing and taking off use ground acceleration,
         # landing aircraft use ground deceleration, others use standard acceleration
         # --> BADA uses the same value for ground acceleration as for deceleration
-        self.axmax = ((self.phase == PHASE['IC']) + (self.phase == PHASE['CR']) + (self.phase == PHASE['AP']) + (self.phase == PHASE['LD'])) * 0.5 \
+        self.axmax = ((self.phase == PHASE['IC']) + (self.phase == PHASE['CR']) + (self.phase == PHASE['AP']) + (self.phase == PHASE['LD'])) * 1 \
             + ((self.phase == PHASE['TO']) + (self.phase == PHASE['GD'])*(1-self.post_flight)) * self.gr_acc  \
             + (self.phase == PHASE['GD']) * self.post_flight * self.gr_acc
 

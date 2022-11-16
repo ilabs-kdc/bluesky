@@ -5288,59 +5288,59 @@ LLRD, RAMAT DAVID, 32.665, 35.179, Medium, 8550, IS,185
 LLRM, RAMON, 30.776, 34.667, Medium, 9824, IS,2126 
 LLSD, SDE DOV, 32.115, 34.782, Medium, 5482, IS,43 
 LMML, LUQA, 35.857, 14.477, Large, 11627, MT,300 
-LOAA, Ottenschlag Airport, 48.419, 15.217, Small, 1600, AU,2867 
-LOAB, Dobersberg Airport, 48.923, 15.297, Small, 1900, AU,1719 
-LOAD, Voeltendorf Airport, 48.162, 15.588, Small, 1600, AU,1063 
-LOAG, Krems Airport, 48.447, 15.635, Small, 2400, AU,1022 
-LOAJ, \xc3\x96amtc Heliport, 48.222, 16.513, Closed, , AU,516 
-LOAL, Leopoldsdorf Airport, 48.227, 16.672, Small, , AU,486 
-LOAR, Altlichtenwarth Airport, 48.666, 16.825, Small, , AU,604 
-LOAS, Spitzerberg Airport, 48.102, 16.935, Small, 2200, AU,600 
-LOAT, Trausdorf Airport, 47.8, 16.567, Small, , AU,525 
-LOAU, Stockerau Airport, 48.41, 16.192, Small, 2600, AU,686 
-LOAV, V\xc3\xb6slau Airport, 47.965, 16.26, Small, 3000, AU,765 
-LOGC, Nieder\xc3\xb6blarn Heliport, 47.48, 14.011, Small, , AU,2142 
-LOGF, Fuerstenfeld Airport, 47.062, 16.086, Small, 2200, AU,830 
-LOGG, Punitz-G\xc3\xbcssing Airport, 47.147, 16.317, Small, 2600, AU,950 
-LOGI, Trieben Airport, 47.494, 14.498, Small, 2500, AU,2283 
-LOGK, Kapfenberg Airport, 47.458, 15.33, Small, 1900, AU,1690 
-LOGL, Turnau Airport, 47.557, 15.325, Small, 2000, AU,2575 
-LOGM, Mariazell Airport, 47.788, 15.302, Small, 1600, AU,2822 
-LOGP, Pinkafeld Airport, 47.387, 16.113, Small, 2000, AU,1339 
-LOGT, Timmersdorf Airport, 47.38, 14.968, Small, 2000, AU,2060 
-LOGW, Unterfladnitz Airport, 47.171, 15.665, Small, 1400, AU,1296 
-LOIH, Hohenems-Dornbirn Airport, 47.385, 9.7, Small, 2000, AU,1352 
-LOIJ, St. Johann In Tirol Airport, 47.52, 12.45, Small, 2400, AU,2198 
-LOIR, Hoefen Airport, 47.47, 10.692, Small, 1600, AU,2805 
-LOKF, Ossiacher See Airport, 46.709, 14.077, Small, 1900, AU,1706 
-LOKG, Glainach Airport, 46.533, 14.333, Small, , AU,1499 
-LOKH, Hirt Airport, 46.928, 14.433, Small, 2300, AU,2018 
-LOKM, Mayerhofen Airport, 46.976, 14.372, Small, 1300, AU,2119 
-LOKN, N\xc3\xb6tsch Im Gailtal Airport, 46.581, 13.629, Small, 2300, AU,1801 
-LOKW, Wolfsberg Airport, 46.818, 14.826, Small, 2200, AU,1460 
-LOLC, Scharnstein Airport, 47.899, 13.939, Small, 2100, AU,1742 
-LOLD, Europa 3 Heliport, 48.401, 13.45, Small, , AU,1109 
-LOLE, Eferding Airport, 48.338, 13.985, Small, 1300, AU,886 
-LOLF, Freistadt Airport, 48.515, 14.408, Small, 1300, AU,2238 
-LOLG, St. Georgen Am Ybbsfelde Airport, 48.104, 14.951, Small, 1500, AU,827 
-LOLH, Hb Hofkirchen Airport, 48.14, 14.338, Small, 1400, AU,1175 
-LOLK, Kirchheim Airport, 48.212, 13.345, Small, 1900, AU,1350 
-LOLM, Micheldorf Airport, 47.871, 14.125, Small, 1500, AU,1509 
-LOLO, Linz-Ost Airport, 48.3, 14.333, Small, 3000, AU,827 
-LOLT, Seitenstetten Airport, 48.05, 14.652, Small, 2700, AU,1050 
-LOLU, Gmunden-Laakirchen Airport, 47.952, 13.867, Small, 1800, AU,1670 
-LOLW, WELS, 48.183, 14.041, Small, 4327, AU,1043 
-LOSM, Mauterndorf Airport, 47.132, 13.697, Small, 2600, AU,3642 
-LOWG, GRAZ, 46.991, 15.44, Medium, 9842, AU,1115 
-LOWI, INNSBRUCK, 47.26, 11.344, Medium, 6364, AU,1906 
-LOWL, LINZ, 48.233, 14.188, Medium, 9350, AU,978 
-LOWS, SALZBURG, 47.793, 13.004, Medium, 8366, AU,1411 
-LOWW, SCHWECHAT, 48.11, 16.57, Large, 11811, AU,600 
-LOWZ, Zell Am See Airport, 47.293, 12.788, Small, 2100, AU,2470 
-LOXK, KLAGENFURT, 46.643, 14.338, Medium, 8924, AU,1470 
-LOXN, Wiener Neustadt West Airport, 47.84, 16.222, Small, 100, AU,935 
-LOXT, Brumowski  Air Base, 48.317, 16.117, Small, 1000, AU,574 
-LOXZ, ZELTWEG, 47.203, 14.744, Medium, 8530, AU,2220 
+LOAA, Ottenschlag Airport, 48.419, 15.217, Small, 1600, AT,2867
+LOAB, Dobersberg Airport, 48.923, 15.297, Small, 1900, AT,1719
+LOAD, Voeltendorf Airport, 48.162, 15.588, Small, 1600, AT,1063
+LOAG, Krems Airport, 48.447, 15.635, Small, 2400, AT,1022
+LOAJ, \xc3\x96amtc Heliport, 48.222, 16.513, Closed, , AT,516
+LOAL, Leopoldsdorf Airport, 48.227, 16.672, Small, , AT,486
+LOAR, Altlichtenwarth Airport, 48.666, 16.825, Small, , AT,604
+LOAS, Spitzerberg Airport, 48.102, 16.935, Small, 2200, AT,600
+LOAT, Trausdorf Airport, 47.8, 16.567, Small, , AT,525
+LOAU, Stockerau Airport, 48.41, 16.192, Small, 2600, AT,686
+LOAV, V\xc3\xb6slau Airport, 47.965, 16.26, Small, 3000, AT,765
+LOGC, Nieder\xc3\xb6blarn Heliport, 47.48, 14.011, Small, , AT,2142
+LOGF, Fuerstenfeld Airport, 47.062, 16.086, Small, 2200, AT,830
+LOGG, Punitz-G\xc3\xbcssing Airport, 47.147, 16.317, Small, 2600, AT,950
+LOGI, Trieben Airport, 47.494, 14.498, Small, 2500, AT,2283
+LOGK, Kapfenberg Airport, 47.458, 15.33, Small, 1900, AT,1690
+LOGL, Turnau Airport, 47.557, 15.325, Small, 2000, AT,2575
+LOGM, Mariazell Airport, 47.788, 15.302, Small, 1600, AT,2822
+LOGP, Pinkafeld Airport, 47.387, 16.113, Small, 2000, AT,1339
+LOGT, Timmersdorf Airport, 47.38, 14.968, Small, 2000, AT,2060
+LOGW, Unterfladnitz Airport, 47.171, 15.665, Small, 1400, AT,1296
+LOIH, Hohenems-Dornbirn Airport, 47.385, 9.7, Small, 2000, AT,1352
+LOIJ, St. Johann In Tirol Airport, 47.52, 12.45, Small, 2400, AT,2198
+LOIR, Hoefen Airport, 47.47, 10.692, Small, 1600, AT,2805
+LOKF, Ossiacher See Airport, 46.709, 14.077, Small, 1900, AT,1706
+LOKG, Glainach Airport, 46.533, 14.333, Small, , AT,1499
+LOKH, Hirt Airport, 46.928, 14.433, Small, 2300, AT,2018
+LOKM, Mayerhofen Airport, 46.976, 14.372, Small, 1300, AT,2119
+LOKN, N\xc3\xb6tsch Im Gailtal Airport, 46.581, 13.629, Small, 2300, AT,1801
+LOKW, Wolfsberg Airport, 46.818, 14.826, Small, 2200, AT,1460
+LOLC, Scharnstein Airport, 47.899, 13.939, Small, 2100, AT,1742
+LOLD, Europa 3 Heliport, 48.401, 13.45, Small, , AT,1109
+LOLE, Eferding Airport, 48.338, 13.985, Small, 1300, AT,886
+LOLF, Freistadt Airport, 48.515, 14.408, Small, 1300, AT,2238
+LOLG, St. Georgen Am Ybbsfelde Airport, 48.104, 14.951, Small, 1500, AT,827
+LOLH, Hb Hofkirchen Airport, 48.14, 14.338, Small, 1400, AT,1175
+LOLK, Kirchheim Airport, 48.212, 13.345, Small, 1900, AT,1350
+LOLM, Micheldorf Airport, 47.871, 14.125, Small, 1500, AT,1509
+LOLO, Linz-Ost Airport, 48.3, 14.333, Small, 3000, AT,827
+LOLT, Seitenstetten Airport, 48.05, 14.652, Small, 2700, AT,1050
+LOLU, Gmunden-Laakirchen Airport, 47.952, 13.867, Small, 1800, AT,1670
+LOLW, WELS, 48.183, 14.041, Small, 4327, AT,1043
+LOSM, Mauterndorf Airport, 47.132, 13.697, Small, 2600, AT,3642
+LOWG, GRAZ, 46.991, 15.44, Medium, 9842, AT,1115
+LOWI, INNSBRUCK, 47.26, 11.344, Medium, 6364, AT,1906
+LOWL, LINZ, 48.233, 14.188, Medium, 9350, AT,978
+LOWS, SALZBURG, 47.793, 13.004, Medium, 8366, AT,1411
+LOWW, SCHWECHAT, 48.11, 16.57, Large, 11811, AT,600
+LOWZ, Zell Am See Airport, 47.293, 12.788, Small, 2100, AT,2470
+LOXK, KLAGENFURT, 46.643, 14.338, Medium, 8924, AT,1470
+LOXN, Wiener Neustadt West Airport, 47.84, 16.222, Small, 100, AT,935
+LOXT, Brumowski  Air Base, 48.317, 16.117, Small, 1000, AT,574
+LOXZ, ZELTWEG, 47.203, 14.744, Medium, 8530, AT,2220
 LPAR, ALVERCA, 38.883, -9.03, Medium, 9023, PO,11 
 LPAV, AVEIRO, 40.654, -8.744, Small, 4593, PO,26 
 LPAZ, SANTA MARIA, 36.971, -25.171, Medium, 10000, PO,308 

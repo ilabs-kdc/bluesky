@@ -16,7 +16,7 @@ from bluesky.tools.geo import latlondist
 from bluesky.core import Entity, timed_function
 from .route import Route
 from bluesky.traffic.performance.wilabada.performance import esf_d, PHASE
-from bluesky.traffic.performance.wilabada.EEI import EEI
+from bluesky.traffic.performance.wilabada.ESTIMATOR import EEI
 from bluesky.stack.simstack import pcall
 from .descent import find_gamma
 
@@ -67,7 +67,7 @@ class Autopilot(Entity, replaceable=True):
             # Default values
             self.bankdef = np.array([])  # nominal bank angle, [radians]
             self.vsdef = np.array([]) # [m/s]default vertical speed of autopilot
-            
+
             # Currently used roll/bank angle [rad]
             self.turnphi = np.array([])  # [rad] bank angle setting of autopilot
 
@@ -76,6 +76,10 @@ class Autopilot(Entity, replaceable=True):
 
             self.EEI = EEI()
             self.TOsw = np.array([])
+            self.TOdf = np.array([], dtype='object')
+            self.TO_slope = np.array([])
+            self.EEI_IAS = np.array([])
+            self.EEI_ROC = np.array([])
 
             # Descent path switch
             self.dpswitch = np.array([])
@@ -90,7 +94,12 @@ class Autopilot(Entity, replaceable=True):
         self.trk[-n:] = bs.traf.trk[-n:]
         self.alt[-n:] = bs.traf.alt[-n:]
 
-        self.TOsw[-n] = False
+        self.TOsw[-n:] = False
+        self.TOdf[-n:] = False
+        self.TO_slope[-n:] = False
+        self.EEI_IAS[-n:] = 0
+        self.EEI_ROC[-n:] = 0
+
         self.dpswitch[-n:] = True
         self.geo[-n:] = False
         self.steepnessv2[-n:] = self.steepness
@@ -154,10 +163,6 @@ class Autopilot(Entity, replaceable=True):
             if not bs.traf.actwp.swlastwp[i]:
 
                 r = self.route[i]
-                print(333333333333333333333333333333333333)
-                print()
-                print('New wpt data', r.wpalt[r.iactwp], r.wpname[r.iactwp])
-                print('Alt nu', round(bs.traf.alt[i]/ft/100,3))
                 if r.wpalt[r.iactwp] > -999:
                     # bs.traf.actwp.altconst[i] = True
                     self.dpswitch[i] = True
@@ -256,7 +261,7 @@ class Autopilot(Entity, replaceable=True):
             self.ComputeVNAV(i, toalt, bs.traf.actwp.xtoalt[i], bs.traf.actwp.torta[i],
                              bs.traf.actwp.xtorta[i])
 
-        
+
 
         # End of per waypoint i switching loop
         # Update qdr2wp with up-to-date qdr, now that we have checked passing wp
@@ -353,10 +358,6 @@ class Autopilot(Entity, replaceable=True):
         # ADDED Dismiss speed commands if too close to runway
         # self.dismiss_command()
 
-        # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
         bs.traf.actwp.tempaltconst = np.where(self.dist2vscount < 1, False, bs.traf.actwp.tempaltconst)
 
         startdescent = (self.dist2wp < self.dist2vs) * (self.dist2vscount < 1) # What happens during climb?
@@ -373,9 +374,6 @@ class Autopilot(Entity, replaceable=True):
         self.alt = np.where(self.swvnavvs, bs.traf.actwp.nextaltco, bs.traf.selalt)
         # When descending or climbing in VNAV also update altitude command of select/hold mode
         bs.traf.selalt = np.where(self.swvnavvs, bs.traf.actwp.nextaltco, bs.traf.selalt)
-
-        # print('selalt', bs.traf.actwp.nextaltco, bs.traf.selalt)
-
 
 
         """ 
@@ -444,7 +442,7 @@ class Autopilot(Entity, replaceable=True):
         # once the altitude is known.
         nexttas = vcasormach2tas(bs.traf.actwp.nextspd, bs.traf.alt)
 
-#        tasdiff   = (nexttas - bs.traf.tas)*(bs.traf.actwp.spd>=0.) # [m/s]
+#       tasdiff   = (nexttas - bs.traf.tas)*(bs.traf.actwp.spd>=0.) # [m/s]
 
 
         # t = (v1-v0)/a ; x = v0*t+1/2*a*t*t => dx = (v1*v1-v0*v0)/ (2a)
@@ -452,8 +450,7 @@ class Autopilot(Entity, replaceable=True):
         dxspdconchg = distaccel(bs.traf.tas, nexttas, bs.traf.perf.axmax)
 
         # ADDED Update speed schedule speeds
-        self.speedschedule()
-
+        # self.speedschedule()
 
 
         # ADDED Turn on speed schedule bool
@@ -487,68 +484,41 @@ class Autopilot(Entity, replaceable=True):
         bs.traf.actwp.turnfromlastwp = np.logical_and(bs.traf.actwp.turnfromlastwp,inoldturn)
 
         # Select speed: turn sped, next speed constraint, or current speed constraint
-        # bs.traf.selspd = np.where(useturnspd,bs.traf.actwp.turnspd,
-        #                           np.where(usenextspdcon, bs.traf.actwp.nextspd,
-        #                                    np.where((bs.traf.actwp.spdcon>=0)*bs.traf.swvnavspd,bs.traf.actwp.spd,
-        #                                                                     bs.traf.selspd)))
-
-        # ADDED
-        bs.traf.selspd = np.where(useturnspd, bs.traf.actwp.turnspd,
+        bs.traf.selspd = np.where(useturnspd,bs.traf.actwp.turnspd,
                                   np.where(usenextspdcon, bs.traf.actwp.nextspd,
-                                           np.where((bs.traf.actwp.spdcon >= 0) * bs.traf.swvnavspd,
-                                                    np.where(usespds, self.spds, bs.traf.actwp.spdcon),
-                                                    np.where(bs.traf.swvnavspd & bs.traf.swdescent, self.spds, bs.traf.selspd))))
+                                           np.where((bs.traf.actwp.spdcon>=0)*bs.traf.swvnavspd,bs.traf.actwp.spd,
+                                                                            bs.traf.selspd)))
+
+        # # ADDED
+        # bs.traf.selspd = np.where(useturnspd, bs.traf.actwp.turnspd,
+        #                           np.where(usenextspdcon, bs.traf.actwp.nextspd,
+        #                                    np.where((bs.traf.actwp.spdcon >= 0) * bs.traf.swvnavspd,
+        #                                             np.where(usespds, self.spds, bs.traf.actwp.spdcon),
+        #                                             np.where(bs.traf.swvnavspd & bs.traf.swdescent, self.spds, bs.traf.selspd))))
 
         # Temporary override when still in old turn
         bs.traf.selspd = np.where(inoldturn*(bs.traf.actwp.oldturnspd>0.)*bs.traf.swvnavspd*bs.traf.swvnav*bs.traf.swlnav,
                                   bs.traf.actwp.oldturnspd,bs.traf.selspd)
 
-        """
         # Another overwrite
-        speed = self.EEI.speeds(bs.traf.type, bs.traf.alt)*0.514444
-        # speed0 = self.EEI.speeds(bs.traf.type, 0)*0.514444
-        ROC = self.EEI.ROCf(bs.traf.type, bs.traf.alt)*0.3048/60
-        for i in range(len(speed)):
-            if bs.traf.alt[i] >= 100*0.3048*100:
-                self.TOsw[i] = False
-            if speed[i] != False and speed[i] != 0:
-                if bs.traf.actwp.nextspd[i]>0:
-                    # print(bs.traf.actwp.nextspd[i])
-                    bs.traf.selspd[i] = np.where(self.TOsw[i], min(bs.traf.actwp.nextspd[i], speed[i]), bs.traf.selspd[i])
-                    # print("Deze 1: ", bs.traf.selspd[i])
-                    if bs.traf.alt[i] > 100 * 0.3048 and bs.traf.alt[i] < 1000 * 0.3048:
-                        bs.traf.selspd[i] = np.where(self.TOsw[i],
-                                                     min(bs.traf.actwp.nextspd[i], speed[i]),
-                                                     bs.traf.selspd[i]) * 0.9
-                    if bs.traf.alt[i] > 1000 * 0.3048 and bs.traf.alt[i] < 2000 * 0.3048:
-                        bs.traf.selspd[i] = np.where(self.TOsw[i], min(bs.traf.actwp.nextspd[i], speed[i]),
-                                                     bs.traf.selspd[i]) * 0.95
-                else:
-                    # print(self.TOsw[i], speed[i], bs.traf.selspd[i])
-                    bs.traf.selspd[i] = np.where(self.TOsw[i], speed[i], bs.traf.selspd[i])
-                    if bs.traf.alt[i] > 100 * 0.3048 and bs.traf.alt[i] < 1000 * 0.3048:
-                        bs.traf.selspd[i] = np.where(self.TOsw[i], speed[i], bs.traf.selspd[i]) * 0.9
-                    if bs.traf.alt[i] > 1000 * 0.3048 and bs.traf.alt[i] < 2000 * 0.3048:
-                        bs.traf.selspd[i] = np.where(self.TOsw[i], speed[i], bs.traf.selspd[i]) * 0.95
-                    # print("Deze 2: ", bs.traf.selspd[i])
-            if ROC[i] != False and ROC[i] != 0:
-                self.vs[i] = np.where(self.TOsw[i], ROC[i], selvs[i])
-                bs.traf.actwp.vs[i] = np.where(self.TOsw[i], ROC[i], selvs[i])
-        """
+        self.ESTspeeds()
+        spdcon = np.logical_not(bs.traf.actwp.nextspd < 0)
+        self.EEI_IAS = np.where(spdcon, np.minimum(bs.traf.actwp.nextspd, self.EEI_IAS), self.EEI_IAS)
+        bs.traf.selspd = np.where(self.TOsw, self.EEI_IAS, bs.traf.selspd)
 
-        #debug if inoldturn[0]:
-        #debug     print("inoldturn bs.traf.trk =",bs.traf.trk[0],"qdr =",qdr)
-        #debug elif usenextspdcon[0]:
-        #debug     print("usenextspdcon")
-        #debug elif useturnspd[0]:
-        #debug     print("useturnspd")
-        #debug elif bs.traf.actwp.spdcon>0:
-        #debug     print("using current speed constraint")
-        #debug else:
-        #debug     print("no speed given")
+        sw = np.logical_not(bs.traf.cas < bs.traf.perf.vmto*0.97)
+        bs.traf.actwp.vs = np.where(self.TOsw, self.EEI_ROC, selvs)
+        sw_alt = np.logical_not(bs.traf.alt < 1)
+        sw = np.where(sw_alt, True, sw)
+        sw_vs_restr = np.logical_not(self.alt == bs.traf.alt)
 
-        # Below crossover altitude: CAS=const, above crossover altitude: Mach = const
+        bs.traf.vs = np.where(sw_vs_restr, np.where(self.TOsw, np.where(sw, self.EEI_ROC, 0), selvs), 0)
+        self.vs = np.where(self.TOsw, self.EEI_ROC, selvs)
         self.tas = vcasormach2tas(bs.traf.selspd, bs.traf.alt)
+
+    @timed_function(dt=3, manual = True)
+    def ESTspeeds(self):
+        self.EEI_IAS, self.EEI_ROC = self.EEI.IAS_ROC(self.TOdf, bs.traf.alt)
 
     def ComputeVNAV(self, idx, toalt, xtoalt, torta, xtorta):
         # debug print ("ComputeVNAV for",bs.traf.id[idx],":",toalt/ft,"ft  ",xtoalt/nm,"nm")
@@ -611,8 +581,6 @@ class Autopilot(Entity, replaceable=True):
             r = self.route[idx]
             icurr = r.iactwp  # index of active waypoint
 
-            print('kom ik wel bij alle punten? ik ben nu bij :', r.wpname[icurr])
-            print('wat zijn mn bools? :', bs.traf.actwp.altconst[idx], self.dpswitch[idx])
 
             # if bs.traf.actwp.altconst[idx] and self.dpswitch[idx]:
             if self.dpswitch[idx]:
@@ -669,10 +637,8 @@ class Autopilot(Entity, replaceable=True):
             t2go = max(0.1, legdist+xtoalt) / max(0.01, bs.traf.gs[idx])
             bs.traf.actwp.vs[idx]  = np.maximum(self.steepness*bs.traf.gs[idx], \
                             (bs.traf.actwp.nextaltco[idx] - bs.traf.alt[idx])/ t2go) # [m/s]
-            ROC = self.EEI.ROCf(bs.traf.type, bs.traf.alt) * 0.3048 / 60
-            if ROC[idx] != False and ROC[idx] != 0:
-                bs.traf.actwp.vs[idx] = np.where(self.TOsw[idx], ROC[idx], bs.traf.actwp.vs[idx])
-        # Level leg: never start V/S
+            if self.EEI_ROC[idx] != False and self.EEI_ROC[idx] != 0:
+                bs.traf.actwp.vs[idx] = np.where(self.TOsw[idx], self.EEI_ROC[idx], bs.traf.actwp.vs[idx])
         else:
             self.dist2vs[idx] = -999. # [m]
 
@@ -688,8 +654,6 @@ class Autopilot(Entity, replaceable=True):
         Date: 12/10/2022
         '''
 
-        print()
-        print('Path calculations')
 
         # Altitude segments and corresponding gamma angles
         segments, gammatas, vsegm, extradist = find_gamma(idx, bs.traf.alt[idx], bs.traf.tas[idx])
@@ -699,7 +663,6 @@ class Autopilot(Entity, replaceable=True):
         ilast = len(r.wpalt) - 1    # index of last waypoint
         icurr = r.iactwp            # index of active waypoint
 
-        print('My active wpt is: ', r.wpname[icurr])
 
         # indexes of altitude constrained waypoints
         ialtconst = [index for index,i in enumerate(r.wpalt) if i > -999 and index >= icurr]
@@ -735,7 +698,6 @@ class Autopilot(Entity, replaceable=True):
                 if alt_req >= altconst: altlast = alt_req
                 else: altlast = altconst
 
-            print(round(altlast/ft/100,3), ' FL at ', r.wpname[i])
 
             ilast = i   # set latest altitude constraint waypoint as start point for new loop
 
@@ -784,8 +746,6 @@ class Autopilot(Entity, replaceable=True):
 
         return
 
-
-
     def descentaltitude(self, idx, gammatas, altlast, wpdist):
         # calculate altitude reached within given distance using nominal descent rates (gammaTAS)
 
@@ -818,7 +778,6 @@ class Autopilot(Entity, replaceable=True):
             if start >= start_break: return bs.traf.alt[idx] - altlast
 
         return alt
-
 
     def descentdistance(self, gammatas, altlast, altconst):
         # calculate distance needed to travel between two different altitudes using nominal descent rates (gammaTAS)
@@ -912,8 +871,6 @@ class Autopilot(Entity, replaceable=True):
         #        np.logical_and(alt > 9999, alt <= bs.traf.perf.hpdes / 0.3048) * l7 * kts + \
         #        np.where(alt > bs.traf.perf.hpdes / 0.3048, 1, 0) * l8
 
-
-
     def setspeedforRTA(self, idx, torta, xtorta):
         #debug print("setspeedforRTA called, torta,xtorta =",torta,xtorta/nm)
 
@@ -971,9 +928,32 @@ class Autopilot(Entity, replaceable=True):
         self.TOsw[idx] = True
         bs.traf.swvnav[idx] = False
         id = bs.traf.id[idx]
+        AC_type = bs.traf.type[idx]
+
+        self.TOdf[idx], self.TO_slope[idx] = self.EEI.select(id, AC_type, airline=id[:3])
         if SID != None:
-            # string = "WILABADA/SID/"+SID
-            string = "LVNL/Routes/SID/"+SID
+            string = "WILABADA/SID/"+SID
+            # string = "LVNL/Routes/SID/"+SID
+            pcall(string, id)
+
+    @stack.command(name='TOD', annotations = "acid,SID,txt")
+    def TODcmd(self, idx: 'acid', SID: 'SID', dest: 'dest'):
+        """ TO acid
+
+            Select autopilot altitude command."""
+
+        self.TOsw[idx] = True
+        bs.traf.swvnav[idx] = False
+        id = bs.traf.id[idx]
+        AC_type = bs.traf.type[idx]
+
+        self.setdest(acidx = idx, wpname = dest)
+
+        self.TOdf[idx], self.TO_slope[idx] = self.EEI.select(id, AC_type, airline = id[:3], dest = dest)
+
+        if SID != None:
+            # string = "WILABADA/SID/" + SID
+            string = "PLRH/" + SID
             pcall(string, id)
 
     @stack.command(name='VS')
@@ -1053,8 +1033,8 @@ class Autopilot(Entity, replaceable=True):
 
     @stack.command(name='SPD', aliases=("SPEED",))
     def selspdcmd(self, idx: 'acid', casmach: 'spd'):  # SPD command
-        """ SPD acid, casmach (= CASkts/Mach) 
-        
+        """ SPD acid, casmach (= CASkts/Mach)
+
             Select autopilot speed. """
         # Depending on or position relative to crossover altitude,
         # we will maintain CAS or Mach when altitude changes

@@ -7,6 +7,8 @@ from bluesky.tools.misc import txt2bool, txt2lat, txt2lon, txt2alt, txt2tim, \
     txt2hdg, txt2vs, txt2spd
 from bluesky.tools.position import Position, islat
 import bluesky as bs
+import os
+from bluesky import settings
 
 
 # Regular expression for argument parser
@@ -207,6 +209,16 @@ class WpaltresArg(Parser):
             return restr, argstring
         raise ArgumentError(f'{restr} not AT, BELOW or ABOVE')
 
+class SIDArg(Parser):
+    '''Argument parser for SID restriction commands'''
+    def parse(self, argstring):
+        arg, argstring = re_getarg.match(argstring).groups()
+        SID = arg.upper()
+        SIDs = os.listdir(settings.scenario_path_SIDs)
+        if SID + ".scn" in SIDs:
+            return SID, argstring
+        raise ArgumentError(f'{SID} not found or the wrong folder is defined in the settings.cfg file.')
+
 class WpinrouteArg(Parser):
     ''' Argument parser for waypoints in an aircraft route. '''
     def parse(self, argstring):
@@ -344,6 +356,7 @@ argparsers = {
     'lon': None,
     'pandir': PandirArg(),
     'spd': Parser(txt2spd),
+    'SID': SIDArg(),
     'vspd': Parser(txt2vs),
     'alt': Parser(txt2alt),
     'hdg': Parser(lambda txt: txt2hdg(txt, refdata.acidx, refdata.lat, refdata.lon)),
