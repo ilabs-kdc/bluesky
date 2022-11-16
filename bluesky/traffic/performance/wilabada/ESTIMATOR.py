@@ -72,7 +72,7 @@ class EEI:
 
         self.airports = pd.read_csv(r"D:\airports.csv", sep=',', usecols = [1, 8])
 
-        self.continents = pd.read_csv(r"C:\Users\LVNL_iLAB1\PycharmProjects\bluesky\data\performance\WILABADA\countries.txt", sep ='\t')
+        self.continents = pd.read_csv(r"C:\Users\LVNL_ILAB3\PycharmProjects\bluesky\bluesky\traffic\performance\wilabada\Compare\countries.txt", sep ='\t')
         self.continents["two_code"] = self.continents["two_code"].apply(lambda x: x if not pd.isnull(x) else "NA")
 
         self.kind = "linear"
