@@ -57,12 +57,13 @@ class TIDGui(QDialog):
 
         # PC specific settings
         host = socket.gethostbyname(socket.gethostname())
-        if self.name == 'Function-TID' and host in ['192.168.0.6', '169.254.95.213']:
+        print(host)
+        if self.name == 'Function-TID' and host in ['192.168.0.6', '192.168.0.8']:
             self.setGeometry(500, 200, 300, 250)
             self.move(2500, 2500)
             self.showMaximized()
             self.setWindowFlags(Qt.WindowMinMaxButtonsHint | Qt.FramelessWindowHint)
-        elif self.name == 'Display-TID' and host in ['192.168.0.6', '169.254.95.213']:
+        elif self.name == 'Display-TID' and host in ['192.168.0.6', '192.168.0.8']:
             self.setGeometry(500, 200, 300, 250)
             self.move(0, 2500)
             self.showMaximized()
