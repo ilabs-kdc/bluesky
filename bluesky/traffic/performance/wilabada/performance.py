@@ -108,6 +108,9 @@ def phases(alt, gs, delalt, cas, vmto, vmic, vmap,
     # combine all phases
     phase = np.maximum.reduce([to, ic, ap, ld, cr, gd])
 
+    # print(round(alt[0] / 0.3048 / 100, 1), Caalt, Cavs, cra, crb, Ccalt, Ccvs, Ccspd, crc)
+    # print(Aaalt, Aaspd, Aavs, apa, Abalt, Abspd, Abvs, apb, ap)
+
     phase = np.where(selphase>0, selphase, phase)
 
     to2 = np.where(phase == 1)
@@ -139,19 +142,20 @@ def phases(alt, gs, delalt, cas, vmto, vmic, vmap,
 # (BADA User Manual 3.12, p.15)
 #
 #-----------------------------------------------------------------------------
-def esf(alt, M, climb, descent, delspd, selmach, esf_table, tISA = 0):
+def esf(alt, M, climb, descent, delspd, selmach, geoswitch, tISA = 1):
 
+    delspd = np.where(geoswitch, 0, delspd) # overwrite delspd when geo descent
 
     # test for acceleration / deceleration
     cspd  = np.array((delspd <= 0.1) & (delspd >= -0.1))
-    # cspd = np.array((delspd <= 10) & (delspd >= -10))
+    # cspd = np.array((delspd <= 1000) & (delspd >= -1000))
 
     # accelerating or decelerating
     acc   = np.array(delspd > 0.1)
     dec   = np.array(delspd < -0.1)
 
-    # acc = np.array(delspd > 10)
-    # dec = np.array(delspd < -10)
+    # acc = np.array(delspd > 1000)
+    # dec = np.array(delspd < -1000)
 
 
 
@@ -252,13 +256,13 @@ def interpolate_esf(alt, esf_table, dec=False):
 #
 #------------------------------------------------------------------------------
 def calclimits(desspd, gs, to_spd, vmin, vmo, mmo, M, alt, hmaxact,
-           desalt, desvs, maxthr, Thr, D, tas, mass, ESF, phase):
+           desalt, desvs, maxthr, Thr, D, tas, mass, ESF, phase, swdescent):
 
     # minimum CAS - below crossover (we do not check for minimum Mach)
     limspd      = np.where((desspd < vmin), vmin, -999.)
 
     # in traf, we will check for min and max spd, hence a flag is required
-    limspd_flag = np.where((desspd < vmin), True, False)
+    limspd_flag = np.where(swdescent, False, np.where((desspd < vmin), True, False))
 
     # maximum CAS: below crossover and above crossover
     limspd      = np.where((desspd > vmo), vmo, limspd )

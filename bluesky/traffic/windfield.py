@@ -4,8 +4,11 @@ from numpy import array, sin, cos, arange, radians, ones, append, ndarray, \
                   interp, pi
 
 from bluesky.tools.aero import ft
+from bluesky.tools import Functions
 import bluesky as bs
 import numpy as np
+# import math as m
+
 
 class Windfield():
     """ Windfield class:
@@ -121,6 +124,39 @@ class Windfield():
         self.nvec = self.nvec+1
 
         return idx # return index of added point
+
+    def getnewdata(self, idx, userlat, userlon, useralt = 0.0):
+        if bs.traf.HighRes == True:
+
+            if bs.traf.activate_HR:
+                bs.traf.prev_timestamp, bs.traf.next_timestamp = Functions.utc2stamps(bs.sim.utc)
+                bs.traf.df_1 = Functions.query_DB_to_DF(bs.traf.Wind_DB,
+                                                     "SELECT * FROM " + bs.traf.Wind_DB + " WHERE timestamp_data = " + str(
+                                                         bs.traf.prev_timestamp))
+                bs.traf.df_2 = Functions.query_DB_to_DF(bs.traf.Wind_DB,
+                                                     "SELECT * FROM " + bs.traf.Wind_DB + " WHERE timestamp_data = " + str(
+                                                         bs.traf.next_timestamp))
+                bs.traf.HR_Loaded = True
+                bs.traf.activate_HR = False
+
+            """ Fill the uwind and vwind variables. """
+            timefrac = Functions.utc2frac(bs.sim.utc, bs.traf.prev_timestamp)
+            if userlat >= 49 and userlat <= 55.9 and userlon >= -1 and \
+                    userlon <= 9.9:
+                value1 = Functions.find_datapoint_timeframe(bs.traf.df_1,
+                                                            [bs.traf.prev_timestamp, useralt / 0.3048,
+                                                             userlat, userlon])
+                value2 = Functions.find_datapoint_timeframe(bs.traf.df_2,
+                                                            [bs.traf.next_timestamp, useralt / 0.3048,
+                                                             userlat, userlon])
+                uwind = Functions.time_interpolation(timefrac, value1[4], value2[4])
+                vwind = Functions.time_interpolation(timefrac, value1[5], value2[5])
+                return uwind, vwind
+            else:
+                return 0, 0
+        else:
+            return self.getdata(userlat, userlon, useralt)
+
 
     def getdata(self,userlat,userlon,useralt=0.0): # in case no altitude specified and field is 3D, use sea level wind
         if bs.traf.HighRes == True:

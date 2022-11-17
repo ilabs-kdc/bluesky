@@ -21,6 +21,9 @@ def islat(txt):
     if (testtxt[0]=="N" or testtxt[0]=="S") and len(testtxt)>1:
         testtxt =testtxt[1:]
 
+    if (testtxt[-1]=="N" or testtxt[-1]=="S") and len(testtxt)>1:
+        testtxt =testtxt[:-1]
+
     try:
         float(testtxt)
     except ValueError:

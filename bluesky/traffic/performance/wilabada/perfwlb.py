@@ -173,13 +173,8 @@ class WILABADA(PerfBase):
             self.limvs       = np.array([])  # limit vertical speed due to thrust limitation
             self.limvs_flag  = np.array([])  # A need to limit V/S detected
 
-            # # ESF Tables
-            self.esf_table = np.array([], dtype=object)  #ADDED, write explanation
-            self.gamma_table = np.array([], dtype=object)  # ADDED, write explanation
-
     def engchange(self, acid, engid=None):
         return False, "BADA performance model doesn't allow changing engine type"
-    # Waarom niet?
 
     def create(self, n = 1):
         super().create(n)
@@ -348,10 +343,6 @@ class WILABADA(PerfBase):
         self.gr_acc[-n:] = coeff.gr_acc
         self.gr_dec[-n:] = coeff.gr_acc ######### ik weet niet zeker of dit zomaar mag -winand
 
-        # # ESF look-up table generate
-        # self.esf_table[-n:] = ESFinterpolate(settings.perf_path_bada, actype)
-        # self.gamma_table[-n:] = gammaTAS(settings.perf_path_bada, actype)
-
         return
 
     def update(self, dt):
@@ -431,7 +422,7 @@ class WILABADA(PerfBase):
         delspd = bs.traf.aporasas.tas - bs.traf.tas
         selmach = bs.traf.selspd < 2.0
 
-        self.ESF = esf(bs.traf.alt, bs.traf.M, climb, descent, delspd, selmach, self.esf_table)
+        self.ESF = esf(bs.traf.alt, bs.traf.M, climb, descent, delspd, selmach, bs.traf.ap.geodescent)
 
         # THRUST
         # 1. climb: max.climb thrust in ISA conditions (p. 32, BADA User Manual 3.12)
@@ -622,6 +613,8 @@ class WILABADA(PerfBase):
             + ((self.phase == PHASE['TO']) + (self.phase == PHASE['GD'])*(1-self.post_flight)) * self.gr_acc  \
             + (self.phase == PHASE['GD']) * self.post_flight * self.gr_acc
 
+        self.axmax = np.where(bs.traf.ap.geodescent, 0.2, self.axmax) # 0.2 kts decel during geo descent
+
     def limits(self, intent_v, intent_vs, intent_h, ax):
         """FLIGHT ENVELPOE"""
         # summarize minimum speeds - ac in ground mode might be pushing back
@@ -650,7 +643,7 @@ class WILABADA(PerfBase):
                 bs.traf.M, bs.traf.alt, self.hmaxact,
                 intent_h, intent_vs, self.maxthr,
                 self.thrust, self.D, bs.traf.tas,
-                self.mass, self.ESF, self.phase)
+                self.mass, self.ESF, self.phase, bs.traf.swdescent)
 
         bs.traf.esf = self.ESF
         bs.traf.thrust = self.thrust
@@ -678,7 +671,10 @@ class WILABADA(PerfBase):
         # Autopilot selected vertical speed (V/S)
         # allowed_vs = np.where(self.limvs_flag, self.limvs, intent_vs)
         #nog niet voor climb let op!!
-        allowed_vs = np.where(abs(intent_vs)>990, 1.05*self.limvs, np.where(intent_vs<=1.6*abs(self.limvs), intent_vs, self.limvs*1.6))
+        allowed_vs = np.where(abs(intent_vs)>990, self.limvs, np.where(intent_vs<=1.6*abs(self.limvs), intent_vs, self.limvs*1.6))
+
+        # if self.ESF[0] <0.35:
+        #     print('decel meas.', bs.traf.cas/0.5144, bs.traf.alt/0.3048, allowed_vs/0.00508, bs.traf.ax)
 
         # # TEMPORARY
         # allowed_vs = self.limvs

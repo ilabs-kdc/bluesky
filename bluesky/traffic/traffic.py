@@ -295,6 +295,7 @@ class Traffic(Entity):
 
         self.hdg[-n:]  = achdg
         self.trk[-n:]  = achdg
+        self.trkmiles[-n:] = 0
 
         # Velocities
         self.tas[-n:], self.cas[-n:], self.M[-n:] = vcasormach(acspd, acalt)

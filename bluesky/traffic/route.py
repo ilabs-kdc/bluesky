@@ -144,7 +144,7 @@ class Route(Replaceable):
                 bs.scr.echo('Current ADDWPT mode is FLYTURN.')
                 return True
             
-    @stack.command(name='ADDWPT', annotations='acid,wpt,[alt,spd,wpinroute,wpinroute,wpaltres]', aliases=("WPTYPE",))
+    @stack.command(name='ADDWPT', annotations='acid,wpt,[altres,spd,wpinroute,wpinroute,wpaltres]', aliases=("WPTYPE",))
     @staticmethod
     def addwptStack(acidx, *args):  # args: all arguments of addwpt
         """ADDWPT acid, (wpname/lat,lon),[alt],[spd],[afterwp],[beforewp]"""
@@ -247,7 +247,9 @@ class Route(Replaceable):
                     wptype  = Route.wplatlon
 
                 if len(args) > 1 and args[1]:
-                    alt = args[1]
+                    if type(args[1]) == tuple:
+                        alt, altres = args[1]
+                    else: alt = args[1]
 
                 if len(args) > 2 and args[2]:
                     spd = args[2]
@@ -376,20 +378,24 @@ class Route(Replaceable):
 
     @stack.command
     @staticmethod
-    def before(acidx : 'acid', beforewp: 'wpinroute', addwpt, waypoint, alt: 'alt' = None, spd: 'spd' = None, altres = None):
+    def before(acidx : 'acid', beforewp: 'wpinroute', addwpt, waypoint, alt: 'altres' = (None,None), spd: 'spd' = None, altres = None):
         ''' BEFORE acid, wpinroute ADDWPT acid, (wpname/lat,lon),[alt],[spd]
 
             Before waypoint, add a waypoint to route of aircraft (FMS).
         '''
+        alt, altres = alt[0], alt[1]
+
         return Route.addwptStack(acidx, waypoint, alt, spd, None, beforewp, altres)
 
     @stack.command
     @staticmethod
-    def after(acidx: 'acid', afterwp: 'wpinroute', addwpt, waypoint, alt:'alt' = None, spd: 'spd' = None, altres = None):
+    def after(acidx: 'acid', afterwp: 'wpinroute', addwpt, waypoint, alt:'altres' = (None,None), spd: 'spd' = None, altres = None):
         ''' AFTER acid, wpinroute ADDWPT (wpname/lat,lon),[alt],[spd]
 
             After waypoint, add a waypoint to route of aircraft (FMS).
         '''
+        alt, altres = alt[0], alt[1]
+
         return Route.addwptStack(acidx, waypoint, alt, spd, afterwp, None, altres)
 
     @stack.command

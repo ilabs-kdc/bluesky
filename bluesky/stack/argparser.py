@@ -3,7 +3,7 @@ import inspect
 import re
 from types import SimpleNamespace
 from matplotlib import colors
-from bluesky.tools.misc import txt2bool, txt2lat, txt2lon, txt2alt, txt2tim, \
+from bluesky.tools.misc import txt2bool, txt2lat, txt2lon, txt2alt, txt2altres, txt2tim, \
     txt2hdg, txt2vs, txt2spd
 from bluesky.tools.position import Position, islat
 import bluesky as bs
@@ -359,6 +359,7 @@ argparsers = {
     'SID': SIDArg(),
     'vspd': Parser(txt2vs),
     'alt': Parser(txt2alt),
+    'altres': Parser(txt2altres),
     'hdg': Parser(lambda txt: txt2hdg(txt, refdata.acidx, refdata.lat, refdata.lon)),
     'time': Parser(txt2tim),
     'color': ColorArg()}
