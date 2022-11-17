@@ -18,7 +18,7 @@ def Connect_SQL_DB(dbname):
         host="localhost",
         database=dbname,
         user="postgres",
-        password="lucht_1")
+        password="lucht_2")
     return conn
 
 def query_DB_to_DF(dbname, query):

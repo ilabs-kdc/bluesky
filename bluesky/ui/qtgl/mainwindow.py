@@ -4,10 +4,10 @@ import os
 
 from PyQt5.QtWidgets import QApplication as app
 from PyQt5.QtCore import Qt, pyqtSlot, QTimer, QItemSelectionModel, QSize
-from PyQt5.QtGui import QPixmap, QIcon, QFont
+from PyQt5.QtGui import QPixmap, QIcon
 from PyQt5.QtWidgets import QMainWindow, QSplashScreen, QTreeWidgetItem, \
     QPushButton, QFileDialog, QDialog, QTreeWidget, QVBoxLayout, \
-    QDialogButtonBox, QWidget
+    QDialogButtonBox
 from PyQt5 import uic
 
 # Local imports
@@ -16,17 +16,15 @@ from bluesky.tools.misc import tim2txt
 from bluesky.network import get_ownip
 from bluesky.ui import palette
 from bluesky.ui.qtgl import console
-import bluesky.ui.qtgl.TID_layouts as tid
-from bluesky.ui.qtgl.TIDS.base_tid import show_basetid, tidclose
-
+from bluesky.ui.qtgl.tidgui import TIDGui
+from bluesky.stack import stack
 
 # Child windows
 from bluesky.ui.qtgl.docwindow import DocWindow
 from bluesky.ui.qtgl.radarwidget import RadarWidget
 from bluesky.ui.qtgl.infowindow import InfoWindow
 from bluesky.ui.qtgl.settingswindow import SettingsWindow
-from bluesky.ui.qtgl.TID import showTID
-# from bluesky.ui.qtgl.nd import ND
+
 
 if platform.system().lower() == "windows":
     from bluesky.ui.pygame.dialog import fileopen
@@ -108,7 +106,9 @@ class MainWindow(QMainWindow):
         # self.nd = ND(shareWidget=self.radarwidget)
         self.infowin = InfoWindow()
         self.settingswin = SettingsWindow()
-        self.touchinterface = showTID()
+        self.ftid = TIDGui("Function-TID")
+        self.dtid = TIDGui("Display-TID")
+        #self.touchinterface = showTID()
 
         try:
             self.docwin = DocWindow(self)
@@ -154,7 +154,8 @@ class MainWindow(QMainWindow):
                     self.SPD:         ['fwd.svg', 'Speed Command', self.buttonClicked],
                     self.DIRECT:      ['panright', 'Direct to', self.buttonClicked],
                     self.MANUAL:      ['stop.svg', 'Set Aircraft on Manual', self.buttonClicked],
-                    self.tid:       [None, 'TID', self.buttonClicked],
+                    self.tid1:        [None, 'TID_Function', self.buttonClicked],
+                    self.tid2:        [None, 'TID_Display', self.buttonClicked],
                     }
 
         for b in buttons.items():
@@ -358,7 +359,7 @@ class MainWindow(QMainWindow):
         elif self.sender() == self.showac:
             actdata.show_traf = not actdata.show_traf
         elif self.sender() == self.showpz:
-            actdata.show_pz = not actdata.show_pz
+            actdata.show_pz = not actdata.show_pzF
         elif self.sender() == self.showapt:
             if actdata.show_apt < 3:
                 actdata.show_apt += 1
@@ -391,8 +392,22 @@ class MainWindow(QMainWindow):
             console.process_cmdline("DIRECT")
         elif self.sender() == self.MANUAL:
             console.process_cmdline("MANUAL")
-        elif self.sender() == self.tid:
-            show_basetid('start', 'start')
+        elif self.sender() == self.tid1:
+            if actdata.atcmode == 'APP':
+                stack('ATCMODE APP')
+                self.ftid.start("appmain")
+            elif actdata.atcmode == 'ACC':
+                stack('ATCMODE ACC')
+                self.ftid.start("accmain")
+            else:
+                self.ftid.start("base")
+        elif self.sender() == self.tid2:
+            if actdata.atcmode == 'APP':
+                stack('ATCMODE APP')
+                self.dtid.start('appdisp')
+            elif actdata.atcmode == 'ACC':
+                stack('ATCMODE ACC')
+                self.dtid.start('accdisp')
 
     def show_file_dialog(self):
         # Due to Qt5 bug in Windows, use temporarily Tkinter

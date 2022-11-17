@@ -54,6 +54,8 @@ class RadarShaders(glh.ShaderSet):
                          'radarwidget-tiled.frag')
         self.load_shader('text', 'radarwidget-text.vert',
                          'radarwidget-text.frag')
+        self.load_shader('dashed', 'radarwidget-dashed.vert',
+                         'radarwidget-dashed.frag')
         self.load_shader('ssd', 'ssd.vert', 'ssd.frag', 'ssd.geom')
 
     def set_wrap(self, wraplon, wrapdir):
@@ -123,6 +125,7 @@ class RadarWidget(glh.RenderWidget):
         self.mouse_event = Signal('radarmouse')
         self.panzoom_event = Signal('panzoom')
         self.labelpos_event = Signal('labelpos')
+        self.acverticeslvnl_event = Signal('acverticeslvnl')
 
 
     def actdata_changed(self, nodeid, nodedata, changed_elems):
@@ -434,6 +437,7 @@ class RadarWidget(glh.RenderWidget):
                 return self.panzoom(pan=(dlat, dlon))
             elif event.buttons() & Qt.LeftButton:
                 self.labelpos_event.emit(event.x(), event.y())
+                self.acverticeslvnl_event.emit()
                 self.prevmousepos = (event.x(), event.y())
                 self.labelposchanged = True
 
@@ -452,6 +456,7 @@ class RadarWidget(glh.RenderWidget):
             if self.labelposchanged:
                 self.labelposchanged = False
                 self.labelpos_event.emit(event.x(), event.y())
+                self.acverticeslvnl_event.emit()
         else:
             return super().event(event)
         

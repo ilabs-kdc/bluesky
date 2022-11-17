@@ -668,7 +668,7 @@ class Traffic(Entity):
         self.HighRes = flag
         self.Wind_DB = name
         if self.HighRes:
-            print("HighResolution Meteo mode has been initialised.")
+            bs.scr.echo("HighResolution Meteo mode has been initialised.")
             self.wind.winddim = 1
             self.activate_HR = True
         else:
