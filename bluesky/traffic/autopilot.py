@@ -517,17 +517,17 @@ class Autopilot(Entity, replaceable=True):
         bs.traf.actwp.turnfromlastwp = np.logical_and(bs.traf.actwp.turnfromlastwp,inoldturn)
 
         # Select speed: turn sped, next speed constraint, or current speed constraint
-        bs.traf.selspd = np.where(useturnspd,bs.traf.actwp.turnspd,
-                                  np.where(usenextspdcon, bs.traf.actwp.nextspd,
-                                           np.where((bs.traf.actwp.spdcon>=0)*bs.traf.swvnavspd,bs.traf.actwp.spd,
-                                                                            bs.traf.selspd)))
+        # bs.traf.selspd = np.where(useturnspd,bs.traf.actwp.turnspd,
+        #                           np.where(usenextspdcon, bs.traf.actwp.nextspd,
+        #                                    np.where((bs.traf.actwp.spdcon>=0)*bs.traf.swvnavspd,bs.traf.actwp.spd,
+        #                                                                     bs.traf.selspd)))
 
         # # ADDED
-        # bs.traf.selspd = np.where(useturnspd, bs.traf.actwp.turnspd,
-        #                           np.where(usenextspdcon, bs.traf.actwp.nextspd,
-        #                                    np.where((bs.traf.actwp.spdcon >= 0) * bs.traf.swvnavspd,
-        #                                             np.where(usespds, self.spds, bs.traf.actwp.spdcon),
-        #                                             np.where(bs.traf.swvnavspd & bs.traf.swdescent, self.spds, bs.traf.selspd))))
+        bs.traf.selspd = np.where(useturnspd, bs.traf.actwp.turnspd,
+                                  np.where(usenextspdcon, bs.traf.actwp.nextspd,
+                                           np.where((bs.traf.actwp.spdcon >= 0) * bs.traf.swvnavspd,
+                                                    np.where(usespds, self.spds, bs.traf.actwp.spdcon),
+                                                    np.where(bs.traf.swvnavspd & bs.traf.swdescent, self.spds, bs.traf.selspd))))
 
         # Temporary override when still in old turn
         bs.traf.selspd = np.where(inoldturn*(bs.traf.actwp.oldturnspd>0.)*bs.traf.swvnavspd*bs.traf.swvnav*bs.traf.swlnav,
@@ -540,13 +540,16 @@ class Autopilot(Entity, replaceable=True):
         bs.traf.selspd = np.where(self.TOsw, self.EEI_IAS, bs.traf.selspd)
 
         sw = np.logical_not(bs.traf.cas < bs.traf.perf.vmto*0.97)
-        bs.traf.actwp.vs = np.where(self.TOsw, self.EEI_ROC, selvs)
+        # bs.traf.actwp.vs = np.where(self.TOsw, self.EEI_ROC, selvs)
+        bs.traf.actwp.vs = np.where(self.TOsw, self.EEI_ROC, bs.traf.actwp.vs)
         sw_alt = np.logical_not(bs.traf.alt < 1)
         sw = np.where(sw_alt, True, sw)
         sw_vs_restr = np.logical_not(self.alt == bs.traf.alt)
 
-        bs.traf.vs = np.where(sw_vs_restr, np.where(self.TOsw, np.where(sw, self.EEI_ROC, 0), selvs), 0)
-        self.vs = np.where(self.TOsw, self.EEI_ROC, selvs)
+
+        bs.traf.vs = np.where(self.TOsw, np.where(sw_vs_restr, np.where(self.TOsw, np.where(sw, self.EEI_ROC, 0), selvs), 0), bs.traf.vs)
+        # self.vs = np.where(self.TOsw, self.EEI_ROC, selvs)
+        self.vs = np.where(self.TOsw, self.EEI_ROC, self.vs)
         self.tas = vcasormach2tas(bs.traf.selspd, bs.traf.alt)
 
     @timed_function(dt=3, manual = True)

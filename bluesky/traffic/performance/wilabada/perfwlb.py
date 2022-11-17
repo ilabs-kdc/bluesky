@@ -609,9 +609,16 @@ class WILABADA(PerfBase):
         # define acceleration: aircraft taxiing and taking off use ground acceleration,
         # landing aircraft use ground deceleration, others use standard acceleration
         # --> BADA uses the same value for ground acceleration as for deceleration
-        self.axmax = ((self.phase == PHASE['IC']) + (self.phase == PHASE['CR']) + (self.phase == PHASE['AP']) + (self.phase == PHASE['LD'])) * 1 \
-            + ((self.phase == PHASE['TO']) + (self.phase == PHASE['GD'])*(1-self.post_flight)) * self.gr_acc  \
-            + (self.phase == PHASE['GD']) * self.post_flight * self.gr_acc
+
+        # self.axmax = ((self.phase == PHASE['IC']) + (self.phase == PHASE['CR']) + (self.phase == PHASE['AP']) + (self.phase == PHASE['LD'])) * 1 \
+        #     + ((self.phase == PHASE['TO']) + (self.phase == PHASE['GD'])*(1-self.post_flight)) * self.gr_acc  \
+        #     + (self.phase == PHASE['GD']) * self.post_flight * self.gr_acc
+
+        self.axmax = ((self.phase == PHASE['IC']) + (self.phase == PHASE['CR']) + (self.phase == PHASE['AP']) + (
+                    self.phase == PHASE['LD'])) * (0.5 + 0.5*(bs.traf.ap.TOsw) ) \
+                     + ((self.phase == PHASE['TO']) + (self.phase == PHASE['GD']) * (
+                    1 - self.post_flight)) * self.gr_acc \
+                     + (self.phase == PHASE['GD']) * self.post_flight * self.gr_acc
 
         self.axmax = np.where(bs.traf.ap.geodescent, 0.2, self.axmax) # 0.2 kts decel during geo descent
 

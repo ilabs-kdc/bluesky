@@ -530,7 +530,7 @@ class Traffic(Entity):
         self.vs = np.where(np.isfinite(self.vs), self.vs, 0)    # fix vs nan issue
 
         #DELETE
-        #print('vs', self.vs/fpm, self.aporasas.vs/fpm, self.perf.phase)
+        # print('vs', self.vs/fpm, self.aporasas.vs/fpm, self.perf.phase)
 
     def update_groundspeed(self):
         # Compute ground speed and track from heading, airspeed and wind
