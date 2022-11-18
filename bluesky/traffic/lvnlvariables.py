@@ -186,10 +186,6 @@ class LVNLVariables(Entity):
             bs.traf.swvnav[idx] = False
             bs.traf.swvnavspd[idx] = False
 
-        # Labels
-        self.tracklbl[idx] = True
-        self.ssrlbl[idx] = ''
-
         # Set UCO/REL
         bs.traf.trafdatafeed.uco(idx)
         self.uco[idx] = IP[-11:]
@@ -220,10 +216,6 @@ class LVNLVariables(Entity):
         bs.traf.swlnav[idx] = True
         bs.traf.swvnav[idx] = True
         bs.traf.swvnavspd[idx] = True
-
-        # Labels
-        self.tracklbl[idx] = False
-        self.ssrlbl[idx] = 'C'
 
         # Set UCO/REL
         self.uco[idx] = '0'
