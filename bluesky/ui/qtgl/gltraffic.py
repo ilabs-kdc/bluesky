@@ -5,7 +5,7 @@ import numpy as np
 import itertools
 from bluesky.ui.qtgl import glhelpers as glh
 from bluesky.ui.qtgl import console
-from bluesky.ui.qtgl.trafficgui import TrafficData, leaderline_vertices
+from bluesky.ui.qtgl.trafficgui import TrafficData
 
 import bluesky as bs
 from bluesky.tools import geo, misc
@@ -259,7 +259,7 @@ class Traffic(glh.RenderObject, layer=100):
         self.aclabels_lvnl.create(self.lbl_lvnl, self.lat, self.lon, self.color,
                                   self.lbloffset, instanced=True)
         self.ssrlabels.create(self.ssrlbl, self.lat, self.lon, self.color,
-                              (ac_size, -1.1*ac_size), instanced=True)
+                              (ac_size, -0.9*ac_size), instanced=True)
         self.microlabels.create(self.mlbl, self.lat, self.lon, self.color,
                                 self.mlbloffset, instanced=True)
 
@@ -528,25 +528,26 @@ class Traffic(glh.RenderObject, layer=100):
                     rawlabel += baselabel(actdata, data, i)
                 else:
                     if actdata.atcmode == 'APP':
-                        label, mlabel, ssrlabel = applabel(actdata, data, i)
+                        label, mlabel, ssrlabel = self.applabel(actdata, data, i)
                         rawlabel_lvnl += label
                         rawmlabel     += mlabel
                         rawssrlabel   += ssrlabel
                     elif actdata.atcmode == 'ACC':
-                        label, mlabel, ssrlabel = acclabel(actdata, data, i)
+                        label, mlabel, ssrlabel = self.acclabel(actdata, data, i)
                         rawlabel_lvnl += label
                         rawmlabel     += mlabel
                         rawssrlabel   += ssrlabel
                     elif actdata.atcmode == 'TWR':
-                        label, mlabel, ssrlabel = twrlabel(actdata, data, i)
+                        label, mlabel, ssrlabel = self.twrlabel(actdata, data, i)
                         rawlabel_lvnl += label
                         rawmlabel     += mlabel
                         rawssrlabel   += ssrlabel
 
-
                     self.trafdata.mlabelpos[i] = initial_micropos(actdata.acdata, i)
-                    self.trafdata.leaderlinepos[i] = leaderline_vertices(actdata, self.trafdata.labelpos[i][0],
-                                                                         self.trafdata.labelpos[i][1], i)
+                    self.trafdata.leaderlinepos[i] = self.trafdata.leaderline_vertices(actdata,
+                                                                                       self.trafdata.labelpos[i][0],
+                                                                                       self.trafdata.labelpos[i][1],
+                                                                                       i)
                 # Colours
                 if inconf:
                     if actdata.ssd_conflicts:
@@ -688,7 +689,7 @@ class Traffic(glh.RenderObject, layer=100):
         idx = misc.get_indices(actdata.acdata.id, console.Console._instance.id_select)
 
         # Check if selected aircraft exists
-        if len(idx) != 0 and actdata.acdata.tracklbl[idx]:
+        if len(idx) != 0 and self.trafdata.tracklabel[idx]:
             idx = idx[0]
 
             # Get cursor position change
@@ -700,8 +701,10 @@ class Traffic(glh.RenderObject, layer=100):
             self.trafdata.labelpos[idx][1] -= dy
 
             # Leader lines
-            self.trafdata.leaderlinepos[idx] = leaderline_vertices(actdata, self.trafdata.labelpos[idx][0],
-                                                                   self.trafdata.labelpos[idx][1], idx)
+            self.trafdata.leaderlinepos[idx] = self.trafdata.leaderline_vertices(actdata,
+                                                                                 self.trafdata.labelpos[idx][0],
+                                                                                 self.trafdata.labelpos[idx][1],
+                                                                                 idx)
 
             # Update label offset
             self.lbloffset.update(np.array(self.trafdata.labelpos, dtype=np.float32))
@@ -827,6 +830,264 @@ class Traffic(glh.RenderObject, layer=100):
         self.acs_lvnltwrin.set_attribs(vertex=twrin)
         self.acs_lvnltwrout.set_attribs(vertex=twrout)
         self.acs_lvnlother.set_attribs(vertex=other)
+
+    def applabel(self, actdata, data, i):
+        """
+        Function: Create approach label
+        Args:
+            actdata:    node data [class]
+            data:       aircraft data [class]
+            i:          index for data [int]
+        Returns:
+            label:      track label string [str]
+            mlabel:     micro label string [str]
+            ssrlabel:   ssr label string [str]
+
+        Created by: Bob van Dillen
+        Date: 21-12-2021
+        """
+
+        IP = socket.gethostbyname(socket.gethostname())
+
+        # Empty labels
+        label = ''
+        mlabel = ''
+        ssrlabel = ''
+
+        # Track label
+        if self.trafdata.tracklabel[i]:
+            # Line 1
+            label += '%-8s' % data.id[i][:8]
+
+            # Line 2
+            label += '%-3s' % leading_zeros(data.alt[i] / ft / 100)[-3:]
+            if actdata.acdata.alt[i] < actdata.translvl:
+                label += '%-1s' % 'A'
+            else:
+                label += '%-1s' % ' '
+            if data.uco[i] == IP[-11:] and data.selalt[i] != 0:
+                label += '%-3s' % leading_zeros(data.selalt[i] / ft / 100)[-3:]
+            else:
+                label += '%-3s' % '   '
+            label += '%-1s' % ' '
+
+            # Line 3
+            label += '%-4s' % str(data.type[i])[:4]
+            if data.uco[i] == IP[-11:] and data.selhdg[i] != 0:
+                label += '%-3s' % leading_zeros(data.selhdg[i])[:3]
+            elif data.flighttype[i] == 'INBOUND':
+                label += '%-3s' % data.arr[i].replace('ARTIP', 'ATP')[:3]
+            elif data.flighttype[i] == 'OUTBOUND':
+                label += '%-3s' % data.sid[i][:3]
+            else:
+                label += '%-3s' % '   '
+            label += '%-1s' % ' '
+
+            # Line 4
+            label += '%-3s' % leading_zeros(data.gs[i] / kts)[:3]
+            if data.wtc[i].upper() == 'H' or data.wtc[i].upper() == 'J':
+                label += '%-1s' % str(data.wtc[i])[:1]
+            else:
+                label += '%-1s' % ' '
+            if data.uco[i] == IP[-11:] and data.selspd[i] != 0:
+                label += '%-3s' % leading_zeros(data.selspd[i] / kts)[:3]
+            else:
+                label += '%-3s' % 'SPD'
+            label += '%-1s' % ' '
+        else:
+            label += 8 * 4 * ' '
+
+        # Micro label   #elif is tried for gmp eor
+        if self.trafdata.mlabel[i]:
+            if data.flighttype[i].upper() == 'OUTBOUND':
+                mlabel += '      ' + chr(30)  # 30
+            elif (len(data.rwy[i]) == 3):
+                if data.rwy[i] in ['18C', '18C_E'] or data.arr[i] in ['ATP18C', 'ATP18CEOR', 'RIV18C', 'SUG18C']:
+                    mlabel += '%-7s' % data.rwy[i][:7]
+                else:
+                    mlabel += '%-7s' % ('    ' + data.rwy[i][:7])
+            elif (len(data.rwy[i]) == 5) and (
+                    (data.rwy[i] in ['18R', '18R_E']) or data.arr[i] in ['ATP18R', 'RIV18R', 'RIV18REOR', 'SUG18R',
+                                                                         'SUG18REOR']):
+                mlabel += '%-7s' % ('  ' + data.rwy[i][:7])
+            elif (len(data.rwy[i]) == 2):
+                mlabel += '%-7s' % ('     ' + data.rwy[i][:7])
+            else:
+                mlabel += '%-7s' % data.rwy[i][:7]
+        else:
+            mlabel += 7 * ' '
+
+        # SSR label
+        ssrlabelmodes = ssrlabel_order(self.trafdata.ssrlabel[i], 'APP')
+        if 'A' in ssrlabelmodes:
+            ssrlabel += '%-7s' % str(data.ssr[i])[:7]
+            ssrlabelmodes.remove('A')
+        else:
+            ssrlabel += 7*' '
+        for mode in ssrlabelmodes:
+            if mode == 'C':
+                ssrlabel += '%-3s' % leading_zeros(data.alt[i] / ft / 100)[:3]
+                if data.alt[i] < actdata.translvl:
+                    ssrlabel += '%-4s' % 'A   '
+                else:
+                    ssrlabel += '%-4s' % '    '
+            elif mode == 'ACID':
+                ssrlabel += '%-7s' % data.id[i][:7]
+        ssrlabel += 7*(2-len(ssrlabelmodes))*' '
+
+        return label, mlabel, ssrlabel
+
+    def acclabel(self, actdata, data, i):
+        """
+        Function: Create acc label
+        Args:
+            actdata:    node data [class]
+            data:       aircraft data [class]
+            i:          index for data [int]
+        Returns:
+            label:      track label string [str]
+            mlabel:     micro label string [str]
+            ssrlabel:   ssr label string [str]
+
+        Created by: Bob van Dillen
+        Date: 21-12-2021
+        """
+
+        IP = socket.gethostbyname(socket.gethostname())
+
+        # Empty labels
+        label = ''
+        ssrlabel = ''
+        mlabel = ''
+
+        # Track label
+        if self.trafdata.tracklabel[i]:
+            # Line 1
+            label += '%-8s' % data.id[i][:8]
+
+            # Line 2
+            label += '%-3s' % leading_zeros(data.alt[i] / ft / 100)[-3:]
+            if data.alt[i] < actdata.translvl:
+                label += '%-1s' % 'A'
+            else:
+                label += '%-1s' % ' '
+            if data.uco[i] == IP[-11:] and data.selalt[i] != 0:
+                label += '%-3s' % leading_zeros(data.selalt[i] / ft / 100)[-3:]
+            else:
+                label += '%-3s' % '   '
+            label += '%-1s' % ' '
+
+            # Line 3
+            label += '%-3s' % '...'
+            label += '%-1s' % ' '
+            label += '%-3s' % leading_zeros(data.gs[i] / kts)[:3]
+            if data.wtc[i].upper() == 'H' or data.wtc[i].upper() == 'J':
+                label += '%-1s' % str(data.wtc[i])[:1]
+            else:
+                label += '%-1s' % ' '
+
+            # Line 4
+            if data.uco[i] == IP[-11:] and data.selspd[i] != 0:
+                label += '%-1s' % 'I'
+                label += '%-3s' % leading_zeros(data.selspd[i] / kts)[:3]
+            else:
+                label += '%-4s' % '    '
+            label += '%-4s' % data.type[i][:4]
+        else:
+            label += 8 * 4 * ' '
+
+        # Micro label
+        if self.trafdata.mlabel[i]:
+            if data.flighttype[i].upper() == 'INBOUND':
+                if (len(data.rwy[i]) == 3):
+                    if data.rwy[i] in ['18C', '18C_E'] or data.arr[i] in ['ATP18C', 'ATP18CEOR', 'RIV18C', 'SUG18C']:
+                        mlabel += '%-7s' % chr(31)
+                    else:
+                        mlabel += '%-7s' % ('      ' + chr(31))
+                else:
+                    mlabel += '%-7s' % ('      ' + chr(31))
+            else:
+                mlabel += 7 * ' '
+        else:
+            mlabel += 7 * ' '
+
+        # SSR label
+        ssrlabelmodes = ssrlabel_order(self.trafdata.ssrlabel[i], 'ACC')
+        if 'C' in ssrlabelmodes and len(ssrlabelmodes) == 1:
+            ssrlabel += 7*' '
+            ssrlabel += '%-3s' % leading_zeros(data.alt[i] / ft / 100)[:3]
+            if data.alt[i] < actdata.translvl:
+                ssrlabel += '%-4s' % 'A   '
+            else:
+                ssrlabel += '%-4s' % '    '
+            ssrlabel += 7*' '
+        elif 'ACID' in ssrlabelmodes and 'C' in ssrlabelmodes and 'A' not in ssrlabelmodes:
+            ssrlabel += '%-7s' % data.id[i][:7]
+            ssrlabel += 7*' '
+            ssrlabel += '%-3s' % leading_zeros(data.alt[i] / ft / 100)[:3]
+            if data.alt[i] < actdata.translvl:
+                ssrlabel += '%-4s' % 'A   '
+            else:
+                ssrlabel += '%-4s' % '    '
+        else:
+            for mode in ssrlabelmodes:
+                if mode == 'ACID':
+                    ssrlabel += '%-7s' % data.id[i][:7]
+                elif mode == 'A':
+                    ssrlabel += '%-7s' % str(data.ssr[i])[:7]
+                elif mode == 'C':
+                    ssrlabel += '%-3s' % leading_zeros(data.alt[i] / ft / 100)[:3]
+                    if data.alt[i] < actdata.translvl:
+                        ssrlabel += '%-4s' % 'A   '
+                    else:
+                        ssrlabel += '%-4s' % '    '
+            ssrlabel += 7*(3-len(ssrlabelmodes))*' '
+
+        return label, mlabel, ssrlabel
+
+    def twrlabel(self, actdata, data, i):
+        """
+        Function: Create acc label
+        Args:
+            actdata:    node data [dict]
+            data:       aircraft data [dict]
+            i:          index for data [int]
+        Returns:
+            label:      track label string [str]
+            mlabel:     micro label string [str]
+            ssrlabel:   ssr label string [str]
+
+        Created by: Bob van Dillen
+        Date: 21-12-2021
+        """
+
+        # Empty label
+        label = ''
+        mlabel = ''
+        ssrlabel = ''
+
+        if self.trafdata.tracklabel[i]:
+            # Line 1
+            label += '%-8s' % data.id[i][:8]
+
+            # Line 2
+            if data.flighttype[i] == "INBOUND":
+                label += 8 * ' '
+            else:
+                label += '%-5s' % data.sid[i][:5]
+                label += ' '
+                label += '%-2s' % data.rwy[i][-2:]
+            # Line 3
+            label += '%-8s' % data.type[i][:8]
+            # Line 4
+            label += 8 * ' '
+        else:
+            label += 8 * 4 * ' '
+
+        mlabel += 7 * 1 * ' '
+        ssrlabel += 7 * 3 * ' '
+
+        return label, mlabel, ssrlabel
 
     def plugin_init(self, blocksize=None, position=None):
         """
@@ -969,259 +1230,6 @@ def baselabel(actdata, data, i):
     return label
 
 
-def applabel(actdata, data, i):
-    """
-    Function: Create approach label
-    Args:
-        actdata:    node data [class]
-        data:       aircraft data [class]
-        i:          index for data [int]
-    Returns:
-        label:      track label string [str]
-        mlabel:     micro label string [str]
-        ssrlabel:   ssr label string [str]
-
-    Created by: Bob van Dillen
-    Date: 21-12-2021
-    """
-
-    IP = socket.gethostbyname(socket.gethostname())
-
-    # Empty labels
-    label    = ''
-    mlabel   = ''
-    ssrlabel = ''
-
-    # Track label
-    if data.tracklbl[i]:
-        # Line 1
-        label += '%-8s' % data.id[i][:8]
-
-        # Line 2
-        label += '%-3s' % leading_zeros(data.alt[i]/ft/100)[-3:]
-        if actdata.acdata.alt[i] < actdata.translvl:
-            label += '%-1s' % 'A'
-        else:
-            label += '%-1s' % ' '
-        if data.uco[i] == IP[-11:] and data.selalt[i] != 0:
-            label += '%-3s' % leading_zeros(data.selalt[i]/ft/100)[-3:]
-        else:
-            label += '%-3s' % '   '
-        label += '%-1s' % ' '
-
-        # Line 3
-        label += '%-4s' % str(data.type[i])[:4]
-        if data.uco[i] == IP[-11:] and data.selhdg[i] != 0:
-            label += '%-3s' % leading_zeros(data.selhdg[i])[:3]
-        elif data.flighttype[i] == 'INBOUND':
-            label += '%-3s' % data.arr[i].replace('ARTIP', 'ATP')[:3]
-        elif data.flighttype[i] == 'OUTBOUND':
-            label += '%-3s' % data.sid[i][:3]
-        else:
-            label += '%-3s' % '   '
-        label += '%-1s' % ' '
-
-        # Line 4
-        label += '%-3s' % leading_zeros(data.gs[i]/kts)[:3]
-        if data.wtc[i].upper() == 'H' or data.wtc[i].upper() == 'J':
-            label += '%-1s' % str(data.wtc[i])[:1]
-        else:
-            label += '%-1s' % ' '
-        if data.uco[i] == IP[-11:] and data.selspd[i] != 0:
-            label += '%-3s' % leading_zeros(data.selspd[i]/kts)[:3]
-        else:
-            label += '%-3s' % 'SPD'
-        label += '%-1s' % ' '
-    else:
-        label += 8*4*' '
-
-    # Micro label   #elif is tried for gmp eor
-    if data.mlbl[i]:
-        if data.flighttype[i].upper() == 'OUTBOUND':
-            mlabel += '      '+chr(30)   #30
-        elif (len(data.rwy[i]) == 3):
-            if data.rwy[i] in ['18C', '18C_E'] or data.arr[i] in ['ATP18C', 'ATP18CEOR', 'RIV18C', 'SUG18C']:
-                mlabel += '%-7s' % data.rwy[i][:7]
-            else:
-                mlabel += '%-7s' % ('    ' + data.rwy[i][:7])
-        elif (len(data.rwy[i]) == 5) and ((data.rwy[i] in ['18R', '18R_E']) or data.arr[i] in ['ATP18R', 'RIV18R', 'RIV18REOR', 'SUG18R', 'SUG18REOR']):
-            mlabel += '%-7s' % ('  '+data.rwy[i][:7])
-        elif (len(data.rwy[i]) == 2):
-            mlabel += '%-7s' % ('     ' + data.rwy[i][:7])
-        else:
-            mlabel += '%-7s' % data.rwy[i][:7]
-    else:
-        mlabel += 7*' '
-
-    # SSR label
-    ssrlbl = data.ssrlbl[i].split(';')
-    # Mode A
-    if 'A' in ssrlbl and data.ssr[i] != 0:
-        ssrlabel += '%-7s' % str(data.ssr[i])[:7]
-    else:
-        ssrlabel += 7*' '
-    # Mode C
-    if 'C' in ssrlbl:
-        ssrlabel += '%-3s' % leading_zeros(data.alt[i]/ft/100)[:3]
-        if data.alt[i] < actdata.translvl:
-            ssrlabel += '%-4s' % 'A   '
-        else:
-            ssrlabel += '%-4s' % '    '
-    else:
-        ssrlabel += 7*' '
-
-    # ACID
-    if 'ACID' in ssrlbl:
-        ssrlabel += '%-7s' % data.id[i][:7]
-    else:
-        ssrlabel += 7 * ' '
-
-    return label, mlabel, ssrlabel
-
-
-def acclabel(actdata, data, i):
-    """
-    Function: Create acc label
-    Args:
-        actdata:    node data [class]
-        data:       aircraft data [class]
-        i:          index for data [int]
-    Returns:
-        label:      track label string [str]
-        mlabel:     micro label string [str]
-        ssrlabel:   ssr label string [str]
-
-    Created by: Bob van Dillen
-    Date: 21-12-2021
-    """
-
-    IP = socket.gethostbyname(socket.gethostname())
-
-    # Empty labels
-    label    = ''
-    ssrlabel = ''
-    mlabel   = ''
-
-    # Track label
-    if data.tracklbl[i]:
-        # Line 1
-        label += '%-8s' % data.id[i][:8]
-
-        # Line 2
-        label += '%-3s' % leading_zeros(data.alt[i]/ft/100)[-3:]
-        if data.alt[i] < actdata.translvl:
-            label += '%-1s' % 'A'
-        else:
-            label += '%-1s' % ' '
-        if data.uco[i] == IP[-11:] and data.selalt[i] != 0:
-            label += '%-3s' % leading_zeros(data.selalt[i]/ft/100)[-3:]
-        else:
-            label += '%-3s' % '   '
-        label += '%-1s' % ' '
-
-        # Line 3
-        label += '%-3s' % '...'
-        label += '%-1s' % ' '
-        label += '%-3s' % leading_zeros(data.gs[i]/kts)[:3]
-        if data.wtc[i].upper() == 'H' or data.wtc[i].upper() == 'J':
-            label += '%-1s' % str(data.wtc[i])[:1]
-        else:
-            label += '%-1s' % ' '
-
-        # Line 4
-        if data.uco[i] == IP[-11:] and data.selspd[i] != 0:
-            label += '%-1s' % 'I'
-            label += '%-3s' % leading_zeros(data.selspd[i]/kts)[:3]
-        else:
-            label += '%-4s' % '    '
-        label += '%-4s' % data.type[i][:4]
-    else:
-        label += 8*4*' '
-
-    # Micro label
-    if data.mlbl[i]:
-        if data.flighttype[i].upper() == 'INBOUND':
-            if (len(data.rwy[i]) == 3):
-                if data.rwy[i] in ['18C', '18C_E'] or data.arr[i] in ['ATP18C', 'ATP18CEOR', 'RIV18C', 'SUG18C']:
-                    mlabel += '%-7s' % chr(31)
-                else:
-                    mlabel += '%-7s' % ('      ' + chr(31))
-            else:
-                mlabel += '%-7s' % ('      ' + chr(31))
-        else:
-            mlabel += 7*' '
-    else:
-        mlabel += 7*' '
-
-    # SSR label
-    ssrlbl = data.ssrlbl[i].split(';')
-    # ACID
-    if 'ACID' in ssrlbl:
-        ssrlabel += '%-7s' % data.id[i][:7]
-    else:
-        ssrlabel += 7*' '
-    # Mode A
-    if 'A' in ssrlbl and data.ssr[i] != 0:
-        ssrlabel += '%-7s' % str(data.ssr[i])[:7]
-    else:
-        ssrlabel += 7*' '
-    # Mode C
-    if 'C' in ssrlbl:
-        ssrlabel += '%-3s' % leading_zeros(data.alt[i]/ft/100)[:3]
-        if data.alt[i] < actdata.translvl:
-            ssrlabel += '%-4s' % 'A   '
-        else:
-            ssrlabel += '%-4s' % '    '
-    else:
-        ssrlabel += 7*' '
-
-    return label, mlabel, ssrlabel
-
-
-def twrlabel(actdata, data, i):
-    """
-    Function: Create acc label
-    Args:
-        actdata:    node data [dict]
-        data:       aircraft data [dict]
-        i:          index for data [int]
-    Returns:
-        label:      track label string [str]
-        mlabel:     micro label string [str]
-        ssrlabel:   ssr label string [str]
-
-    Created by: Bob van Dillen
-    Date: 21-12-2021
-    """
-
-    # Empty label
-    label    = ''
-    mlabel   = ''
-    ssrlabel = ''
-
-    # Line 1
-    label += '%-8s' % data.id[i][:8]
-    if actdata.show_lbl == 2:
-        # Line 2
-        if data.flighttype[i] == "INBOUND":
-            label += 8*' '
-        else:
-            label += '%-5s' % data.sid[i][:5]
-            label += ' '
-            label += '%-2s' % data.rwy[i][-2:]
-        # Line 3
-        label += '%-8s' % data.type[i][:8]
-        # Line 4
-        label += 8*' '
-    else:
-        label += 8*4*' '
-
-    mlabel += 3*1*' '
-    ssrlabel += 7*3*' '
-
-    return label, mlabel, ssrlabel
-
-
 def leading_zeros(number):
     """
     Function: Add leading zeros to number string (e.g. 005)
@@ -1243,21 +1251,36 @@ def leading_zeros(number):
     else:
         return str(round(number))
 
-def draw_track_sym(sym, val): # for instances
-    """
-    Function: Returns total number of aircrafts having given symbol
-    Args:
-        sym:    symbol array [array with str dtype]
-        val:    symbol type [1 type][ACC/APP/TWR IN/TWR OUT]
-    Returns:
-        total:  length of aircrafts with particular symbol
 
-    Created by: Ajay Kumbhar
-    Date:
+def ssrlabel_order(ssrlabel, atcmode):
     """
-    sym = [i for i in sym if i == val]
-    total = len(sym)
-    return total
+    Function: Create the right SSR label order
+    Args:
+        ssrlabel:           SSR label elements
+    Returns:
+        ssrlabel_sorted:    Sorted SSR label elements
+
+    Created by: Bob van Dillen
+    Date: 18-11-2022
+    """
+
+    ssrlabel_sorted = []
+    if atcmode == 'APP':
+        if 'A' in ssrlabel:
+            ssrlabel_sorted.append('A')
+        if 'C' in ssrlabel:
+            ssrlabel_sorted.append('C')
+        if 'ACID' in ssrlabel:
+            ssrlabel_sorted.append('ACID')
+    elif atcmode == 'ACC':
+        if 'ACID' in ssrlabel:
+            ssrlabel_sorted.append('ACID')
+        if 'A' in ssrlabel:
+            ssrlabel_sorted.append('A')
+        if 'C' in ssrlabel:
+            ssrlabel_sorted.append('C')
+
+    return ssrlabel_sorted
 
 def initial_micropos(data, i):
     """

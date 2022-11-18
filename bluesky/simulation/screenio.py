@@ -247,7 +247,7 @@ class ScreenIO:
         else:
             return False, 'SETATCMODE: ATC Mode not recognized'
 
-    def showlabel(self, idx):
+    def settracklabel(self, idx):
         """
         Function: Show the track label
         Args:
@@ -259,6 +259,32 @@ class ScreenIO:
         """
 
         bs.net.send_event(b'DISPLAYFLAG', dict(flag='GUITRAFDATA', args={'cmd': "TRACKLABEL", 'data': idx}))
+
+    def setssrlabel(self, idx, *args):
+        """
+        Function: Show the SSR label
+        Args:
+            idx: Index for traffic variables [int]
+        Returns: -
+
+        Created by: Bob van Dillen
+        Date: 18-11-2022
+        """
+
+        bs.net.send_event(b'DISPLAYFLAG', dict(flag='GUITRAFDATA', args={'cmd': "SSRLABEL", 'data': [idx, args]}))
+
+    def setmlabel(self, idx):
+        """
+        Function: Show the micro label
+        Args:
+            idx: Index for traffic variables [int]
+        Returns: -
+
+        Created by: Bob van Dillen
+        Date: 18-11-2022
+        """
+
+        bs.net.send_event(b'DISPLAYFLAG', dict(flag='GUITRAFDATA', args={'cmd': "MLABEL", 'data': idx}))
 
     def setsimname(self, name):
         """
@@ -384,17 +410,13 @@ class ScreenIO:
 
             # Always update data
             data['arr']         = np.array(bs.traf.lvnlvars.arr)
-            data['mlbl']        = np.array(bs.traf.lvnlvars.mlbl)
             data['symbol']      = np.array(bs.traf.lvnlvars.symbol)
-            data['rel']         = bs.traf.lvnlvars.rel
             data['rwy']         = np.array(bs.traf.lvnlvars.rwy)
             data['selhdg']      = bs.traf.selhdg
             data['selalt']      = bs.traf.selalt
             data['selspd']      = bs.traf.selspd
             data['sid']         = np.array(bs.traf.lvnlvars.sid)
             data['ssr']         = bs.traf.lvnlvars.ssr
-            data['ssrlbl']      = np.array(bs.traf.lvnlvars.ssrlbl)
-            data['tracklbl']    = bs.traf.lvnlvars.tracklbl
             data['uco']         = bs.traf.lvnlvars.uco
 
             self.prevactime = bs.sim.simt
@@ -415,11 +437,8 @@ class ScreenIO:
         # Always update data (take aircraft create/delete into account)
         data['arr'][idata]      = np.array(bs.traf.lvnlvars.arr)[itraf]
         data['arr']             = data['arr'].tolist()
-        data['mlbl'][idata]     = np.array(bs.traf.lvnlvars.mlbl)[itraf]
-        data['mlbl']            = data['mlbl'].tolist()
         data['symbol'][idata]   = np.array(bs.traf.lvnlvars.symbol)[itraf]
         data['symbol']          = data['symbol'].tolist()
-        data['rel'][idata]      = bs.traf.lvnlvars.rel[itraf]
         data['rwy'][idata]      = np.array(bs.traf.lvnlvars.rwy)[itraf]
         data['rwy']             = data['rwy'].tolist()
         data['selhdg'][idata]   = bs.traf.selhdg[itraf]
@@ -428,9 +447,6 @@ class ScreenIO:
         data['sid'][idata]      = np.array(bs.traf.lvnlvars.sid)[itraf]
         data['sid']             = data['sid'].tolist()
         data['ssr'][idata]      = bs.traf.lvnlvars.ssr[itraf]
-        data['ssrlbl'][idata]   = np.array(bs.traf.lvnlvars.ssrlbl)[itraf]
-        data['ssrlbl']          = data['ssrlbl'].tolist()
-        data['tracklbl'][idata] = bs.traf.lvnlvars.tracklbl[itraf]
         data['uco'][idata]      = bs.traf.lvnlvars.uco[itraf]
 
         # Send data

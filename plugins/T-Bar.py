@@ -102,7 +102,7 @@ class TBar(core.Entity):
                 for idx in range(len(nodedata.acdata.id)):
                     acid = nodedata.acdata.id[idx]
                     dtg = nodedata.acdata.dtg[idx]
-                    tracklbl = nodedata.acdata.tracklbl[idx]
+                    tracklbl = self.tbarlbl.trafdata.tracklabel[idx]
                     if tracklbl and dtg != 0. and acid == console.Console._instance.id_select:
                         rawlabel += '%-3s' % leading_zeros(dtg)[:3]
                     else:
