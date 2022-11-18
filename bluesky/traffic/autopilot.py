@@ -1029,8 +1029,11 @@ class Autopilot(Entity, replaceable=True):
         l4 = corr * bs.traf.perf.vmld/kts + 50
         l5 = np.where(bs.traf.perf.casdes / kts <= 220, bs.traf.perf.casdes / kts, 220)
         l6 = np.where(bs.traf.perf.casdes2 / kts <= 250, bs.traf.perf.casdes2 / kts, 250)
-        l7 = bs.traf.perf.casdes2/kts
-        l8 = bs.traf.perf.mades
+        l7 = 280
+        l8 = np.where(bs.traf.perf.mmax>7000, 0.78, 0.82)
+
+        # l7 = bs.traf.perf.casdes2/kts
+        # l8 = bs.traf.perf.mades
 
         # Piston aircraft speeds
         l9 = corr * bs.traf.perf.vmld / kts + 0
@@ -1047,8 +1050,17 @@ class Autopilot(Entity, replaceable=True):
                np.logical_and(alt > 1999, alt <= 2999) * l4 * kts + \
                np.logical_and(alt > 2999, alt <= 5999) * l5 * kts + \
                np.logical_and(alt > 5999, alt <= 9999) * l6 * kts + \
-               np.logical_and(alt > 9999, alt <= bs.traf.perf.hpdes/0.3048) * l7 * kts + \
-               np.where(alt>bs.traf.perf.hpdes/0.3048, 1, 0) * l8
+               np.logical_and(alt > 9999, alt <= 26000) * l7 * kts + \
+               np.where(alt>26000, 1, 0) * l8
+
+        # spds = np.where(alt<=999, 1, 0) * l1 * kts + \
+        #        np.logical_and(alt > 999, alt <= 1499) * l2 * kts + \
+        #        np.logical_and(alt > 1499, alt <= 1999) * l3 * kts + \
+        #        np.logical_and(alt > 1999, alt <= 2999) * l4 * kts + \
+        #        np.logical_and(alt > 2999, alt <= 5999) * l5 * kts + \
+        #        np.logical_and(alt > 5999, alt <= 9999) * l6 * kts + \
+        #        np.logical_and(alt > 9999, alt <= bs.traf.perf.hpdes/0.3048) * l7 * kts + \
+        #        np.where(alt>bs.traf.perf.hpdes/0.3048, 1, 0) * l8
 
         # Segments for piston aircraft
         spds_p = np.where(alt <= 499, 1, 0) * l9 *kts + \
@@ -1111,6 +1123,7 @@ class Autopilot(Entity, replaceable=True):
     @stack.command(name='ALT')
     def selaltcmd(self, idx: 'acid', alt: 'alt', vspd: 'vspd' = None):
         """ ALT acid, alt, [vspd]
+
             Select autopilot altitude command."""
         bs.traf.selalt[idx] = alt
         bs.traf.swvnav[idx] = False
@@ -1126,6 +1139,57 @@ class Autopilot(Entity, replaceable=True):
             # by setting autopilot vs to zero
             oppositevs = np.logical_and(bs.traf.selvs[idx] * delalt < 0., abs(bs.traf.selvs[idx]) > 0.01)
             bs.traf.selvs[idx[oppositevs]] = 0.
+            if delalt < 0:
+                self.vs[idx] = -999
+                bs.traf.selvs[idx] = -999
+
+    # @stack.command(name='ALT')
+    # def selaltcmd(self, idx: 'acid', alt: 'alt', vspd: 'vspd' = None):
+    #     """ ALT acid, alt, [vspd]
+    #
+    #         Select autopilot altitude command."""
+    #     bs.traf.selalt[idx] = alt
+    #     if bs.traf.swvnav[idx]: self.altdismiss[idx] = True
+    #     if not self.dpswitch[idx]: self.dpswitch[idx] = True
+    #     bs.traf.swvnav[idx] = False
+    #
+    #
+    #     # Check for optional VS argument
+    #     if vspd:
+    #         bs.traf.selvs[idx] = vspd
+    #     else:
+    #         if not isinstance(idx, Collection):
+    #             idx = np.array([idx])
+    #         delalt = alt - bs.traf.alt[idx]
+    #         # Check for VS with opposite sign => use default vs
+    #         # by setting autopilot vs to zero
+    #         oppositevs = np.logical_and(bs.traf.selvs[idx] * delalt < 0., abs(bs.traf.selvs[idx]) > 0.01)
+    #         bs.traf.selvs[idx[oppositevs]] = 0.
+    #
+    # @stack.command(name='FORCEALT')
+    # def selaltcmd(self, idx: 'acid', alt: 'alt', vspd: 'vspd' = None):
+    #     """ ALT acid, alt, [vspd]
+    #
+    #         Select autopilot altitude command."""
+    #     bs.traf.selalt[idx] = alt
+    #     if bs.traf.swvnav[idx]: self.faltdismiss[idx] = True
+    #     if not self.dpswitch[idx]: self.dpswitch[idx] = True
+    #     bs.traf.swvnav[idx] = False
+    #
+    #     # Check for optional VS argument
+    #     if vspd:
+    #         bs.traf.selvs[idx] = vspd
+    #     else:
+    #         if not isinstance(idx, Collection):
+    #             idx = np.array([idx])
+    #         delalt = alt - bs.traf.alt[idx]
+    #         # Check for VS with opposite sign => use default vs
+    #         # by setting autopilot vs to zero
+    #         oppositevs = np.logical_and(bs.traf.selvs[idx] * delalt < 0., abs(bs.traf.selvs[idx]) > 0.01)
+    #         bs.traf.selvs[idx[oppositevs]] = 0.
+    #         if delalt<0:
+    #             self.vs[idx] = -999
+    #             bs.traf.selvs[idx] = -999
 
     @stack.command(name='TO')
     def TOcmd(self, idx: 'acid', SID = None):
