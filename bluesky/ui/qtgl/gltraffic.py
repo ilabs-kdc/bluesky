@@ -22,7 +22,8 @@ settings.set_variable_defaults(
     text_size=13,
     ac_size=16,
     asas_vmin=200.0,
-    asas_vmax=500.0
+    asas_vmax=500.0,
+    atc_mode='BLUESKY'
 )
 
 palette.set_default_colours(
@@ -59,23 +60,26 @@ class Traffic(glh.RenderObject, layer=100):
         self.lat            = glh.GLBuffer()
         self.lon            = glh.GLBuffer()
 
-        self.latacc         = glh.GLBuffer()   # lat_UCO_ACC
-        self.lonacc         = glh.GLBuffer()
-        self.latapp         = glh.GLBuffer()   # lat_UCO_APP
-        self.lonapp         = glh.GLBuffer()
-        self.lattwr_in      = glh.GLBuffer()   # lat_UCO_TWR
-        self.lontwr_in      = glh.GLBuffer()
-        self.lattwr_out     = glh.GLBuffer()  # lat_UCO_TWR
-        self.lontwr_out     = glh.GLBuffer()
+        self.lat_lvnlacc        = glh.GLBuffer()   # lat_UCO_ACC
+        self.lon_lvnlacc        = glh.GLBuffer()
+        self.lat_lvnlapp        = glh.GLBuffer()   # lat_UCO_APP
+        self.lon_lvnlapp        = glh.GLBuffer()
+        self.lat_lvnltwrin      = glh.GLBuffer()   # lat_UCO_TWR
+        self.lon_lvnltwrin      = glh.GLBuffer()
+        self.lat_lvnltwrout     = glh.GLBuffer()  # lat_UCO_TWR
+        self.lon_lvnltwrout     = glh.GLBuffer()
+        self.lat_lvnlother      = glh.GLBuffer()
+        self.lon_lvnlother      = glh.GLBuffer()
 
         self.alt            = glh.GLBuffer()
         self.tas            = glh.GLBuffer()
         self.color          = glh.GLBuffer()
 
-        self.coloracc      = glh.GLBuffer()    # color_UCO_ACC
-        self.colorapp      = glh.GLBuffer()    # color_UCO_APP
-        self.colortwr_in   = glh.GLBuffer()    # color_UCO_TWR
-        self.colortwr_out  = glh.GLBuffer()
+        self.clr_lvnlacc    = glh.GLBuffer()    # color_UCO_ACC
+        self.clr_lvnlapp    = glh.GLBuffer()    # color_UCO_APP
+        self.clr_lvnltwrin  = glh.GLBuffer()    # color_UCO_TWR
+        self.clr_lvnltwrout = glh.GLBuffer()
+        self.clr_lvnlother  = glh.GLBuffer()
 
         self.asasn          = glh.GLBuffer()
         self.asase          = glh.GLBuffer()
@@ -98,11 +102,17 @@ class Traffic(glh.RenderObject, layer=100):
         self.protectedzone  = glh.Circle()
         self.ac_symbol      = glh.VertexArrayObject(glh.gl.GL_TRIANGLE_FAN)
 
-        self.acs_lvnlacc        = glh.VertexArrayObject(glh.gl.GL_LINE_LOOP)   # aircraft symbols lvnl
-        self.acs_lvnluacc       = glh.VertexArrayObject(glh.gl.GL_LINE_LOOP)
-        self.acs_lvnluapp       = glh.VertexArrayObject(glh.gl.GL_LINE_LOOP)
-        self.acs_lvnlutwr_in    = glh.VertexArrayObject(glh.gl.GL_LINE_LOOP)
-        self.acs_lvnlutwr_out   = glh.VertexArrayObject(glh.gl.GL_LINE_LOOP)
+        self.acs_lvnlacc    = glh.VertexArrayObject(glh.gl.GL_LINE_LOOP)  # UCO at ACC
+        self.acs_lvnlapp    = glh.VertexArrayObject(glh.gl.GL_LINE_LOOP)  # UCO at APP
+        self.acs_lvnltwrin  = glh.VertexArrayObject(glh.gl.GL_LINE_LOOP)  # UCO at TWR (inbound)
+        self.acs_lvnltwrout = glh.VertexArrayObject(glh.gl.GL_LINE_LOOP)  # UCO at TWR (outbound)
+        self.acs_lvnlother  = glh.VertexArrayObject(glh.gl.GL_LINE_LOOP)  # Other
+
+        self.nlvnlacc    = 0
+        self.nlvnlapp    = 0
+        self.nlvnltwrin  = 0
+        self.nlvnltwrout = 0
+        self.nlvnlother  = 0
 
         self.hist_symbol    = glh.VertexArrayObject(glh.gl.GL_TRIANGLE_FAN)
         self.cpalines       = glh.VertexArrayObject(glh.gl.GL_LINES)
@@ -156,23 +166,26 @@ class Traffic(glh.RenderObject, layer=100):
         self.lat.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw)
         self.lon.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw)
 
-        self.latacc.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw) # create attributes
-        self.lonacc.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw)
-        self.latapp.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw)
-        self.lonapp.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw)
-        self.lattwr_in.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw)
-        self.lontwr_in.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw)
-        self.lattwr_out.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw)
-        self.lontwr_out.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw)
+        self.lat_lvnlacc.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw) # create attributes
+        self.lon_lvnlacc.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw)
+        self.lat_lvnlapp.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw)
+        self.lon_lvnlapp.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw)
+        self.lat_lvnltwrin.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw)
+        self.lon_lvnltwrin.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw)
+        self.lat_lvnltwrout.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw)
+        self.lon_lvnltwrout.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw)
+        self.lat_lvnlother.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw)
+        self.lon_lvnlother.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw)
 
         self.alt.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw)
         self.tas.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw)
         self.color.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw)
 
-        self.coloracc.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw)
-        self.colorapp.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw)
-        self.colortwr_in.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw)
-        self.colortwr_out.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw)
+        self.clr_lvnlacc.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw)
+        self.clr_lvnlapp.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw)
+        self.clr_lvnltwrin.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw)
+        self.clr_lvnltwrout.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw)
+        self.clr_lvnlother.create(MAX_NAIRCRAFT * 4, glh.GLBuffer.StreamDraw)
 
         self.asasn.create(MAX_NAIRCRAFT * 24, glh.GLBuffer.StreamDraw)
         self.asase.create(MAX_NAIRCRAFT * 24, glh.GLBuffer.StreamDraw)
@@ -207,102 +220,27 @@ class Traffic(glh.RenderObject, layer=100):
 
         # --------------- Aircraft symbols ---------------
 
+        # BlueSky
         acvertices = np.array([(0.0, 0.5 * ac_size), (-0.5 * ac_size, -0.5 * ac_size),
                                (0.0, -0.25 * ac_size), (0.5 * ac_size, -0.5 * ac_size)],
                               dtype=np.float32)
         self.ac_symbol.create(vertex=acvertices)
         self.ac_symbol.set_attribs(lat=self.lat, lon=self.lon, color=self.color, orientation=self.hdg,
-                                   instance_divisor=1)  #default - BlueSky
-
-        acv_lvnlacc = np.array([(-0.5 * ac_size, -0.5 * ac_size),
-                                   (0.5 * ac_size, 0.5 * ac_size),
-                                   (0.5 * ac_size, -0.5 * ac_size),
-                                   (-0.5 * ac_size, 0.5 * ac_size),
-                                   (-0.5 * ac_size, -0.5 * ac_size),
-                                   (0.5 * ac_size, -0.5 * ac_size),
-                                   (0.5 * ac_size, 0.5 * ac_size),
-                                   (-0.5 * ac_size, 0.5 * ac_size)],
-                                  dtype=np.float32)  # a square with diagonals - ACC MODE
-        self.acs_lvnlacc.create(vertex=acv_lvnlacc)
-        self.acs_lvnlacc.set_attribs(lat=self.lat, lon=self.lon, color=self.color,
                                    instance_divisor=1)
 
-        acv_lvnluacc = np.array([(-0.375 * ac_size, 0 * ac_size),
-                                   (-0.375 * ac_size, -0.5 * ac_size),
-                                   (-0.375 * ac_size, 0 * ac_size),
-                                   (0.375 * ac_size, 0 * ac_size),
-                                   (0.375 * ac_size, -0.5 * ac_size),
-                                   (0.375 * ac_size, 0 * ac_size),
-                                   (0.125 * ac_size, 0.5 * ac_size),
-                                   (-0.125 * ac_size, 0.5 * ac_size),
-                                   (-0.375 * ac_size, 0 * ac_size),
-                                   (0.375 * ac_size, 0 * ac_size)],
-                                    dtype=np.float32)  # A - UCO at ACC
+        # LVNL
+        self.acs_lvnlacc.create(lat=self.lat_lvnlacc, lon=self.lon_lvnlacc, color=self.clr_lvnlacc,
+                                instance_divisor=1)
+        self.acs_lvnlapp.create(lat=self.lat_lvnlapp, lon=self.lon_lvnlapp, color=self.clr_lvnlapp,
+                                instance_divisor=1)
+        self.acs_lvnltwrin.create(lat=self.lat_lvnltwrin, lon=self.lon_lvnltwrin, color=self.clr_lvnltwrin,
+                                  instance_divisor=1)
+        self.acs_lvnltwrout.create(lat=self.lat_lvnltwrout, lon=self.lon_lvnltwrout, color=self.clr_lvnltwrout,
+                                   instance_divisor=1)
+        self.acs_lvnlother.create(lat=self.lat_lvnlother, lon=self.lon_lvnlother, color=self.clr_lvnlother,
+                                  instance_divisor=1)
 
-        self.acs_lvnluacc.create(vertex=acv_lvnluacc)
-        self.acs_lvnluacc.set_attribs(lat=self.latacc, lon=self.lonacc, color=self.coloracc,
-                                       instance_divisor=1)
-
-        acv_lvnluapp = np.array([(0.5 * ac_size, 0.433 * ac_size),
-                                (-0.5 * ac_size, 0.433 * ac_size),
-                                (0 * ac_size, -0.433 * ac_size)],
-                                dtype=np.float32) # triangle - UCO at APP
-
-        self.acs_lvnluapp.create(vertex=acv_lvnluapp)
-        self.acs_lvnluapp.set_attribs(lat=self.latapp, lon=self.lonapp, color=self.colorapp,
-                                     instance_divisor=1)
-
-        acv_lvnlutwr_in = np.array([(0 * ac_size, 0.5 * ac_size),
-                                   (0.125 * ac_size, 0.484 * ac_size),
-                                   (0.25 * ac_size, 0.433 * ac_size),
-                                   (0.375 * ac_size, 0.33 * ac_size),
-                                   (0.5 * ac_size, 0 * ac_size),
-                                   (0.375 * ac_size, -0.330 * ac_size),
-                                   (0.25 * ac_size, -0.433 * ac_size),
-                                   (0.125 * ac_size, -0.484 * ac_size),
-                                   (0 * ac_size, -0.5 * ac_size),
-                                   (-0.125 * ac_size, -0.484 * ac_size),
-                                   (-0.25 * ac_size, -0.443 * ac_size),
-                                   (-0.375 * ac_size, -0.330 * ac_size),
-                                   (-0.5 * ac_size, 0 * ac_size),
-                                   (-0.375 * ac_size, 0.330 * ac_size),
-                                   (-0.25 * ac_size, 0.433 * ac_size),
-                                   (-0.125 * ac_size, 0.484 * ac_size),
-                                   (0 * ac_size, 0.5 * ac_size),
-                                   (0 * ac_size, -0.5 * ac_size),
-                                   (0 * ac_size, 0 * ac_size),
-                                   (0.5 * ac_size, 0 * ac_size),
-                                   (-0.5 * ac_size, 0 * ac_size),
-                                   (0 * ac_size, 0 * ac_size)],
-                                   dtype=np.float32)  # a circle with plus (Tower IN)
-
-        self.acs_lvnlutwr_in.create(vertex=acv_lvnlutwr_in)
-        self.acs_lvnlutwr_in.set_attribs(lat=self.lattwr_in, lon=self.lontwr_in, color=self.colortwr_in,
-                                      instance_divisor=1)
-
-        acv_lvnlutwr_out = np.array([(0.375 * ac_size, 0.33 * ac_size),
-                                   (0.5 * ac_size, 0 * ac_size),
-                                   (0.375 * ac_size, -0.330 * ac_size),
-                                   (0.25 * ac_size, -0.433 * ac_size),
-                                   (0.125 * ac_size, -0.484 * ac_size),
-                                   (0 * ac_size, -0.5 * ac_size),
-                                   (-0.125 * ac_size, -0.484 * ac_size),
-                                   (-0.25 * ac_size, -0.443 * ac_size),
-                                   (-0.375 * ac_size, -0.330 * ac_size),
-                                   (-0.5 * ac_size, 0 * ac_size),
-                                   (-0.375 * ac_size, 0.330 * ac_size),
-                                   (-0.25 * ac_size, 0.433 * ac_size),
-                                   (-0.125 * ac_size, 0.484 * ac_size),
-                                   (0 * ac_size, 0.5 * ac_size),
-                                   (0.125 * ac_size, 0.484 * ac_size),
-                                   (0.25 * ac_size, 0.433 * ac_size),
-                                   (0.375 * ac_size, 0.33 * ac_size),
-                                   (-0.375 * ac_size, -0.330 * ac_size)],
-                                   dtype=np.float32)  # a circle with diagonal (Tower OUT)
-
-        self.acs_lvnlutwr_out.create(vertex=acv_lvnlutwr_out)
-        self.acs_lvnlutwr_out.set_attribs(lat=self.lattwr_out, lon=self.lontwr_out, color=self.colortwr_out,
-                                         instance_divisor=1)
+        self.set_acsymbol(settings.atc_mode)
 
         # --------------- History symbols ---------------
 
@@ -389,17 +327,17 @@ class Traffic(glh.RenderObject, layer=100):
         if actdata.atcmode == 'BLUESKY':
             self.ac_symbol.draw(n_instances=actdata.naircraft)
         else:
-            if actdata.atcmode == 'APP': 
-                if draw_track_sym(actdata.acdata.symbol, 'ACC') != 0:
-                    self.acs_lvnluacc.draw(n_instances=draw_track_sym(actdata.acdata.symbol, 'ACC'))
-                if draw_track_sym(actdata.acdata.symbol, 'APP') != 0:
-                    self.acs_lvnluapp.draw(n_instances=draw_track_sym(actdata.acdata.symbol, 'APP'))
-                if draw_track_sym(actdata.acdata.symbol, 'TWRIN') != 0:
-                    self.acs_lvnlutwr_in.draw(n_instances=draw_track_sym(actdata.acdata.symbol, 'TWRIN'))
-                if draw_track_sym(actdata.acdata.symbol, 'TWROUT') != 0:
-                    self.acs_lvnlutwr_out.draw(n_instances=draw_track_sym(actdata.acdata.symbol, 'TWROUT'))
-            elif actdata.atcmode == 'ACC':
-                self.acs_lvnlacc.draw(n_instances=actdata.naircraft)
+            if self.nlvnlacc > 0:
+                self.acs_lvnlacc.draw(n_instances=self.nlvnlacc)
+            if self.nlvnlapp > 0:
+                self.acs_lvnlapp.draw(n_instances=self.nlvnlapp)
+            if self.nlvnltwrin > 0:
+                self.acs_lvnltwrin.draw(n_instances=self.nlvnltwrin)
+            if self.nlvnltwrout > 0:
+                self.acs_lvnltwrout.draw(n_instances=self.nlvnltwrout)
+            if self.nlvnlother > 0:
+                self.acs_lvnlother.draw(n_instances=self.nlvnlother)
+
             if self.tbar_ac is not None and self.show_tbar_ac:
                 self.tbar_ac.draw(n_instances=actdata.naircraft)
 
@@ -450,6 +388,7 @@ class Traffic(glh.RenderObject, layer=100):
                                     nodedata.traillon1)
         if 'ATCMODE' in changed_elems:
             self.hist_symbol.set_attribs(color=palette.aircraft)
+            self.set_acsymbol(nodedata.atcmode)
 
     def update_trails_data(self, lat0, lon0, lat1, lon1):
         ''' Update GPU buffers with route data from simulation. '''
@@ -684,25 +623,44 @@ class Traffic(glh.RenderObject, layer=100):
         Created by: Ajay Kumbhar
         Date:
         """
+
+        # ACC
         iacc = misc.get_indices(data.symbol, 'ACC')
-        self.latacc.update(np.array(data.lat[iacc], dtype=np.float32))
-        self.lonacc.update(np.array(data.lon[iacc], dtype=np.float32))
-        self.coloracc.update(np.array(color[iacc], dtype=np.uint8))
+        self.nlvnlacc = len(iacc)
+        self.lat_lvnlacc.update(np.array(data.lat[iacc], dtype=np.float32))
+        self.lon_lvnlacc.update(np.array(data.lon[iacc], dtype=np.float32))
+        self.clr_lvnlacc.update(np.array(color[iacc], dtype=np.uint8))
 
+        # APP
         iapp = misc.get_indices(data.symbol, 'APP')
-        self.latapp.update(np.array(data.lat[iapp], dtype=np.float32))
-        self.lonapp.update(np.array(data.lon[iapp], dtype=np.float32))
-        self.colorapp.update(np.array(color[iapp], dtype=np.uint8))
+        self.nlvnlapp = len(iapp)
+        self.lat_lvnlapp.update(np.array(data.lat[iapp], dtype=np.float32))
+        self.lon_lvnlapp.update(np.array(data.lon[iapp], dtype=np.float32))
+        self.clr_lvnlapp.update(np.array(color[iapp], dtype=np.uint8))
 
+        # TWR inbound
         itwrin = misc.get_indices(data.symbol, 'TWRIN')
-        self.lattwr_in.update(np.array(data.lat[itwrin], dtype=np.float32))
-        self.lontwr_in.update(np.array(data.lon[itwrin], dtype=np.float32))
-        self.colortwr_in.update(np.array(color[itwrin], dtype=np.uint8))
+        self.nlvnltwrin = len(itwrin)
+        self.lat_lvnltwrin.update(np.array(data.lat[itwrin], dtype=np.float32))
+        self.lon_lvnltwrin.update(np.array(data.lon[itwrin], dtype=np.float32))
+        self.clr_lvnltwrin.update(np.array(color[itwrin], dtype=np.uint8))
 
+        # TWR outbound
         itwrout = misc.get_indices(data.symbol, 'TWROUT')
-        self.lattwr_out.update(np.array(data.lat[itwrout], dtype=np.float32))
-        self.lontwr_out.update(np.array(data.lon[itwrout], dtype=np.float32))
-        self.colortwr_out.update(np.array(color[itwrout], dtype=np.uint8))
+        self.nlvnltwrout = len(itwrout)
+        self.lat_lvnltwrout.update(np.array(data.lat[itwrout], dtype=np.float32))
+        self.lon_lvnltwrout.update(np.array(data.lon[itwrout], dtype=np.float32))
+        self.clr_lvnltwrout.update(np.array(color[itwrout], dtype=np.uint8))
+
+        # Other
+        iother = np.setdiff1d(np.arange(len(data.id)), iacc)
+        iother = np.setdiff1d(iother, iapp)
+        iother = np.setdiff1d(iother, itwrin)
+        iother = np.setdiff1d(iother, itwrout)
+        self.nlvnlother = len(iother)
+        self.lat_lvnlother.update(np.array(data.lat[iother], dtype=np.float32))
+        self.lon_lvnlother.update(np.array(data.lon[iother], dtype=np.float32))
+        self.clr_lvnlother.update(np.array(color[iother], dtype=np.uint8))
 
     def update_labelpos(self, x, y):
         """
@@ -752,6 +710,123 @@ class Traffic(glh.RenderObject, layer=100):
                 self.pluginlbloffset.update(np.array(self.trafdata.labelpos+self.pluginlabelpos, dtype=np.float32))
 
             self.leaderlines.update(vertex=np.array(self.trafdata.leaderlinepos, dtype=np.float32))
+
+    def set_acsymbol(self, atcmode):
+        """
+        Function: Set the aircraft symbol vertices
+        Args:
+            atcmode:    ATC mode [str]
+        Returns: -
+
+        Created by: Bob van Dillen
+        Date: 18-11-2022
+        """
+
+        ac_size = settings.ac_size
+
+        # ACC mode
+        if atcmode == 'ACC':
+            acc = app = twrin = twrout = other = np.array([(-0.5 * ac_size, -0.5 * ac_size),
+                                                           (0.5 * ac_size, 0.5 * ac_size),
+                                                           (0.5 * ac_size, -0.5 * ac_size),
+                                                           (-0.5 * ac_size, 0.5 * ac_size),
+                                                           (-0.5 * ac_size, -0.5 * ac_size),
+                                                           (0.5 * ac_size, -0.5 * ac_size),
+                                                           (0.5 * ac_size, 0.5 * ac_size),
+                                                           (-0.5 * ac_size, 0.5 * ac_size)],
+                                                          dtype=np.float32)  # a square with diagonals
+
+        # APP mode
+        elif atcmode == 'APP':
+            acc = np.array([(-0.375 * ac_size, 0 * ac_size),
+                            (-0.375 * ac_size, -0.5 * ac_size),
+                            (-0.375 * ac_size, 0 * ac_size),
+                            (0.375 * ac_size, 0 * ac_size),
+                            (0.375 * ac_size, -0.5 * ac_size),
+                            (0.375 * ac_size, 0 * ac_size),
+                            (0.125 * ac_size, 0.5 * ac_size),
+                            (-0.125 * ac_size, 0.5 * ac_size),
+                            (-0.375 * ac_size, 0 * ac_size),
+                            (0.375 * ac_size, 0 * ac_size)],
+                           dtype=np.float32)  # A
+
+            app = np.array([(0.5 * ac_size, 0.433 * ac_size),
+                            (-0.5 * ac_size, 0.433 * ac_size),
+                            (0 * ac_size, -0.433 * ac_size)],
+                           dtype=np.float32) # triangle
+
+            twrin = np.array([(0 * ac_size, 0.5 * ac_size),
+                              (0.125 * ac_size, 0.484 * ac_size),
+                              (0.25 * ac_size, 0.433 * ac_size),
+                              (0.375 * ac_size, 0.33 * ac_size),
+                              (0.5 * ac_size, 0 * ac_size),
+                              (0.375 * ac_size, -0.330 * ac_size),
+                              (0.25 * ac_size, -0.433 * ac_size),
+                              (0.125 * ac_size, -0.484 * ac_size),
+                              (0 * ac_size, -0.5 * ac_size),
+                              (-0.125 * ac_size, -0.484 * ac_size),
+                              (-0.25 * ac_size, -0.443 * ac_size),
+                              (-0.375 * ac_size, -0.330 * ac_size),
+                              (-0.5 * ac_size, 0 * ac_size),
+                              (-0.375 * ac_size, 0.330 * ac_size),
+                              (-0.25 * ac_size, 0.433 * ac_size),
+                              (-0.125 * ac_size, 0.484 * ac_size),
+                              (0 * ac_size, 0.5 * ac_size),
+                              (0 * ac_size, -0.5 * ac_size),
+                              (0 * ac_size, 0 * ac_size),
+                              (0.5 * ac_size, 0 * ac_size),
+                              (-0.5 * ac_size, 0 * ac_size),
+                              (0 * ac_size, 0 * ac_size)],
+                             dtype=np.float32)  # a circle with plus
+
+            twrout = np.array([(0.375 * ac_size, 0.33 * ac_size),
+                               (0.5 * ac_size, 0 * ac_size),
+                               (0.375 * ac_size, -0.330 * ac_size),
+                               (0.25 * ac_size, -0.433 * ac_size),
+                               (0.125 * ac_size, -0.484 * ac_size),
+                               (0 * ac_size, -0.5 * ac_size),
+                               (-0.125 * ac_size, -0.484 * ac_size),
+                               (-0.25 * ac_size, -0.443 * ac_size),
+                               (-0.375 * ac_size, -0.330 * ac_size),
+                               (-0.5 * ac_size, 0 * ac_size),
+                               (-0.375 * ac_size, 0.330 * ac_size),
+                               (-0.25 * ac_size, 0.433 * ac_size),
+                               (-0.125 * ac_size, 0.484 * ac_size),
+                               (0 * ac_size, 0.5 * ac_size),
+                               (0.125 * ac_size, 0.484 * ac_size),
+                               (0.25 * ac_size, 0.433 * ac_size),
+                               (0.375 * ac_size, 0.33 * ac_size),
+                               (-0.375 * ac_size, -0.330 * ac_size)],
+                              dtype=np.float32)  # a circle with diagonal
+
+            other = np.array([(-0.5 * ac_size, -0.5 * ac_size),
+                              (0.5 * ac_size, 0.5 * ac_size),
+                              (0.5 * ac_size, -0.5 * ac_size),
+                              (-0.5 * ac_size, 0.5 * ac_size),
+                              (-0.5 * ac_size, -0.5 * ac_size),
+                              (0.5 * ac_size, -0.5 * ac_size),
+                              (0.5 * ac_size, 0.5 * ac_size),
+                              (-0.5 * ac_size, 0.5 * ac_size)],
+                             dtype=np.float32)  # a square with diagonals
+
+        # TWR mode
+        else:
+            acc = app = twrin = twrout = other = np.array([(-0.5 * ac_size, -0.5 * ac_size),
+                                                           (0.5 * ac_size, 0.5 * ac_size),
+                                                           (0.5 * ac_size, -0.5 * ac_size),
+                                                           (-0.5 * ac_size, 0.5 * ac_size),
+                                                           (-0.5 * ac_size, -0.5 * ac_size),
+                                                           (0.5 * ac_size, -0.5 * ac_size),
+                                                           (0.5 * ac_size, 0.5 * ac_size),
+                                                           (-0.5 * ac_size, 0.5 * ac_size)],
+                                                          dtype=np.float32)  # a square with diagonals
+
+        # Set the vertices
+        self.acs_lvnlacc.set_attribs(vertex=acc)
+        self.acs_lvnlapp.set_attribs(vertex=app)
+        self.acs_lvnltwrin.set_attribs(vertex=twrin)
+        self.acs_lvnltwrout.set_attribs(vertex=twrout)
+        self.acs_lvnlother.set_attribs(vertex=other)
 
     def plugin_init(self, blocksize=None, position=None):
         """
