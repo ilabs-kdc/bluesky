@@ -45,8 +45,8 @@ class Descent():
 
         self.gammatas = abs(self.rod/self.tasspeeds)
 
-        self.decel_alts = np.array([999 * ft, 1499 * ft, 1999 * ft, 2999 * ft, 5999 * ft, 9999 * ft, bs.traf.perf.hpdes[idx]]) # lenght of 7
-        self.vsegm = np.array([self.speedschedule(idx, i) for i in self.decel_alts] + [self.speedschedule(idx, bs.traf.perf.hpdes[idx] * 1.1)])
+        self.decel_alts = np.array([999 * ft, 1499 * ft, 1999 * ft, 2999 * ft, 5999 * ft, 9999 * ft, 26000*ft]) # lenght of 7
+        self.vsegm = np.array([self.speedschedule(idx, i) for i in self.decel_alts] + [self.speedschedule(idx, 26000 * 1.1)])
 
         cas = vtas2cas(tas, altitude)
 
@@ -177,13 +177,19 @@ class Descent():
             if alt > 5999*ft and alt <= 9999*ft:
                 spd = min(bs.traf.perf.casdes2[idx] / kts, 250)
                 return spd * kts
-            if alt > 9999*ft and alt <= bs.traf.perf.hpdes[idx]:
-                spd = bs.traf.perf.casdes2[idx] / kts
+            if alt > 9999*ft and alt <= 26000*ft:
+                spd = 280
                 return spd * kts
-            if alt > bs.traf.perf.hpdes[idx]:
-                spd = bs.traf.perf.mades[idx]
-                # print('cm', bs.traf.id[idx], vcasormach(spd, alt))
-                return spd #vcasormach(spd, alt)[0]
+            if alt > 26000*ft:
+                if bs.traf.perf.mmax[idx]>7000: spd = 0.78
+                else: spd = 0.82
+
+            # if alt > 9999 * ft and alt <= bs.traf.perf.hpdes[idx]:
+            #     spd = bs.traf.perf.casdes2[idx] / kts
+            #     return spd * kts
+            # if alt > bs.traf.perf.hpdes[idx]:
+            #     spd = bs.traf.perf.mades[idx]
+                return spd
 
     def phases(self, idx, alt, cas, delalt):
 
