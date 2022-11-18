@@ -443,6 +443,32 @@ class LVNLVariables(Entity):
         acid = bs.traf.id[idx]
         cmd = 'PCALL LVNL/Routes/ARR/ILS_' + rwy + ' ' + acid
         stack.stack(cmd)
+        self.rwy[idx] = rwy
+
+    @stack.command(name='WPTARR', brief='HDGARR CALLSIGN WPT', aliases=('STACK',))
+    def setWPTARR(self, idx: 'acid', WPT: str):
+        """
+        Function: Function used for the "Programma Luchtruim Herziening (PLRH). Issues a direct to the waypoints,
+                  and pcalls the scenarios such that it follows the trajectory to the runway.
+        Args:
+            idx:        index for traffic arrays [int]
+            wpt:        waypoint [str]
+        Returns: -
+
+        Created by: Lars Dijkstra
+        Date: 18-11-2022
+        """
+
+        acid = bs.traf.id[idx]
+
+        # Remove the old route of acid. Executing the cmd at function level allows for more easy changes to
+        # waypoint restrictions.
+        cmd = 'delrte' + ' ' + acid
+        stack.stack(cmd)
+
+        cmd = 'PCALL LVNL/PLRH/TID_SCN/' + WPT + '.scn' + ' ' + acid
+        stack.stack(cmd)
+
 
     @stack.command(name='MICROLABEL', brief='MICROLABEL CALLSIGN')
     def setmlabel(self, idx: 'acid'):

@@ -68,6 +68,8 @@ class Console(QWidget):
         bs.net.event_received.connect(self.on_simevent_received)
         bs.net.actnodedata_changed.connect(self.actnodedataChanged)
 
+        self.idselect_event = Signal('idselect')
+
         assert Console._instance is None, "Console constructor: console instance " + \
             "already exists! Cannot have more than one console."
         Console._instance = self

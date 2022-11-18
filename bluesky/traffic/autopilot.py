@@ -1111,34 +1111,8 @@ class Autopilot(Entity, replaceable=True):
     @stack.command(name='ALT')
     def selaltcmd(self, idx: 'acid', alt: 'alt', vspd: 'vspd' = None):
         """ ALT acid, alt, [vspd]
-
             Select autopilot altitude command."""
         bs.traf.selalt[idx] = alt
-        if bs.traf.swvnav[idx]: self.altdismiss[idx] = True
-        if not self.dpswitch[idx]: self.dpswitch[idx] = True
-        bs.traf.swvnav[idx] = False
-
-
-        # Check for optional VS argument
-        if vspd:
-            bs.traf.selvs[idx] = vspd
-        else:
-            if not isinstance(idx, Collection):
-                idx = np.array([idx])
-            delalt = alt - bs.traf.alt[idx]
-            # Check for VS with opposite sign => use default vs
-            # by setting autopilot vs to zero
-            oppositevs = np.logical_and(bs.traf.selvs[idx] * delalt < 0., abs(bs.traf.selvs[idx]) > 0.01)
-            bs.traf.selvs[idx[oppositevs]] = 0.
-
-    @stack.command(name='FORCEALT')
-    def selaltcmd(self, idx: 'acid', alt: 'alt', vspd: 'vspd' = None):
-        """ ALT acid, alt, [vspd]
-
-            Select autopilot altitude command."""
-        bs.traf.selalt[idx] = alt
-        if bs.traf.swvnav[idx]: self.faltdismiss[idx] = True
-        if not self.dpswitch[idx]: self.dpswitch[idx] = True
         bs.traf.swvnav[idx] = False
 
         # Check for optional VS argument
@@ -1186,7 +1160,7 @@ class Autopilot(Entity, replaceable=True):
 
         if SID != None:
             # string = "WILABADA/SID/" + SID
-            string = "PLRH/" + SID
+            string = "LVNL/PLRH/SID/" + SID
             pcall(string, id)
 
     @stack.command(name='VS')

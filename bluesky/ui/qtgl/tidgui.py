@@ -46,6 +46,12 @@ class TIDGui(QDialog):
         self.layouts = dict()
         self.load_layouts()
 
+        self.ac_selected = ''
+        self.rwy = ''
+
+        if name == 'Function-TID':
+            bs.Signal('idselect').connect(self.TID_refresh)
+
         QDialog.__init__(self)
 
         # Create Dialog
@@ -114,7 +120,7 @@ class TIDGui(QDialog):
 
         self.running = False
 
-    def change_tid(self, layoutname):
+    def change_tid(self, layoutname, **kwargs):
         """
         Function: Change the TID layout
         Args:
@@ -124,6 +130,16 @@ class TIDGui(QDialog):
         Created by: Bob van Dillen
         Date: 29-10-2022
         """
+
+        if 'rwy' in kwargs:
+            if kwargs['rwy'] == '18R':
+                self.rwy = 'apphdg18R'
+            elif kwargs['rwy'] == '18C':
+                self.rwy = 'apphdg18C'
+
+        if self.rwy != '' and layoutname == 'apphdg':
+            layoutname = self.rwy
+
 
         # Set layout
         dlgbuttons = self.set_layout(layoutname)
@@ -218,6 +234,25 @@ class TIDGui(QDialog):
 
         return button
 
+    def TID_refresh(self, acid):
+        """
+        Function: that is executed when a different aircraft is selected. Required for the refresh of the Function-TID
+                  when a different aircraft is selected.
+        Args:
+            acid: new selected aircraft
+
+        Created by: Bob van Dillen & Lars Dijkstra
+        Date: 17-11-2022
+        """
+
+        if self.ac_selected != acid and acid != '':
+            actdata = bs.net.get_nodedata()
+            index = actdata.acdata.id.index(acid)
+            rwy = actdata.acdata.rwy[index]
+            self.change_tid('appmain', rwy=rwy)
+
+        self.ac_selected = acid
+
     def load_layouts(self):
         """
         Function: Load the TID layouts
@@ -230,23 +265,30 @@ class TIDGui(QDialog):
 
         folder = os.path.join(bs.settings.gfx_path, 'tids')
 
-        with cachefile.openfile('tidlayouts.p', tiddb_version) as cache:
-            try:
-                self.layouts = cache.load()
-            except (pickle.PickleError, cachefile.CacheError) as e:
-                print(e.args[0])
+        # with cachefile.openfile('tidlayouts.p', tiddb_version) as cache:
+        #     try:
+        #         self.layouts = cache.load()
+        #     except (pickle.PickleError, cachefile.CacheError) as e:
+        #         print(e.args[0])
+        #
+        #         # Loop over files
+        #         for root, dirs, files in os.walk(folder):
+        #
+        #             for file in files:
+        #                 # Skip README
+        #                 if file == 'README.md':
+        #                     continue
+        #
+        #                 self.read_layout(root, file)
+        #
+        #         cache.dump(self.layouts)
+        for root, dirs, files in os.walk(folder):
+                for file in files:
+                    # Skip README
+                    if file == 'README.md':
+                        continue
 
-                # Loop over files
-                for root, dirs, files in os.walk(folder):
-
-                    for file in files:
-                        # Skip README
-                        if file == 'README.md':
-                            continue
-
-                        self.read_layout(root, file)
-
-                cache.dump(self.layouts)
+                    self.read_layout(root, file)
 
     def read_layout(self, folder, file):
         """

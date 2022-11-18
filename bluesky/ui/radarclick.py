@@ -2,6 +2,7 @@ from math import cos, atan2, radians, degrees
 from numpy import array
 import bluesky as bs
 from bluesky.ui.qtgl import console
+from bluesky.core import Signal
 from bluesky.tools import geo
 from bluesky.tools.misc import findnearest, cmdsplit
 
@@ -128,6 +129,7 @@ def radarclick(cmdline, lat, lon, acdata=None, route=None, actdata=None):
                             # Select the aircraft
                             else:
                                 console.Console._instance.id_select = acdata.id[idx]
+                            console.Console._instance.idselect_event.emit(console.Console._instance.id_select)
 
                         else:
                             todisplay += acdata.id[idx] + " "
