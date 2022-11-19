@@ -170,36 +170,40 @@ class LVNLVariables(Entity):
         Changed: IP address in UCO array to check for UCO with multiposition
         """
 
-        # Autopilot modes (check if there is a route)
-        if bs.traf.ap.route[idx].nwp > 0:
-            # Enable autopilot modes
-            bs.traf.swlnav[idx] = True
-            bs.traf.swvnav[idx] = True
-            bs.traf.swvnavspd[idx] = True
-        else:
-            # Set current heading/altitude/speed
-            bs.traf.selhdg[idx] = bs.traf.hdg[idx]
-            bs.traf.selalt[idx] = bs.traf.alt[idx]
-            bs.traf.selspd[idx] = bs.traf.cas[idx]
-            # Disable autopilot modes
-            bs.traf.swlnav[idx] = False
-            bs.traf.swvnav[idx] = False
-            bs.traf.swvnavspd[idx] = False
-
-        # Set UCO/REL
-        bs.traf.trafdatafeed.uco(idx)
-        self.uco[idx] = IP[-11:]
-
-        # Set the symbol
-        if IP[-11:] in self.atcIP['TWR']:
-            if self.flighttype[idx] == 'OUTBOUND':
-                self.symbol[idx] = 'TWROUT'
+        # Check if already UCO
+        if not self.uco[idx] == IP[-11:]:
+            # Autopilot modes (check if there is a route)
+            if bs.traf.ap.route[idx].nwp > 0:
+                # Enable autopilot modes
+                bs.traf.swlnav[idx] = True
+                bs.traf.swvnav[idx] = True
+                bs.traf.swvnavspd[idx] = True
             else:
-                self.symbol[idx] = 'TWRIN'
-        elif IP[-11:] in self.atcIP['APP']:
-            self.symbol[idx] = 'APP'
-        elif IP[-11:] in self.atcIP['ACC']:
-            self.symbol[idx] = 'ACC'
+                # Set current heading/altitude/speed
+                bs.traf.selhdg[idx] = bs.traf.hdg[idx]
+                bs.traf.selalt[idx] = bs.traf.alt[idx]
+                bs.traf.selspd[idx] = bs.traf.cas[idx]
+                # Disable autopilot modes
+                bs.traf.swlnav[idx] = False
+                bs.traf.swvnav[idx] = False
+                bs.traf.swvnavspd[idx] = False
+
+            # Set UCO/REL
+            bs.traf.trafdatafeed.uco(idx)
+            self.uco[idx] = IP[-11:]
+
+            # Set the symbol
+            if IP[-11:] in self.atcIP['TWR']:
+                if self.flighttype[idx] == 'OUTBOUND':
+                    self.symbol[idx] = 'TWROUT'
+                else:
+                    self.symbol[idx] = 'TWRIN'
+            elif IP[-11:] in self.atcIP['APP']:
+                self.symbol[idx] = 'APP'
+            elif IP[-11:] in self.atcIP['ACC']:
+                self.symbol[idx] = 'ACC'
+        else:
+            bs.scr.echo(bs.traf.id[idx] + ' already UCO')
 
     @stack.command(name='REL',)
     def setrelcmd(self, idx: 'acid'):
