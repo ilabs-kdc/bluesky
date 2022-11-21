@@ -300,8 +300,28 @@ class ScreenIO:
         self.simname = name
 
     def showroute(self, acid):
-        ''' Toggle show route for this aircraft '''
-        self.route_acid[stack.sender()] = acid
+        """
+        Function: Toggle show route for this aircraft
+        Args:
+            acid:   Aircraft callsign / index for traffic arrays [str/int]
+        Returns:
+                    True [bool]
+
+        Created by: Original BlueSky version
+        """
+
+        # Check for index
+        if isinstance(acid, int):
+            acid = bs.traf.id[acid]
+
+        if self.route_acid.get(stack.sender()):
+            if self.route_acid[stack.sender()] == acid:
+                self.route_acid[stack.sender()] = ""
+            else:
+                self.route_acid[stack.sender()] = acid
+        else:
+            self.route_acid[stack.sender()] = acid
+
         return True
 
     def addnavwpt(self, name, lat, lon):

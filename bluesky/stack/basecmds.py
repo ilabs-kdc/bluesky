@@ -439,6 +439,12 @@ def initbasecmds():
             bs.scr.setsimname,
             "Set the simulation name"
         ],
+        "SHOWRTE": [
+            "SHOWRTE CALLSIGN",
+            "acid",
+            bs.scr.showroute,
+            "Show the FMS route"
+        ],
         "SSD": [
             "SSD ALL/CONFLICTS/OFF or SSD acid0, acid1, ...",
             "txt,[...]",
