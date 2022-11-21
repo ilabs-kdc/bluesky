@@ -488,9 +488,8 @@ class Autopilot(Entity, replaceable=True):
 
         # ADDED Turn on speed schedule bool
         usespds = (self.spds < bs.traf.actwp.spdcon) #or bs.traf.actwp.spdcon < 0)
-
         # ADDED During descent, speed schedule can be overwritten if own speed is already slower than schedule
-        self.spds = np.where( (vcasormach2tas(self.spds, bs.traf.alt) > vcasormach2tas(bs.traf.selspd, bs.traf.alt)) * bs.traf.selspd > 1,
+        self.spds = np.where( (vcasormach2tas(self.spds, bs.traf.alt) > 1.01 * vcasormach2tas(bs.traf.selspd, bs.traf.alt)) * (bs.traf.selspd > 1),
             bs.traf.selspd, self.spds)
 
         # Check also whether VNAVSPD is on, if not, SPD SEL has override for next leg
@@ -1323,6 +1322,9 @@ class Autopilot(Entity, replaceable=True):
         bs.traf.swlnav[idx] = False
         if not self.dpswitch[idx]: self.dpswitch[idx] = True # makes sure to recalculate descentpath
         # Everything went ok!
+
+        bs.traf.selalt[idx] = bs.traf.alt[idx]
+
         return True
 
     @stack.command(name='SPD', aliases=("SPEED",))
