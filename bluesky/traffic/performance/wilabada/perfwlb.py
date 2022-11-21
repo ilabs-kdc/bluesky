@@ -324,9 +324,9 @@ class WILABADA(PerfBase):
         # Thrust specific fuel consumption coefficients
         # prevent from division per zero in fuelflow calculation
         self.cf1[-n:] = coeff.Cf1
-        self.cf2[-n:] = 1.0 if coeff.Cf2 < 1e-9 else coeff.Cf2
+        self.cf2[-n:] = 1.0 if abs(coeff.Cf2) < 1e-9 else coeff.Cf2
         self.cf3[-n:] = coeff.Cf3
-        self.cf4[-n:] = 1.0 if coeff.Cf4 < 1e-9 else coeff.Cf4
+        self.cf4[-n:] = 1.0 if abs(coeff.Cf4) < 1e-9 else coeff.Cf4
         self.cf_cruise[-n:] = coeff.Cf_cruise
 
         self.thrust[-n:] = 0.0
@@ -590,7 +590,6 @@ class WILABADA(PerfBase):
 
         # update mass
         self.mass -= self.fuelflow * dt # Use fuelflow in kg/min
-
 
 
         # for aircraft on the runway and taxiways we need to know, whether they
