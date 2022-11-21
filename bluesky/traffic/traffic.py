@@ -193,6 +193,7 @@ class Traffic(Entity):
             self.thrust = np.array([])
             self.drag = np.array([])
             self.trkmiles = np.array([])
+            self.pointreached = np.array([])
 
         # Default bank angles per flight phase
         self.bphase = np.deg2rad(np.array([15, 25, 25, 25, 15, 45]))
@@ -277,6 +278,7 @@ class Traffic(Entity):
         self.alt[-n:]  = acalt
 
         self.trkmiles[-n:] = 0
+        self.pointreached[-n:] = 0
 
         if isinstance(achdg, str):
             if achdg.upper() in bs.navdb.wpid:
@@ -468,6 +470,17 @@ class Traffic(Entity):
         self.aporasas.tas, self.aporasas.vs, self.aporasas.alt = \
             self.perf.limits(self.aporasas.tas, self.aporasas.vs,
                              self.aporasas.alt, self.ax)
+
+        for aircraft in range(len(bs.traf.alt)):
+            print(aircraft)
+            wpname_temp = bs.traf.ap.route[aircraft].wpname[bs.traf.ap.route[aircraft].iactwp]
+
+            if wpname_temp == "MRG8C" or wpname_temp == "RIVNW" or wpname_temp == "SUGOL":
+                wpname_temp = 1
+            else:
+                wpname_temp = 0
+
+            self.pointreached[aircraft] = wpname_temp
 
         #---------- Kinematics --------------------------------
         self.update_airspeed()
