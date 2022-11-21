@@ -95,19 +95,19 @@ class VEMMISRead:
             for file in files:
                 if file.upper().startswith('FLIGHTS'):
                     # Read flight data
-                    self.flights = pd.read_csv(self.data_path+'/'+file, sep=';')
+                    self.flights = pd.read_csv(self.data_path+'/'+file, sep=',')
                 elif file.upper().startswith('FLIGHTTIMES'):
                     # Read flight times data
-                    self.flighttimes = pd.read_csv(self.data_path+'/'+file, sep=';')
+                    self.flighttimes = pd.read_csv(self.data_path+'/'+file, sep=',')
                 elif file.upper().startswith('TRACK'):
                     # Read track data
-                    self.tracks = pd.read_csv(self.data_path+'/'+file, sep=';')
+                    self.tracks = pd.read_csv(self.data_path+'/'+file, sep=',')
                 elif file.upper().startswith('TAKEOFFS'):
                     # Read take-off data
-                    self.takeoffs = pd.read_csv(self.data_path+'/'+file, sep=';')
+                    self.takeoffs = pd.read_csv(self.data_path+'/'+file, sep=',')
                 elif file.upper().startswith('LANDINGS'):
                     # Read landing data
-                    self.landings = pd.read_csv(self.data_path+'/'+file, sep=';')
+                    self.landings = pd.read_csv(self.data_path+'/'+file, sep=',')
 
     def delete_nan(self):
         """
@@ -408,7 +408,7 @@ class VEMMISRead:
         # self.flightdata = self.flightdata.loc[self.flightdata['DEST'] == 'EHAM']  # Only inbound EHAM
         # self.flightdata = self.flightdata.loc[(self.flightdata['RUNWAY_IN'] == '18R') |
         #                                       (self.flightdata['RUNWAY_IN'] == '18C')]
-
+        self.flightdata = self.flightdata.loc[self.flightdata['FLIGHT_TYPE'] == 'OUTBOUND']  # Only OUTBOUND
         return
 
     def get_initial(self, swdatafeed):
@@ -439,6 +439,9 @@ class VEMMISRead:
         cmds = list(command_df['COMMAND'])
         cmdst = list(command_df['TIME'])
 
+        cmds = cmds[1:]
+        cmdst = cmdst[1:]
+
         return cmds, cmdst
 
     def initial(self, swdatafeed, typesim=[]):
@@ -460,6 +463,7 @@ class VEMMISRead:
 
         # Initial commands
         cmds = ["DATE "+self.datetime0.strftime('%d %m %Y %H:%M:%S')]
+        # cmds = ['DATE 26 08 2019 16:30:00']
         cmdst = [0.]
 
         # Flight data
