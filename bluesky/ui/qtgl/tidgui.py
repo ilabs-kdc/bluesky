@@ -141,7 +141,10 @@ class TIDGui(QDialog):
                 self.rwy = 'apphdg18R'
             elif kwargs['rwy'] == '18C':
                 self.rwy = 'apphdg18C'
-
+            elif kwargs['rwy'] == '06':
+                self.rwy = 'apphdg06'
+            elif kwargs['rwy'] == '36R':
+                self.rwy = 'apphdg36R'
         if self.rwy != '' and layoutname == 'apphdg':
             layoutname = self.rwy
 

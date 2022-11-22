@@ -98,38 +98,38 @@ class EEI:
             if "dest" in kwargs:
                 if (AC_type, kwargs["airline"], kwargs["dest"]) in self.ac_airline_dest:
                     if len(self.TADG.get_group((AC_type, kwargs["airline"], kwargs["dest"]))) > min_datapoints:
-                        print("{} ({}) uses airline and airport specific data to {}.".format(ID, AC_type, kwargs["dest"]))
+                        # print("{} ({}) uses airline and airport specific data to {}.".format(ID, AC_type, kwargs["dest"]))
                         return self.TADf(AC_type, kwargs["airline"], kwargs["dest"])
                 if (AC_type, kwargs["airline"], country) in self.ac_airline_country:
                     if len(self.TADLG.get_group((AC_type, kwargs["airline"], country))) > min_datapoints:
-                        print("{} ({}) is defaulting to airline and country ({}) specific data".format(ID, AC_type, country))
+                        # print("{} ({}) is defaulting to airline and country ({}) specific data".format(ID, AC_type, country))
                         return self.TADLf(AC_type, kwargs["airline"], country)
                 if (AC_type, kwargs["airline"], continent) in self.ac_airline_continent:
                     if len(self.TADCG.get_group((AC_type, kwargs["airline"], continent))) > min_datapoints:
-                        print("{} ({}) is defaulting to airline and continent ({}) specific data".format(ID, AC_type, continent))
+                        # print("{} ({}) is defaulting to airline and continent ({}) specific data".format(ID, AC_type, continent))
                         return self.TADCf(AC_type, kwargs["airline"], continent)
             if (AC_type, kwargs["airline"]) in self.ac_airline:
                 if len(self.TAG.get_group((AC_type, kwargs["airline"]))) > min_datapoints:
-                    print("Defaulting to average airline performance for {} ({}). Aircraft type specific destination/country/continent data not found.".format(ID, AC_type))
+                    # print("Defaulting to average airline performance for {} ({}). Aircraft type specific destination/country/continent data not found.".format(ID, AC_type))
                     return self.TAf(AC_type, kwargs["airline"])
-            print("Insufficient data is available for ({}, {}) or {} does not operate the {}.".format(ID, AC_type, kwargs["airline"], AC_type))
+            # print("Insufficient data is available for ({}, {}) or {} does not operate the {}.".format(ID, AC_type, kwargs["airline"], AC_type))
             swA = True
         if "airline" not in kwargs or swA:
             if "dest" in kwargs:
                 if (AC_type, kwargs["dest"]) in self.ac_dest:
-                    print("{} ({}) uses airport specific data (not airline performance data) to {}.".format(ID, AC_type, kwargs["dest"]))
+                    # print("{} ({}) uses airport specific data (not airline performance data) to {}.".format(ID, AC_type, kwargs["dest"]))
                     return self.TDf(AC_type, kwargs["dest"])
                 elif (AC_type, country) in self.ac_country:
-                    print("{} ({}) is defaulting to country ({}) specific data (not airline performance data).".format(ID, AC_type, country))
+                    # print("{} ({}) is defaulting to country ({}) specific data (not airline performance data).".format(ID, AC_type, country))
                     return self.TCOUf(AC_type, country)
                 elif (AC_type, continent) in self.ac_continent:
-                    print("{} ({}) is defaulting to continent ({}) specific data (not airline performance data).".format(ID, AC_type, continent))
+                    # print("{} ({}) is defaulting to continent ({}) specific data (not airline performance data).".format(ID, AC_type, continent))
                     return self.TCONf(AC_type, continent)
             if AC_type in self.AC_types:
-                print("Defaulting to average aircraft performance for {} ({}) (not airline performance data).".format(ID, AC_type))
+                # print("Defaulting to average aircraft performance for {} ({}) (not airline performance data).".format(ID, AC_type))
                 return self.TTf(AC_type)
         if AC_type not in self.AC_types:
-            print("No data available for {} ({}). Using B744 average performance.".format(ID, AC_type))
+            # print("No data available for {} ({}). Using B744 average performance.".format(ID, AC_type))
             return self.TTf("B744")
 
     def select_type(self, AC_type, **kwargs):

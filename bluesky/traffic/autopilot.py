@@ -1225,6 +1225,9 @@ class Autopilot(Entity, replaceable=True):
             # string = "WILABADA/SID/" + SID
             string = "LVNL/PLRH/SID/" + SID
             pcall(string, id)
+            bs.traf.lvnlvars.sid[idx] = SID.upper()
+            bs.traf.lvnlvars.flighttype[idx] = 'OUTBOUND'
+            bs.traf.lvnlvars.symbol[idx] = 'TWROUT'
 
     @stack.command(name='VS')
     def selvspdcmd(self, idx: 'acid', vspd:'vspd'):
