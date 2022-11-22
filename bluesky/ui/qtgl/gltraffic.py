@@ -729,15 +729,64 @@ class Traffic(glh.RenderObject, layer=100):
 
         # ACC mode
         if atcmode == 'ACC':
-            acc = app = twrin = twrout = other = np.array([(-0.5 * ac_size, -0.5 * ac_size),
-                                                           (0.5 * ac_size, 0.5 * ac_size),
-                                                           (0.5 * ac_size, -0.5 * ac_size),
-                                                           (-0.5 * ac_size, 0.5 * ac_size),
-                                                           (-0.5 * ac_size, -0.5 * ac_size),
-                                                           (0.5 * ac_size, -0.5 * ac_size),
-                                                           (0.5 * ac_size, 0.5 * ac_size),
-                                                           (-0.5 * ac_size, 0.5 * ac_size)],
-                                                          dtype=np.float32)  # a square with diagonals
+            acc = other = np.array([(-0.5 * ac_size, -0.5 * ac_size),
+                                    (0.5 * ac_size, 0.5 * ac_size),
+                                    (0.5 * ac_size, -0.5 * ac_size),
+                                    (-0.5 * ac_size, 0.5 * ac_size),
+                                    (-0.5 * ac_size, -0.5 * ac_size),
+                                    (0.5 * ac_size, -0.5 * ac_size),
+                                    (0.5 * ac_size, 0.5 * ac_size),
+                                    (-0.5 * ac_size, 0.5 * ac_size)],
+                                   dtype=np.float32)  # a square with diagonals
+
+            app = np.array([(0.5 * ac_size, 0.433 * ac_size),
+                            (-0.5 * ac_size, 0.433 * ac_size),
+                            (0 * ac_size, -0.433 * ac_size)],
+                           dtype=np.float32) # triangle
+
+            twrin = np.array([(0 * ac_size, 0.5 * ac_size),
+                              (0.125 * ac_size, 0.484 * ac_size),
+                              (0.25 * ac_size, 0.433 * ac_size),
+                              (0.375 * ac_size, 0.33 * ac_size),
+                              (0.5 * ac_size, 0 * ac_size),
+                              (0.375 * ac_size, -0.330 * ac_size),
+                              (0.25 * ac_size, -0.433 * ac_size),
+                              (0.125 * ac_size, -0.484 * ac_size),
+                              (0 * ac_size, -0.5 * ac_size),
+                              (-0.125 * ac_size, -0.484 * ac_size),
+                              (-0.25 * ac_size, -0.443 * ac_size),
+                              (-0.375 * ac_size, -0.330 * ac_size),
+                              (-0.5 * ac_size, 0 * ac_size),
+                              (-0.375 * ac_size, 0.330 * ac_size),
+                              (-0.25 * ac_size, 0.433 * ac_size),
+                              (-0.125 * ac_size, 0.484 * ac_size),
+                              (0 * ac_size, 0.5 * ac_size),
+                              (0 * ac_size, -0.5 * ac_size),
+                              (0 * ac_size, 0 * ac_size),
+                              (0.5 * ac_size, 0 * ac_size),
+                              (-0.5 * ac_size, 0 * ac_size),
+                              (0 * ac_size, 0 * ac_size)],
+                             dtype=np.float32)  # a circle with plus
+
+            twrout = np.array([(0.375 * ac_size, 0.33 * ac_size),
+                               (0.5 * ac_size, 0 * ac_size),
+                               (0.375 * ac_size, -0.330 * ac_size),
+                               (0.25 * ac_size, -0.433 * ac_size),
+                               (0.125 * ac_size, -0.484 * ac_size),
+                               (0 * ac_size, -0.5 * ac_size),
+                               (-0.125 * ac_size, -0.484 * ac_size),
+                               (-0.25 * ac_size, -0.443 * ac_size),
+                               (-0.375 * ac_size, -0.330 * ac_size),
+                               (-0.5 * ac_size, 0 * ac_size),
+                               (-0.375 * ac_size, 0.330 * ac_size),
+                               (-0.25 * ac_size, 0.433 * ac_size),
+                               (-0.125 * ac_size, 0.484 * ac_size),
+                               (0 * ac_size, 0.5 * ac_size),
+                               (0.125 * ac_size, 0.484 * ac_size),
+                               (0.25 * ac_size, 0.433 * ac_size),
+                               (0.375 * ac_size, 0.33 * ac_size),
+                               (-0.375 * ac_size, -0.330 * ac_size)],
+                              dtype=np.float32)  # a circle with diagonal
 
         # APP mode
         elif atcmode == 'APP':
@@ -825,11 +874,18 @@ class Traffic(glh.RenderObject, layer=100):
                                                           dtype=np.float32)  # a square with diagonals
 
         # Set the vertices
-        self.acs_lvnlacc.set_attribs(vertex=acc)
-        self.acs_lvnlapp.set_attribs(vertex=app)
-        self.acs_lvnltwrin.set_attribs(vertex=twrin)
-        self.acs_lvnltwrout.set_attribs(vertex=twrout)
-        self.acs_lvnlother.set_attribs(vertex=other)
+        try:
+            self.acs_lvnlacc.update(vertex=acc)
+            self.acs_lvnlapp.update(vertex=app)
+            self.acs_lvnltwrin.update(vertex=twrin)
+            self.acs_lvnltwrout.update(vertex=twrout)
+            self.acs_lvnlother.update(vertex=other)
+        except KeyError:
+            self.acs_lvnlacc.set_attribs(vertex=acc)
+            self.acs_lvnlapp.set_attribs(vertex=app)
+            self.acs_lvnltwrin.set_attribs(vertex=twrin)
+            self.acs_lvnltwrout.set_attribs(vertex=twrout)
+            self.acs_lvnlother.set_attribs(vertex=other)
 
     def applabel(self, actdata, data, i):
         """

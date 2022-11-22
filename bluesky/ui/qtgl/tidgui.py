@@ -57,6 +57,8 @@ class TIDGui(QDialog):
         if name == 'Function-TID':
             bs.Signal('idselect').connect(self.TID_refresh)
 
+        bs.net.actnodedata_changed.connect(self.actdata_changed)
+
         QDialog.__init__(self)
 
         # Create Dialog
@@ -263,6 +265,27 @@ class TIDGui(QDialog):
             self.change_tid('appmain', rwy=rwy)
 
         self.ac_selected = acid
+
+    def actdata_changed(self, nodeid, nodedata, changed_elems):
+        """
+        Function: Update buffers when a different node is selected, or when the data of the current node is updated.
+        Args:
+            nodeid:         ID of the Node [bytes]
+            nodedata:       The Node data [class]
+            changed_elems:  The changed elements [list]
+        Returns: -
+
+        Created by: Bob van Dillen
+        Date: 22-11-2022
+        """
+
+        if 'ATCMODE' in changed_elems:
+            if nodedata.atcmode in ['APP', 'ACC']:
+                if self.name == 'Function-TID':
+                    print(nodedata.atcmode.lower()+'main')
+                    self.change_tid(nodedata.atcmode.lower()+'main')
+                elif self.name == 'Display-TID':
+                    self.change_tid(nodedata.atcmode.lower()+'disp')
 
     def load_layouts(self):
         """
