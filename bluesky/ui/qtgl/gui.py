@@ -56,7 +56,7 @@ def start(mode):
     app.processEvents()
     win = MainWindow(mode)
 
-    if socket.gethostbyname(socket.gethostname()) == '192.168.0.6':
+    if socket.gethostbyname(socket.gethostname()) in ['192.168.0.6', '192.168.0.8']:
         win.showMaximized()   # showMaximized #showFullScreen
     else:
         win.show()

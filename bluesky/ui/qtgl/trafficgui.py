@@ -5,6 +5,7 @@ Created by: Bob van Dillen
 Date: 23-09-2022
 """
 
+import copy
 import numpy as np
 import bluesky as bs
 from bluesky import settings
@@ -33,7 +34,7 @@ class TrafficData:
         self.mlabel         = np.array([])
         self.mlabelpos      = np.array([])
         self.rel            = np.array([])
-        self.ssrlabel       = np.array([])
+        self.ssrlabel       = []
         self.tracklabel     = np.array([])
         self.uco            = np.array([])
 
@@ -43,7 +44,7 @@ class TrafficData:
         self.mlabel_default         = False
         self.mlabelpos_default      = np.array([2 * 0.8 * text_size - ac_size, 0.5 * ac_size])
         self.rel_default            = False
-        self.ssrlabel_default       = False
+        self.ssrlabel_default       = []
         self.tracklabel_default     = True
         self.uco_default            = False
 
@@ -78,9 +79,37 @@ class TrafficData:
         Date: 23-9-2022
         """
 
+        # Track label
         if data.guitrafdata['cmd'] == 'TRACKLABEL':
             idx = data.guitrafdata['data']
             self.tracklabel[idx] = not self.tracklabel[idx]
+
+        # SSR label
+        elif data.guitrafdata['cmd'] == 'SSRLABEL':
+            idx = data.guitrafdata['data'][0]
+            args = data.guitrafdata['data'][1]
+
+            # On/Off
+            if len(args) == 0:
+                if len(self.ssrlabel[idx]) == 0:
+                    self.ssrlabel[idx].append('C')
+                else:
+                    self.ssrlabel[idx] = []
+
+            # Modes
+            else:
+                for mode in args:
+                    mode = mode.upper()
+                    if mode in ['A', 'C', 'ACID']:
+                        if mode in self.ssrlabel[idx]:
+                            self.ssrlabel[idx].remove(mode)
+                        else:
+                            self.ssrlabel[idx].append(mode)
+
+        # Micro label
+        elif data.guitrafdata['cmd'] == 'MLABEL':
+            idx = data.guitrafdata['data']
+            self.mlabel[idx] = not self.mlabel[idx]
 
     def initial_labelpos(self, data, i):
         """
@@ -134,6 +163,65 @@ class TrafficData:
 
         return mlabelpos
 
+    def leaderline_vertices(self, actdata, offsetx, offsety, i, newid=False):
+        """
+        Function: Compute the vertices for the leader line
+        Args:
+            actdata:    node data [class]
+            offsetx:    label offset x pixel coordinates [int]
+            offsety:    label offset y pixel coordinates [int]
+        Returns: -
+
+        Created by: Bob van Dillen
+        Date: 23-2-2022
+        """
+
+        # Sizes
+        ac_size = settings.ac_size
+        text_size = settings.text_size
+        text_width = text_size
+        text_height = text_size * 1.2307692307692308
+
+        # APP
+        if actdata.atcmode == 'APP':
+            block_size = (4 * text_height, 7 * text_width)
+        # ACC
+        elif actdata.atcmode == 'ACC':
+            block_size = (4 * text_height, 8 * text_width)
+        # TWR
+        else:
+            block_size = (3 * text_height, 8 * text_width)
+
+        # Compute the angle
+        angle = np.arctan2(offsety, offsetx)
+
+        if newid:
+            vertices = [0, 0, 0, 0]
+        elif not self.tracklabel[i]:
+            vertices = [0, 0, 0, 0]
+        # Label is on top of aircaft symbol
+        elif -block_size[1] <= offsetx <= 0 and -text_height <= offsety <= 3 * text_height:
+            vertices = [0, 0, 0, 0]
+        # Label is to the right of the aircraft symbol
+        elif offsetx >= 0:
+            vertices = [ac_size * np.cos(angle), ac_size * np.sin(angle), offsetx, offsety]
+        # Label is above the aircraft symbol
+        elif offsetx >= -block_size[1] and offsety >= 0:
+            vertices = [ac_size * np.cos(angle), ac_size * np.sin(angle), offsetx + 0.5 * block_size[1],
+                        offsety - 3 * text_height]
+        # Label is below the aircraft symbol
+        elif offsetx >= -block_size[1] and offsety <= 0:
+            vertices = [ac_size * np.cos(angle), ac_size * np.sin(angle), offsetx + 0.5 * block_size[1],
+                        offsety + text_height]
+        # Label is to the left of the aircraft sym
+        elif offsetx < 0:
+            vertices = [ac_size * np.cos(angle), ac_size * np.sin(angle), offsetx + block_size[1], offsety]
+        # For safety every other situation
+        else:
+            vertices = [0, 0, 0, 0]
+
+        return vertices
+
     def update_trafficdata(self, actdata):
         """
         Function: Update the GUI traffic variables
@@ -161,7 +249,7 @@ class TrafficData:
                     continue
 
                 # Get variable data
-                var = self.__dict__[varname]
+                var = copy.deepcopy(self.__dict__[varname])
 
                 # Check for list
                 if isinstance(var, list):
@@ -187,11 +275,11 @@ class TrafficData:
                             varnext[idx] = self.initial_labelpos(data, idx)
                         elif varname == 'leaderlinepos':
                             offset = self.initial_labelpos(data, idx)
-                            varnext[idx] = leaderline_vertices(actdata, offset[0], offset[1], idx)
+                            varnext[idx] = self.leaderline_vertices(actdata, offset[0], offset[1], idx, newid=True)
                         elif varname == 'mlabelpos':
                             varnext[idx] = self.initial_micropos(data, idx)
                         else:
-                            varnext[idx] = self.__dict__[varname+'_default']
+                            varnext[idx] = copy.deepcopy(self.__dict__[varname+'_default'])
                     else:
                         # Get previous index
                         idx_prev = self.id_prev.index(acid)
@@ -210,57 +298,4 @@ Static Functioms
 """
 
 
-def leaderline_vertices(actdata, offsetx, offsety, i):
-    """
-    Function: Compute the vertices for the leader line
-    Args:
-        actdata:    node data [class]
-        offsetx:    label offset x pixel coordinates [int]
-        offsety:    label offset y pixel coordinates [int]
-    Returns: -
 
-    Created by: Bob van Dillen
-    Date: 23-2-2022
-    """
-
-    # Sizes
-    ac_size = settings.ac_size
-    text_size = settings.text_size
-    text_width = text_size
-    text_height = text_size * 1.2307692307692308
-
-    # APP
-    if actdata.atcmode == 'APP':
-        block_size = (4*text_height, 7*text_width)
-    # ACC
-    elif actdata.atcmode == 'ACC':
-        block_size = (4*text_height, 8*text_width)
-    # TWR
-    else:
-        block_size = (3*text_height, 8*text_width)
-
-    # Compute the angle
-    angle = np.arctan2(offsety, offsetx)
-
-    if not actdata.acdata.tracklbl[i]:
-        vertices = [0, 0, 0, 0]
-    # Label is on top of aircaft symbol
-    elif -block_size[1] <= offsetx <= 0 and -text_height <= offsety <= 3*text_height:
-        vertices = [0, 0, 0, 0]
-    # Label is to the right of the aircraft symbol
-    elif offsetx >= 0:
-        vertices = [ac_size*np.cos(angle), ac_size*np.sin(angle), offsetx, offsety]
-    # Label is above the aircraft symbol
-    elif offsetx >= -block_size[1] and offsety >= 0:
-        vertices = [ac_size*np.cos(angle), ac_size*np.sin(angle), offsetx+0.5*block_size[1], offsety-3*text_height]
-    # Label is below the aircraft symbol
-    elif offsetx >= -block_size[1] and offsety <= 0:
-        vertices = [ac_size*np.cos(angle), ac_size*np.sin(angle), offsetx+0.5*block_size[1], offsety+text_height]
-    # Label is to the left of the aircraft sym
-    elif offsetx < 0:
-        vertices = [ac_size*np.cos(angle), ac_size*np.sin(angle), offsetx+block_size[1], offsety]
-    # For safety every other situation
-    else:
-        vertices = [0, 0, 0, 0]
-
-    return vertices

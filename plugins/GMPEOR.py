@@ -104,7 +104,7 @@ class GMPEOR(core.Entity):
                 for idx in range(len(nodedata.acdata.id)):
                     acid = nodedata.acdata.id[idx]
                     dtg_route = nodedata.acdata.dtg_route[idx]
-                    tracklbl = nodedata.acdata.tracklbl[idx]
+                    tracklbl = self.gmplbl.trafdata.tracklabel[idx]
                     if tracklbl and dtg_route != 0. and acid == console.Console._instance.id_select:
                         rawlabel += '%-3s' % leading_zeros(dtg_route)[:3]
                     else:

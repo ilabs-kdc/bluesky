@@ -8,6 +8,7 @@ import bluesky as bs
 from bluesky.tools import cachefile
 from bluesky.tools.misc import cmdacid, cmdsplit
 from bluesky.core.signal import Signal
+from bluesky.ui.qtgl.tidgui import TIDCmds
 from . import autocomplete
 
 
@@ -63,6 +64,8 @@ class Console(QWidget):
         self.history_pos = 0
         self.command_mem = ''
         self.command_line = ''
+
+        self.tidcmds = TIDCmds()
 
         # Connect to the io client's activenode changed signal
         bs.net.event_received.connect(self.on_simevent_received)

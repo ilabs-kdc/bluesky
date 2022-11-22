@@ -340,6 +340,12 @@ def initbasecmds():
             bs.traf.meteo,
             "Access the Highres meteo demo and (de)activate it",
         ],
+        "MICROLABEL": [
+            "MICROLABEL CALLSIGN",
+            "acid",
+            bs.scr.setmlabel,
+            "Show/hide the micro label"
+        ],
         "MOVE": [
             "MOVE acid,lat,lon,[alt,hdg,spd,vspd]",
             "acid,latlon,[alt,hdg,spd,vspd]",
@@ -433,17 +439,23 @@ def initbasecmds():
             bs.scr.setsimname,
             "Set the simulation name"
         ],
-        "SHOWLABEL": [
-            "SHOWLABEL CALLSIGN",
+        "SHOWRTE": [
+            "SHOWRTE CALLSIGN",
             "acid",
-            bs.scr.showlabel,
-            "Show/hide the track label"
+            bs.scr.showroute,
+            "Show the FMS route"
         ],
         "SSD": [
             "SSD ALL/CONFLICTS/OFF or SSD acid0, acid1, ...",
             "txt,[...]",
             lambda *args: bs.scr.feature("SSD", args),
             "Show state-space diagram (=conflict prevention display/predictive ASAS)",
+        ],
+        "SSRLABEL": [
+            "SSRLABEL CALLSIGN (MODE)",
+            "acid,[txt,...]",
+            bs.scr.setssrlabel,
+            "Show/hide the SSR label"
         ],
         "SWRAD": [
             "SWRAD GEO/MAPALL/GRID/APT/APTDETAILS/VOR/WPT/LABEL/ADSBCOVERAGE/TRAIL/POLY/HISTORY [dt]/[value]",
@@ -463,6 +475,12 @@ def initbasecmds():
             "[txt]",
             bs.sim.setutc,
             "Set simulated clock time",
+        ],
+        "TRACKLABEL": [
+            "TRACKLABEL CALLSIGN",
+            "acid",
+            bs.scr.settracklabel,
+            "Show/hide the track label"
         ],
         "TRAIL": [
             "TRAIL ON/OFF, [dt] OR TRAIL acid color",

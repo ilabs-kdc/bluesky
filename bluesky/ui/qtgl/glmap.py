@@ -55,7 +55,7 @@ class Map(glh.RenderObject, layer=-100):
         self.basemap_lines = glh.VertexArrayObject(glh.gl.GL_LINES)
         self.basemap_dashed = glh.VertexArrayObject(glh.gl.GL_LINES, shader_type='dashed')
         self.basemap_dotted = glh.VertexArrayObject(glh.gl.GL_LINES, shader_type='dashed')
-        #self.basemap_points = glh.VertexArrayObject(glh.gl.GL_TRIANGLE_FAN)
+        self.basemap_points = glh.VertexArrayObject(glh.gl.GL_TRIANGLE_FAN)
 
         bs.net.actnodedata_changed.connect(self.actdata_changed)
 
@@ -72,33 +72,48 @@ class Map(glh.RenderObject, layer=-100):
         lines, dashedlines, dottedlines, points = load_basemap(settings.atc_mode)
 
         # Lines
+        self.basemap_lines.create(vertex=POLY_SIZE * 16, color=POLY_SIZE * 8)
         if lines:
             contours, colors = zip(*lines.values())
-            self.basemap_lines.create(vertex=POLY_SIZE * 16, color=POLY_SIZE * 8)
             self.basemap_lines.update(vertex=np.concatenate(contours, dtype=np.float32),
                                       color=np.concatenate(colors))
         else:
             self.basemap_lines.set_vertex_count(0)
 
         # Dashed lines
+        self.basemap_dashed.create(vertex=POLY_SIZE * 16, color=POLY_SIZE * 8)
         if dashedlines:
             contours, colors = zip(*dashedlines.values())
-            self.basemap_dashed.create(vertex=POLY_SIZE * 16, color=POLY_SIZE * 8)
             self.basemap_dashed.update(vertex=np.concatenate(contours),
                                        color=np.concatenate(colors))
         else:
             self.basemap_dashed.set_vertex_count(0)
 
         # Dotted lines
+        self.basemap_dotted.create(vertex=POLY_SIZE * 16, color=POLY_SIZE * 8)
         if dottedlines:
             contours, colors = zip(*dottedlines.values())
-            self.basemap_dotted.create(vertex=POLY_SIZE * 16, color=POLY_SIZE * 8)
             self.basemap_dotted.update(vertex=np.concatenate(contours),
                                        color=np.concatenate(colors))
         else:
             self.basemap_dotted.set_vertex_count(0)
 
         # Points
+        point_size = settings.point_size
+        num_vert = 6
+        angles = np.linspace(0., 2 * np.pi, num_vert)
+        x = (point_size / 2) * np.sin(angles)
+        y = (point_size / 2) * np.cos(angles)
+        point_vert = np.empty((num_vert, 2), dtype=np.float32)
+        point_vert.T[0] = x
+        point_vert.T[1] = y
+        self.basemap_points.create(vertex=point_vert, color=POLY_SIZE * 8,
+                                   lat=POLY_SIZE * 16, lon=POLY_SIZE * 16,
+                                   instance_divisor=1)
+        if points:
+            contours, colors = zip(*points.values())
+            self.basemap_points.update(lat=np.array(contours[::2], dtype=np.float32),
+                                       lon=np.array(contours[1::2], dtype=np.float32))
 
         # ------- Coastlines -----------------------------
         coastvertices, self.coastindices = load_coastlines()
@@ -150,6 +165,9 @@ class Map(glh.RenderObject, layer=-100):
         # ---------- Base map ----------
         # Lines
         self.basemap_lines.draw()
+
+        # Points
+        self.basemap_points.draw()
 
         # Dashed and Dotted
         dashed_shader = glh.ShaderSet.get_shader('dashed')
@@ -213,7 +231,7 @@ class Map(glh.RenderObject, layer=-100):
             self.coastlines.set_attribs(color=palette.coastlines)
 
             # ---------- Base Map ----------
-            lines, dashedlines, dottedlines, points = load_basemap(settings.atc_mode)
+            lines, dashedlines, dottedlines, points = load_basemap(nodedata.atcmode)
 
             # Lines
             if lines:
@@ -240,4 +258,7 @@ class Map(glh.RenderObject, layer=-100):
                 self.basemap_dotted.set_vertex_count(0)
 
             # Points
-
+            if points:
+                contours, colors = zip(*points.values())
+                self.basemap_points.update(lat=np.array(contours[::2], dtype=np.float32),
+                                           lon=np.array(contours[1::2], dtype=np.float32))

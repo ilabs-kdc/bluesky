@@ -48,25 +48,18 @@ class LVNLVariables(Entity):
     def __init__(self):
         super().__init__()
 
-        self.swautolabel = False  # Auto label change
-
         self.atcIP = {'TWR': [],
                       'APP': [],
                       'ACC': []}
 
         with self.settrafarrays():
             self.arr        = []                           # Arrival/Stack
-            self.autolabel  = np.array([], dtype=np.bool)  # Auto label change
             self.dtg        = np.array([])                 # Distance to T-Bar point
             self.dtg_route  = np.array([])                 # Route DTG for GMPEOR
             self.flighttype = []                           # Flight type
-            self.mlbl       = np.array([], dtype=np.bool)  # Show micro label
-            self.rel        = np.array([], dtype=np.bool)  # Release
             self.rwy        = []                           # Runway
             self.sid        = []                           # SID
             self.ssr        = np.array([], dtype=np.int)   # SSR code
-            self.ssrlbl     = []                           # Show SSR label
-            self.tracklbl   = np.array([], dtype=np.bool)  # Show track label
             self.uco        = np.array([], dtype=np.str)   # Under Control
             self.symbol     = np.array([], dtype=np.str)   # UCO symbol to draw
             self.wtc        = []                           # Wake Turbulence Category
@@ -84,10 +77,7 @@ class LVNLVariables(Entity):
 
         super().create(n)
 
-        self.autolabel[-n:] = True
-        self.tracklbl[-n:]  = True
-        self.mlbl[-n:]      = True
-        self.symbol[-n:]    = 'ACC'
+        self.symbol[-n:]    = ''
         self.uco[-n:]       = '0'
 
     @timed_function(name='lvnlvars', dt=0.1)
@@ -100,44 +90,6 @@ class LVNLVariables(Entity):
         Created by: Bob van Dillen
         Date: 1-2-2022
         """
-
-        # --------------- Automatic label selection ---------------
-
-        if self.swautolabel:
-
-            if bs.scr.atcmode == 'APP':
-                # Indices
-                itracklbl = np.nonzero(bs.traf.alt <= 7467.6)[0]
-                issrlbl = np.setdiff1d(np.arange(len(bs.traf.id)), itracklbl)
-                iautolabel = np.nonzero(self.autolabel)[0]
-                itracklbl = np.intersect1d(itracklbl, iautolabel)
-                issrlbl = np.intersect1d(issrlbl, iautolabel)
-
-                # Set labels
-                self.tracklbl[itracklbl] = True
-                self.tracklbl[issrlbl] = False
-
-                ssrlbl = np.array(self.ssrlbl)
-                ssrlbl[itracklbl] = ''
-                ssrlbl[issrlbl] = 'C'
-                self.ssrlbl = ssrlbl.tolist()
-
-            elif bs.scr.atcmode == 'ACC':
-                # Indices
-                itracklbl = np.nonzero(np.logical_and(bs.traf.alt <= 7467.6, bs.traf.alt >= 2438.4))[0]
-                issrlbl = np.setdiff1d(np.arange(len(bs.traf.id)), itracklbl)
-                iautolabel = np.nonzero(self.autolabel)[0]
-                itracklbl = np.intersect1d(itracklbl, iautolabel)
-                issrlbl = np.intersect1d(issrlbl, iautolabel)
-
-                # Set labels
-                self.tracklbl[itracklbl] = True
-                self.tracklbl[issrlbl] = False
-
-                ssrlbl = np.array(self.ssrlbl)
-                ssrlbl[itracklbl] = ''
-                ssrlbl[issrlbl] = 'C'
-                self.ssrlbl = ssrlbl.tolist()
 
         # --------------- T-Bar DTG ---------------
 
@@ -218,44 +170,40 @@ class LVNLVariables(Entity):
         Changed: IP address in UCO array to check for UCO with multiposition
         """
 
-        # Autopilot modes (check if there is a route)
-        if bs.traf.ap.route[idx].nwp > 0:
-            # Enable autopilot modes
-            bs.traf.swlnav[idx] = True
-            bs.traf.swvnav[idx] = True
-            bs.traf.swvnavspd[idx] = True
-        else:
-            # Set current heading/altitude/speed
-            bs.traf.selhdg[idx] = bs.traf.hdg[idx]
-            bs.traf.selalt[idx] = bs.traf.alt[idx]
-            bs.traf.selspd[idx] = bs.traf.cas[idx]
-            # Disable autopilot modes
-            bs.traf.swlnav[idx] = False
-            bs.traf.swvnav[idx] = False
-            bs.traf.swvnavspd[idx] = False
-
-        # Labels
-        self.tracklbl[idx] = True
-        self.ssrlbl[idx] = ''
-
-        # Set UCO/REL
-        bs.traf.trafdatafeed.uco(idx)
-        self.uco[idx] = IP[-11:]
-        self.rel[idx] = False
-
-        # Set the symbol
-        if IP[-11:] in self.atcIP['TWR']:
-            if self.flighttype[idx] == 'OUTBOUND':
-                self.symbol[idx] = 'TWROUT'
+        # Check if already UCO
+        if not self.uco[idx] == IP[-11:]:
+            # Autopilot modes (check if there is a route)
+            if bs.traf.ap.route[idx].nwp > 0:
+                # Enable autopilot modes
+                bs.traf.swlnav[idx] = True
+                bs.traf.swvnav[idx] = True
+                bs.traf.swvnavspd[idx] = True
             else:
-                self.symbol[idx] = 'TWRIN'
-        elif IP[-11:] in self.atcIP['APP']:
-            self.symbol[idx] = 'APP'
-        elif IP[-11:] in self.atcIP['ACC']:
-            self.symbol[idx] = 'ACC'
+                # Set current heading/altitude/speed
+                bs.traf.selhdg[idx] = bs.traf.hdg[idx]
+                bs.traf.selalt[idx] = bs.traf.alt[idx]
+                bs.traf.selspd[idx] = bs.traf.cas[idx]
+                # Disable autopilot modes
+                bs.traf.swlnav[idx] = False
+                bs.traf.swvnav[idx] = False
+                bs.traf.swvnavspd[idx] = False
 
-        # print('UCO list', self.uco)
-        # print('')
+            # Set UCO/REL
+            bs.traf.trafdatafeed.uco(idx)
+            self.uco[idx] = IP[-11:]
+
+            # Set the symbol
+            if IP[-11:] in self.atcIP['TWR']:
+                if self.flighttype[idx] == 'OUTBOUND':
+                    self.symbol[idx] = 'TWROUT'
+                else:
+                    self.symbol[idx] = 'TWRIN'
+            elif IP[-11:] in self.atcIP['APP']:
+                self.symbol[idx] = 'APP'
+            elif IP[-11:] in self.atcIP['ACC']:
+                self.symbol[idx] = 'ACC'
+        else:
+            bs.scr.echo(bs.traf.id[idx] + ' already UCO')
 
     @stack.command(name='REL',)
     def setrelcmd(self, idx: 'acid'):
@@ -272,10 +220,6 @@ class LVNLVariables(Entity):
         bs.traf.swlnav[idx] = True
         bs.traf.swvnav[idx] = True
         bs.traf.swvnavspd[idx] = True
-
-        # Labels
-        self.tracklbl[idx] = False
-        self.ssrlbl[idx] = 'C'
 
         # Set UCO/REL
         self.uco[idx] = '0'
@@ -295,10 +239,7 @@ class LVNLVariables(Entity):
             if bs.scr.atcmode == 'APP':
                 self.symbol[idx] = 'TWRIN'
             else:
-                self.symbol[idx] == 'ACC'
-
-        self.rel[idx] = True
-        # print('REL list', self.rel)
+                self.symbol[idx] = 'ACC'
 
     @stack.command(name='ATCIP', brief='ATCIP ATCMODE IP')
     def setatcIP(self, atcmode, IP):
@@ -364,49 +305,6 @@ class LVNLVariables(Entity):
         cmd = 'PCALL LVNL/Routes/' + route.upper() + ' ' + acid
         stack.stack(cmd)
 
-    @stack.command(name='AUTOLABEL', brief='AUTOLABEL (ON/OFF or ACID or ACID ON/OFF)')
-    def setautolabel(self, *args):
-        """
-        Function: Set automatic label selection
-        Args:
-            *args:  arguments [tuple]
-        Returns: -
-
-        Created by: Bob van Dillen
-        Date: 27-2-2022
-        """
-
-        # No arguments
-        if len(args) == 0:
-            self.swautolabel = not self.swautolabel
-
-        # ON/OFF
-        if args[0].upper() == 'ON':
-            self.swautolabel = True
-        elif args[0].upper() == 'OFF':
-            self.swautolabel = False
-
-        # ACID
-        elif bs.traf.id2idx(args[0]) > 0:
-            idx = bs.traf.id2idx(args[0])
-
-            # Other arguments
-            if len(args) > 1:
-
-                # ON/OFF
-                if args[1].upper() == 'ON':
-                    self.autolabel[idx] = True
-                elif args[1].upper() == 'OFF':
-                    self.autolabel[idx] = False
-                else:
-                    return False, 'AUTOLABEL: Not a valid input'
-
-            else:
-                self.autolabel[idx] = not self.autolabel[idx]
-
-        else:
-            return False, 'AUTOLABEL: Not a valid input'
-
     @stack.command(name='FLIGHTTYPE', brief='FLIGHTTYPE CALLSIGN TYPE')
     def setflighttype(self, idx: 'acid', flighttype: str):
         """
@@ -470,20 +368,6 @@ class LVNLVariables(Entity):
         stack.stack(cmd)
 
 
-    @stack.command(name='MICROLABEL', brief='MICROLABEL CALLSIGN')
-    def setmlabel(self, idx: 'acid'):
-        """
-        Function: Set the micro label
-        Args:
-            idx:    index for traffic arrays [int]
-        Returns: -
-
-        Created by: Bob van Dillen
-        Date: 24-1-2022
-        """
-
-        self.mlbl[idx] = not self.mlbl[idx]
-
     @stack.command(name='RWY', brief='RWY CALLSIGN RUNWAY', aliases=('RW',))
     def setrwy(self, idx: 'acid', rwy: str):
         """
@@ -537,95 +421,6 @@ class LVNLVariables(Entity):
         """
 
         self.ssr[idx] = int(ssr)
-
-    @stack.command(name='SSRLABEL', brief='SSRLABEL CALLSIGN')
-    def setssrlabel(self, idx: 'acid', *args):
-        """
-        Function: Set the SSR label
-        Args:
-            idx:        index for traffic arrays [int]
-            *args:      arguments [tuple]
-        Returns: -
-
-        Created by: Bob van Dillen
-        Date: 24-1-2022
-        """
-
-        # No arguments passed
-        if len(args) == 0:
-            if self.ssrlbl[idx]:
-                self.ssrlbl[idx] = ''
-            else:
-                self.ssrlbl[idx] = 'C'
-            self.autolabel[idx] = False
-
-        # Switch on/off
-        elif args[0].upper() == 'ON' or args[0].upper() == 'TRUE':
-            self.ssrlbl[idx] = 'C'
-            self.autolabel[idx] = False
-        elif args[0].upper() == 'OFF' or args[0].upper() == 'FALSE':
-            self.ssrlbl[idx] = ''
-            self.autolabel[idx] = False
-
-        # Switch modes on/off
-        else:
-            for ssrmode in args:
-                ssrmode = ssrmode.upper()
-
-                # Check if it is a valid mode
-                if ssrmode in ['A', 'C', 'ACID']:
-                    # Get active modes
-                    if self.ssrlbl[idx]:
-                        actmodes = self.ssrlbl[idx].split(';')
-                    else:
-                        actmodes = []
-
-                    # Remove/Append
-                    if ssrmode in actmodes:
-                        actmodes.remove(ssrmode)
-                    else:
-                        actmodes.append(ssrmode)
-
-                    # Reconstruct ssrlbl
-                    ssrlbl = ''
-                    for mode in actmodes:
-                        ssrlbl += mode+';'
-                    ssrlbl = ssrlbl[:-1]  # Leave out last ';'
-
-                    self.ssrlbl[idx] = ssrlbl
-                    self.autolabel[idx] = False
-
-            else:
-                return False, 'SSRLABEL: Not a valid SSR label item'
-
-    @stack.command(name='TRACKLABEL', brief='TRACKLABEL CALLSIGN')
-    def settracklabel(self, idx: 'acid', *args):
-        """
-        Function: Set the track label
-        Args:
-            idx:        index for traffic arrays [int]
-            *args:      arguments [tuple]
-        Returns: -
-
-        Created by: Bob van Dillen
-        Date: 24-1-2022
-        """
-
-        # No arguments passed
-        if len(args) == 0:
-            self.tracklbl[idx] = not self.tracklbl[idx]
-            self.autolabel[idx] = False
-
-        # Switch on/off
-        elif args[0].upper() == 'ON' or args[0].upper() == 'TRUE':
-            self.tracklbl[idx] = True
-            self.autolabel[idx] = False
-        elif args[0].upper() == 'OFF' or args[0].upper() == 'FALSE':
-            self.tracklbl[idx] = False
-            self.autolabel[idx] = False
-
-        else:
-            return False, 'TRACKLABEL: Not a valid argument'
 
     @stack.command(name='WTC', brief='WTC CALLSIGN WTC')
     def setwtc(self, idx: 'acid', wtc: str = ''):
