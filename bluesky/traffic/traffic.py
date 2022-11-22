@@ -471,16 +471,16 @@ class Traffic(Entity):
             self.perf.limits(self.aporasas.tas, self.aporasas.vs,
                              self.aporasas.alt, self.ax)
 
-        for aircraft in range(len(bs.traf.alt)):
-            print(aircraft)
-            wpname_temp = bs.traf.ap.route[aircraft].wpname[bs.traf.ap.route[aircraft].iactwp]
-
-            if wpname_temp == "MRG8C" or wpname_temp == "RIVNW" or wpname_temp == "SUGOL":
-                wpname_temp = 1
-            else:
-                wpname_temp = 0
-
-            self.pointreached[aircraft] = wpname_temp
+        # for aircraft in range(len(bs.traf.alt)):
+        #     print(aircraft)
+        #     wpname_temp = bs.traf.ap.route[aircraft].wpname[bs.traf.ap.route[aircraft].iactwp]
+        #
+        #     if wpname_temp == "MRG8C" or wpname_temp == "RIVNW" or wpname_temp == "SUGOL":
+        #         wpname_temp = 1
+        #     else:
+        #         wpname_temp = 0
+        #
+        #     self.pointreached[aircraft] = wpname_temp
 
         #---------- Kinematics --------------------------------
         self.update_airspeed()
