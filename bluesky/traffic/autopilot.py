@@ -534,7 +534,7 @@ class Autopilot(Entity, replaceable=True):
 
         # Another overwrite
         self.ESTspeeds()
-        spdcon = np.logical_not(bs.traf.actwp.nextspd < 0)
+        spdcon = np.logical_not(bs.traf.actwp.nextspd <= 0)
         self.EEI_IAS = np.where(spdcon, np.minimum(bs.traf.actwp.nextspd, self.EEI_IAS), self.EEI_IAS)
         bs.traf.selspd = np.where(self.TOsw, self.EEI_IAS, bs.traf.selspd)
 
@@ -544,7 +544,6 @@ class Autopilot(Entity, replaceable=True):
         sw_alt = np.logical_not(bs.traf.alt < 1)
         sw = np.where(sw_alt, True, sw)
         sw_vs_restr = np.logical_not(self.alt == bs.traf.alt)
-
 
         bs.traf.vs = np.where(self.TOsw, np.where(sw_vs_restr, np.where(self.TOsw, np.where(sw, self.EEI_ROC, 0), selvs), 0), bs.traf.vs)
         # self.vs = np.where(self.TOsw, self.EEI_ROC, selvs)
@@ -1220,7 +1219,7 @@ class Autopilot(Entity, replaceable=True):
         self.setdest(acidx = idx, wpname = dest)
 
         self.TOdf[idx], self.TO_slope[idx] = self.EEI.select(id, AC_type, airline = id[:3], dest = dest)
-
+        print(idx, SID)
         if SID != None:
             # string = "WILABADA/SID/" + SID
             string = "LVNL/PLRH/SID/" + SID

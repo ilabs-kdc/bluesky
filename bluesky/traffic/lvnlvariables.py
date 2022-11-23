@@ -407,6 +407,29 @@ class LVNLVariables(Entity):
             cmd = 'PCALL LVNL/Routes/SID/'+sid.upper()+' '+acid
             stack.stack(cmd)
 
+    @stack.command(name='SIDTO', brief='SID CALLSIGN SID')
+    def setsidTO(self, idx: 'acid', sid: str = '', addwpts: 'onoff' = True):
+        """
+        Function: Set the SID
+        Args:
+            idx:    index for traffic arrays [int]
+            sid:    SID [str]
+        Returns: -
+
+        Created by: Bob van Dillen
+        Date: 21-12-2021
+        Edited by: Mitchell de Keijzer
+        Date: 25-02-2022
+        Changes: small bug fix, added scenario files to scenario/lvnl/routes/sid
+        """
+
+        self.sid[idx] = sid.upper()
+
+        if addwpts:
+            acid = bs.traf.id[idx]
+            cmd = 'PCALL LVNL/PLRH/SID/'+sid.upper()+' '+acid
+            stack.stack(cmd)
+
     @stack.command(name='SSRCODE', brief='SSRCODE CALLSIGN SSR')
     def setssr(self, idx: 'acid', ssr: float):
         """

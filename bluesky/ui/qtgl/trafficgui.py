@@ -41,7 +41,7 @@ class TrafficData:
         # Defaults
         self.labelpos_default       = np.array([50., 0.])
         self.leaderlinepos_default  = np.array([0., 0., 50., 0.])
-        self.mlabel_default         = False
+        self.mlabel_default         = True
         self.mlabelpos_default      = np.array([2 * 0.8 * text_size - ac_size, 0.5 * ac_size])
         self.rel_default            = False
         self.ssrlabel_default       = []
