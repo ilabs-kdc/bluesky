@@ -578,6 +578,7 @@ class nodeData:
         # Display flags
         self.show_coast    = True
         self.show_traf     = True
+        self.show_trail    = True
         self.show_pz       = False
         self.show_fir      = True
         self.show_lbl      = 2
@@ -822,6 +823,9 @@ class nodeData:
         # Satellite image background on/off
         elif flag == 'TRAF':
             self.show_traf = not self.show_traf
+
+        elif flag == 'TRAIL' or flag == 'TRAILS':
+            self.show_trail = not self.show_trail
 
         elif flag == 'POLY':
             self.show_poly = 0 if self.show_poly == 2 else self.show_poly + 1
