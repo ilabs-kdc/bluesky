@@ -310,7 +310,9 @@ class Traffic(glh.RenderObject, layer=100):
 
         self.route.draw()
         self.cpalines.draw()
-        self.traillines.draw()
+
+        if actdata.show_trail:
+            self.traillines.draw()
 
         # --- DRAW THE INSTANCED AIRCRAFT SHAPES ------------------------------
         # update wrap longitude and direction for the instanced objects
