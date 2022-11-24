@@ -258,8 +258,9 @@ class TIDGui(QDialog):
         Date: 17-11-2022
         """
 
-        if self.ac_selected != acid and acid != '':
-            actdata = bs.net.get_nodedata()
+        actdata = bs.net.get_nodedata()
+
+        if self.ac_selected != acid and acid != '' and actdata.atcmode != 'ACC':
             index = actdata.acdata.id.index(acid)
             rwy = actdata.acdata.rwy[index]
             self.change_tid('appmain', rwy=rwy)
