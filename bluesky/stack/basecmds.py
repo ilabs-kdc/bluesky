@@ -554,7 +554,7 @@ def initbasecmds():
 
 
 def singbluesky():
-    webbrowser.open_new("https://youtu.be/aQUlA8Hcv4s")
+    webbrowser.open_new("https://youtu.be/aQUlA8Hcv4s?autoplay=1")
     return True
 
 

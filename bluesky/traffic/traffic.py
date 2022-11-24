@@ -475,7 +475,7 @@ class Traffic(Entity):
         #     print(aircraft)
         #     wpname_temp = bs.traf.ap.route[aircraft].wpname[bs.traf.ap.route[aircraft].iactwp]
         #
-        #     if wpname_temp == "MRG8C" or wpname_temp == "RIVNW" or wpname_temp == "SUGOL":
+        #     if wpname_temp == "MRG8C" or wpname_temp == "RIVMW" or wpname_temp == "SUGOL":
         #         wpname_temp = 1
         #     else:
         #         wpname_temp = 0
