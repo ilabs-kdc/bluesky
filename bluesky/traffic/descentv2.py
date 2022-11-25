@@ -59,10 +59,10 @@ class Descent():
             elif self.vsegm[index + 1] > cas and self.vsegm[index]< cas:
                 self.decel_altspd.append((i, self.vsegm[index], cas))
 
-        # for index, i in enumerate(segments):
-            # print('ALT:', segments[index]/ft/100, 'T', T[index], ' D:', D[index], 'TAS', vcas2tas(np.array(speed)[index], np.array(segments)[index]), ' ESF:', esft[index], 'ROD', rod[index]/0.00508 )
-            # print('ALT:', segments[index]/ft/100, ' SPD:', speed[index]/0.5144, ' PHS:', phase[index], ' ESF:', esft[index],
-            #       ' T:', T[index], ' D:', D[index], ' ROD:', rod[index]/fpm, ' Gm:', gammatas[index], data[index])
+        # for index, i in enumerate(self.segments):
+        #     print('ALT:', self.segments[index]/ft/100, 'T', self.T[index], ' D:', self.D[index], ' CAS:', self.speed[index]/0.5144, 'TAS', self.tasspeeds[index], ' ESF:', self.esft[index], 'ROD', self.rod[index]/0.00508 )
+        #     # print('ALT:', self.segments[index]/ft/100, ' CAS:', self.speed[index]/0.5144, ' PHS:', self.phase[index], ' ESF:', self.esft[index],
+        #     #       ' T:', self.T[index], ' D:', self.D[index], ' ROD:', self.rod[index]/fpm, ' Gm:', self.gammatas[index], data[index])
 
 
 

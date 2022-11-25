@@ -761,6 +761,7 @@ class Autopilot(Entity, replaceable=True):
             ilast = i   # set latest altitude constraint waypoint as start point for new loop
 
         """Aircraft find top of descent distance to next ordinary waypoint"""
+        # print('current')
 
         # Distance from next ordinary waypoint to first restricted waypoint
         wpdist_list = [latlondist(r.wplat[k], r.wplon[k], r.wplat[k + 1], r.wplon[k + 1]) for k in
@@ -901,7 +902,7 @@ class Autopilot(Entity, replaceable=True):
 
     def interlatlon(self, lat1, lon1, lat2, lon2):
         bearing, dist = qdrdist(lat1, lon1, lat2, lon2)
-        sep = ceil(dist/1)
+        sep = 1#ceil(dist/1)
         coords = list(zip(np.linspace(lat1, lat2, sep + 1), np.linspace(lon1, lon2, sep + 1)))
         wpqdr1 = [(bearing, dist/sep) for i in range(sep + 1)]
         wpqdr = [qdrdist(coords[k][0], coords[k][1], coords[k+1][0], coords[k+1][1]) for k in range(sep)]
@@ -960,7 +961,7 @@ class Autopilot(Entity, replaceable=True):
             dist += (100 * ft) / gammatas[i]
             alt += 100 * ft
 
-            # todo turn on
+            #todo turn on
             dsegmi, dist = self.add_decelsegm(idx, dsegmi, dist, ds, alt, gammatas, spddismiss, windbearing)
 
             # if dist > cutoff and abs(step)<len(gammatas_total):
@@ -991,6 +992,7 @@ class Autopilot(Entity, replaceable=True):
         if dsegmi < len(ds.decel_altspd):
             if alt > ds.decel_altspd[dsegmi][0] and not spddismiss:
                 d_alt = ds.decel_altspd[dsegmi][0]
+                # print('Hoogte:',  d_alt / 0.3048)
                 d_v0 = ds.decel_altspd[dsegmi][1]
                 d_v1 = ds.decel_altspd[dsegmi][2]
                 dsegm_dist, dsegm_alt = ds.decelsegment(idx, d_alt, d_v0, d_v1, gammatas, wind)
