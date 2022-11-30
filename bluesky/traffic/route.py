@@ -59,6 +59,7 @@ class Route(Replaceable):
         self.wpflyby = []   # Flyby (True)/flyover(False) switch
         self.wpstack = []   # Stack with command execured when passing this waypoint
         self.wpaltres = []  # Alt restriction; AT, AT/BELOW, AT/ABOVE
+        self.wpgeo = []     # If restricted, fly geo or use TOD
 
         # Made for drones: fly turn mode, means use specified turn radius and optionally turn speed
         self.wpflyturn = []   # Flyturn (True) or flyover/flyby (False) switch
@@ -223,6 +224,7 @@ class Route(Replaceable):
         afterwp = ""
         beforewp = ""
         altres = ""
+        geo = False
 
         # Is it aspecial take-off waypoint?
         takeoffwpt = name.replace('-', '') == "TAKEOFF"
@@ -248,7 +250,7 @@ class Route(Replaceable):
 
                 if len(args) > 1 and args[1]:
                     if type(args[1]) == tuple:
-                        alt, altres = args[1]
+                        alt, altres, geo = args[1]
                     else: alt = args[1]
 
                 if len(args) > 2 and args[2]:
@@ -350,7 +352,7 @@ class Route(Replaceable):
             name = "T/O-" + acid # Use lat/lon naming convention
 
         # Add waypoint
-        wpidx = acrte.addwpt(acidx, name, wptype, lat, lon, alt, spd, afterwp, beforewp, altres)
+        wpidx = acrte.addwpt(acidx, name, wptype, lat, lon, alt, spd, afterwp, beforewp, altres, geo)
 
         # Recalculate flight plan
         acrte.calcfp()
@@ -378,25 +380,25 @@ class Route(Replaceable):
 
     @stack.command
     @staticmethod
-    def before(acidx : 'acid', beforewp: 'wpinroute', addwpt, waypoint, alt: 'altres' = (None,None), spd: 'spd' = None, altres = None):
+    def before(acidx : 'acid', beforewp: 'wpinroute', addwpt, waypoint, alt: 'altres' = (None,None,None), spd: 'spd' = None, altres = None):
         ''' BEFORE acid, wpinroute ADDWPT acid, (wpname/lat,lon),[alt],[spd]
 
             Before waypoint, add a waypoint to route of aircraft (FMS).
         '''
-        alt, altres = alt[0], alt[1]
+        alt, altres, geo = alt[0], alt[1], alt[2]
 
-        return Route.addwptStack(acidx, waypoint, alt, spd, None, beforewp, altres)
+        return Route.addwptStack(acidx, waypoint, alt, spd, None, beforewp, altres, geo)
 
     @stack.command
     @staticmethod
-    def after(acidx: 'acid', afterwp: 'wpinroute', addwpt, waypoint, alt:'altres' = (None,None), spd: 'spd' = None, altres = None):
+    def after(acidx: 'acid', afterwp: 'wpinroute', addwpt, waypoint, alt:'altres' = (None,None,None), spd: 'spd' = None, altres = None):
         ''' AFTER acid, wpinroute ADDWPT (wpname/lat,lon),[alt],[spd]
 
             After waypoint, add a waypoint to route of aircraft (FMS).
         '''
-        alt, altres = alt[0], alt[1]
+        alt, altres, geo = alt[0], alt[1], alt[2]
 
-        return Route.addwptStack(acidx, waypoint, alt, spd, afterwp, None, altres)
+        return Route.addwptStack(acidx, waypoint, alt, spd, afterwp, None, altres, geo)
 
     @stack.command
     @staticmethod
@@ -589,25 +591,25 @@ class Route(Replaceable):
         return True
 
     def overwrite_wpt_data(self, wpidx, wpname, wplat, wplon, wptype, wpalt,
-                           wpspd, wpaltres):
+                           wpspd, wpaltres, geo):
         """
         Overwrites information for a waypoint, via addwpt_data/9
         """
 
         self.addwpt_data(True, wpidx, wpname, wplat, wplon, wptype, wpalt,
-                         wpspd, wpaltres)
+                         wpspd, wpaltres, geo)
 
     def insert_wpt_data(self, wpidx, wpname, wplat, wplon, wptype, wpalt,
-                        wpspd, wpaltres):
+                        wpspd, wpaltres, geo):
         """
         Inserts information for a waypoint, via addwpt_data/9
         """
 
         self.addwpt_data(False, wpidx, wpname, wplat, wplon, wptype, wpalt,
-                         wpspd, wpaltres)
+                         wpspd, wpaltres, geo)
 
     def addwpt_data(self, overwrt, wpidx, wpname, wplat, wplon, wptype,
-                    wpalt, wpspd, wpaltres):
+                    wpalt, wpspd, wpaltres, geo):
         """
         Overwrites or inserts information for a waypoint
         """
@@ -628,6 +630,7 @@ class Route(Replaceable):
             self.wprta[wpidx]   = -999.0 # initially no RTA
             self.wpstack[wpidx] = []
             self.wpaltres[wpidx] = wpaltres
+            self.wpgeo[wpidx] = geo
 
         else:
             self.wpname.insert(wpidx, wpname)
@@ -643,9 +646,10 @@ class Route(Replaceable):
             self.wprta.insert(wpidx,-999.0)       # initially no RTA
             self.wpstack.insert(wpidx,[])
             self.wpaltres.insert(wpidx, wpaltres)
+            self.wpgeo.insert(wpidx, geo)
 
 
-    def addwpt(self, iac, name, wptype, lat, lon, alt=-999., spd=-999., afterwp="", beforewp="", altres=""):
+    def addwpt(self, iac, name, wptype, lat, lon, alt=-999., spd=-999., afterwp="", beforewp="", altres="", geo=False):
         """Adds waypoint an returns index of waypoint, lat/lon [deg], alt[m]"""
 #        print ("addwpt:")
 #        print ("iac = ",iac)
@@ -689,7 +693,7 @@ class Route(Replaceable):
             # Overwrite existing origin/dest
             if self.nwp > 0 and self.wptype[wpidx] == wptype:
                 self.overwrite_wpt_data(
-                    wpidx, wprtename, wplat, wplon, wptype, alt, spd, altres)
+                    wpidx, wprtename, wplat, wplon, wptype, alt, spd, altres, geo)
 
             # Or add before first waypoint/append to end
             else:
@@ -697,7 +701,7 @@ class Route(Replaceable):
                     wpidx = len(self.wplat)
 
                 self.insert_wpt_data(
-                    wpidx, wprtename, wplat, wplon, wptype, alt, spd, altres)
+                    wpidx, wprtename, wplat, wplon, wptype, alt, spd, altres, geo)
 
                 self.nwp += 1
                 if orig and self.iactwp >= 0:
@@ -746,7 +750,7 @@ class Route(Replaceable):
                         self.wpname.index(bfwp)
 
                     self.insert_wpt_data(
-                        wpidx, newname, wplat, wplon, wptype, alt, spd, altres)
+                        wpidx, newname, wplat, wplon, wptype, alt, spd, altres, geo)
 
                     if afterwp and self.iactwp >= wpidx:
                         self.iactwp += 1
@@ -760,7 +764,7 @@ class Route(Replaceable):
                         wpidx = self.nwp
 
                     self.addwpt_data(
-                        False, wpidx, newname, wplat, wplon, wptype, alt, spd, altres)
+                        False, wpidx, newname, wplat, wplon, wptype, alt, spd, altres, geo)
 
                 idx = wpidx
                 self.nwp += 1

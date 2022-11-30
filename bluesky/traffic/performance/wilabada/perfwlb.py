@@ -684,9 +684,10 @@ class WILABADA(PerfBase):
 
         # # TEMPORARY
         # allowed_vs = self.limvs
-        # print(' FL:', bs.traf.alt/0.3048/100,' CAS:', vtas2cas(allowed_tas, bs.traf.alt)/0.5144,' Mass:', self.mass,
-        #       ' T:',self.thrust, ' D:',self.D, ' ESF:',self.ESF, ' ROD:',self.limvs/0.00508,
-        #       ' TDC:',(self.thrust-self.D),' gamma:',np.degrees(np.arctan(self.limvs/allowed_tas)), ' phase:', self.phase)
+        # if round(bs.traf.alt[0]/0.3048/100,1)%1<0.2:
+        #     print(' FL:', bs.traf.alt/0.3048/100,' CAS:', vtas2cas(allowed_tas, bs.traf.alt)/0.5144,' Mass:', self.mass,
+        #           ' T:',self.thrust, ' D:',self.D, ' ESF:',self.ESF, ' ROD:',self.limvs/0.00508,
+        #           ' TDC:',(self.thrust-self.D),' gamma:',np.degrees(np.arctan(self.limvs/allowed_tas)), ' phase:', self.phase)
 
         return allowed_tas, allowed_vs, allowed_alt
 

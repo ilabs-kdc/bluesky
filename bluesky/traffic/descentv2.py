@@ -65,15 +65,20 @@ class Descent():
         #     #       ' T:', self.T[index], ' D:', self.D[index], ' ROD:', self.rod[index]/fpm, ' Gm:', self.gammatas[index], data[index])
 
 
+    def tasspeeds_func(self, max = 99999):
+        return vcasormach2tas(np.where(self.speed>max, max, self.speed), self.segments)
+
 
 
     def decelsegment(self, idx, alt, v0,v1, gammatas, wind = 0):
+
+        # print('added segment for', round(alt / 0.3048 / 100, 2), round(v0 / 0.514444, 2), round(v1 / 0.514444, 2))
 
         m = 1
 
         add_alt, add_dist = 0, 0
 
-        if v1<3: v1 = vmach2cas(v1, alt)
+        if v1<3: v1 = vmach2cas(v1, alt) # Overbodig?
 
         while np.round(v0,2) < np.round(v1,2):
             v0tas = vcasormach2tas(v0, alt + add_alt)
