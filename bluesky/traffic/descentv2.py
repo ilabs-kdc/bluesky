@@ -16,6 +16,8 @@ class Descent():
         start_altitude = altitude + 100*ft
         final_altitude = 0
 
+        # print('MASSAAAA', bs.traf.perf.mass[idx])
+
         self.segments = np.arange(final_altitude, start_altitude, 100*ft)
         self.speed = np.array([self.speedschedule(idx, i) for i in self.segments])
         if concas>0: self.speed = np.array([concas for i in self.segments])
@@ -59,6 +61,9 @@ class Descent():
             elif self.vsegm[index + 1] > cas and self.vsegm[index]< cas:
                 self.decel_altspd.append((i, self.vsegm[index], cas))
 
+
+        self.added_alt = 0
+
         # for index, i in enumerate(self.segments):
         #     print('ALT:', self.segments[index]/ft/100, 'T', self.T[index], ' D:', self.D[index], ' CAS:', self.speed[index]/0.5144, 'TAS', self.tasspeeds[index], ' ESF:', self.esft[index], 'ROD', self.rod[index]/0.00508 )
         #     # print('ALT:', self.segments[index]/ft/100, ' CAS:', self.speed[index]/0.5144, ' PHS:', self.phase[index], ' ESF:', self.esft[index],
@@ -98,6 +103,10 @@ class Descent():
             v1 = cas
 
         olddist = self.descentdistance(gammatas, alt+add_alt, alt)
+
+        # print('   Added:', (add_dist-olddist)/1852, add_alt/0.3048)
+
+        self.added_alt = add_alt
 
         return (add_dist - olddist, add_alt)
 
