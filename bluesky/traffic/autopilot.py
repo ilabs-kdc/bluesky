@@ -392,9 +392,11 @@ class Autopilot(Entity, replaceable=True):
 
         # bs.traf.actwp.tempaltconst = np.where(self.dist2vscount < 1, False, bs.traf.actwp.tempaltconst)
 
-        self.dist2vs = np.where( (self.dist2vscount<0)*self.dist2vscountpassed, self.dist2wp-self.dist2vs, self.dist2vs)
+        self.dist2vs = np.where( (self.dist2vscount<0)*self.dist2vscountpassed*(self.dist2vs<99990), self.dist2wp-self.dist2vs, self.dist2vs)
         self.dist2vscountpassed = np.where( self.dist2vscount<0, False, self.dist2vscountpassed)
         startdescent = (self.dist2wp < self.dist2vs) * (self.dist2vscount < 1)
+
+        # print(1, self.dist2wp, self.dist2vs, self.dist2vscount, self.dist2vscountpassed)
 
         self.swvnavvs = bs.traf.swvnav * np.where(bs.traf.swlnav, startdescent,
                                                   self.dist2wp <= np.maximum(185.2, bs.traf.actwp.turndist))
