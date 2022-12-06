@@ -1058,6 +1058,7 @@ class Route(Replaceable):
         bs.traf.swlnav[acidx]    = False
         bs.traf.swvnav[acidx]    = False
         bs.traf.swvnavspd[acidx] = False
+        bs.traf.selalt[acidx]    = bs.traf.alt[acidx]
 
         return True
 

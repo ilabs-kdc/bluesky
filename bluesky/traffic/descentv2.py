@@ -16,8 +16,6 @@ class Descent():
         start_altitude = altitude + 100*ft
         final_altitude = 0
 
-        # print('MASSAAAA', bs.traf.perf.mass[idx])
-
         self.segments = np.arange(final_altitude, start_altitude, 100*ft)
         self.speed = np.array([self.speedschedule(idx, i) for i in self.segments])
         if concas>0: self.speed = np.array([concas for i in self.segments])
@@ -27,9 +25,6 @@ class Descent():
 
         td = np.array([self.TandD(idx, i, self.speed[index], self.phase[index]) for index,i in enumerate(self.segments)], dtype=object)
         self.T, self.D, data = zip(*td)
-
-
-
 
         self.tasspeeds = vcasormach2tas(self.speed, self.segments)
 
@@ -70,7 +65,9 @@ class Descent():
         #     #       ' T:', self.T[index], ' D:', self.D[index], ' ROD:', self.rod[index]/fpm, ' Gm:', self.gammatas[index], data[index])
 
 
-    def tasspeeds_func(self, max = 99999):
+    def tasspeeds_func(self, mach, alt):
+        if alt>26000*ft: max = 99999
+        else: max = vmach2cas(mach, alt)
         return vcasormach2tas(np.where(self.speed>max, max, self.speed), self.segments)
 
 
@@ -287,10 +284,12 @@ class Descent():
 
 
 
-    def esf(self, idx, alt, cas):
+    def esf(self, idx, alt, spd):
 
-        M = vcas2mach(cas, alt)
-        selmach = bs.traf.selspd[idx] < 2.0
+        if spd < 3: M = spd
+        else: M = vcas2mach(spd, alt)
+
+        selmach = spd < 2.0
 
         abtp  = alt > 11000.0
         beltp = np.logical_not(abtp)

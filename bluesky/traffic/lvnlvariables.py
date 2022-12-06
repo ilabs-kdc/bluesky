@@ -366,6 +366,7 @@ class LVNLVariables(Entity):
 
         cmd = 'PCALL LVNL/PLRH/TID_SCN/' + WPT + '.scn' + ' ' + acid
         stack.stack(cmd)
+        bs.traf.ap.dpswitch[idx] = True
 
 
     @stack.command(name='RWY', brief='RWY CALLSIGN RUNWAY', aliases=('RW',))
