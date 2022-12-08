@@ -52,6 +52,8 @@ class Autopilot(Entity, replaceable=True):
             self.dist2accel = np.array([]) # Distance to go to acceleration(decelaration) for turn next waypoint [nm]
             self.dist2vscount = np.array([]) #ADDED
             self.dist2vscountpassed = np.array([])
+            self.startdescent = np.array([])
+            self.nextaltco = np.array([])
 
             self.swvnavvs = np.array([])  # whether to use given VS or not
             self.vnavvs   = np.array([])  # vertical speed in VNAV
@@ -116,6 +118,8 @@ class Autopilot(Entity, replaceable=True):
         self.steepnessv2[-n:] = self.steepness
         self.prevconst[-n:] = False
         self.prevconst[-n:] = None
+        self.startdescent[-n:] = False
+        self.nextaltco[-n:] = -1
 
         self.altdismiss[-n:] = False
         self.faltdismiss[-n:] = False
@@ -393,14 +397,18 @@ class Autopilot(Entity, replaceable=True):
         # bs.traf.actwp.tempaltconst = np.where(self.dist2vscount < 1, False, bs.traf.actwp.tempaltconst)
 
         self.dist2vs = np.where( (self.dist2vscount<0)*self.dist2vscountpassed*(self.dist2vs<99990), self.dist2wp-self.dist2vs, self.dist2vs)
-        self.dist2vscountpassed = np.where( self.dist2vscount<0, False, self.dist2vscountpassed)
-        startdescent = (self.dist2wp < self.dist2vs) * (self.dist2vscount < 1)
+        self.startdescent = np.where(self.startdescent, self.startdescent, (self.dist2wp < self.dist2vs) * (self.dist2vscount < 1))
 
-        # print(1, self.dist2wp, self.dist2vs, self.dist2vscount, self.dist2vscountpassed)
+        self.dist2vscountpassed = np.where(self.dist2vscount < 0, False, self.dist2vscountpassed)
+        self.dist2vscountpassed = np.where(self.startdescent, False, self.dist2vscountpassed)
 
-        self.swvnavvs = bs.traf.swvnav * np.where(bs.traf.swlnav, startdescent,
+        self.swvnavvs = bs.traf.swvnav * np.where(bs.traf.swlnav, self.startdescent,
                                                   self.dist2wp <= np.maximum(185.2, bs.traf.actwp.turndist))
         bs.traf.actwp.vs = np.where(self.geodescent, self.steepnessv2*bs.traf.gs, -999)
+
+        bs.traf.actwp.nextaltco = np.where(self.nextaltco<0, bs.traf.actwp.nextaltco, self.nextaltco)
+
+        # print(2, list(zip(self.swvnavvs, bs.traf.selvs))[0])
 
         self.vnavvs = np.where(self.swvnavvs, bs.traf.actwp.vs, self.vnavvs)
         selvs = np.where(abs(bs.traf.selvs) > 0.1, bs.traf.selvs, self.vsdef)  # m/s
@@ -408,6 +416,8 @@ class Autopilot(Entity, replaceable=True):
         self.alt = np.where(self.swvnavvs, bs.traf.actwp.nextaltco, bs.traf.selalt)
         # When descending or climbing in VNAV also update altitude command of select/hold mode
         bs.traf.selalt = np.where(self.swvnavvs, bs.traf.actwp.nextaltco, bs.traf.selalt)
+
+        # print(1, list(zip(bs.traf.id, self.dist2wp, self.dist2vs, self.dist2vscount, self.dist2vscountpassed, self.vs ) )[0])
 
 
         """ 
@@ -782,7 +792,8 @@ class Autopilot(Entity, replaceable=True):
             self.dist2vscountpassed[idx] = True
             bs.traf.actwp.tempaltconst[idx] = True  # Do not reset alt constraint when passing ordinary waypoints
             self.geodescent[idx] = False
-            bs.traf.actwp.nextaltco[idx] = altlast - wpalt_correction
+            # bs.traf.actwp.nextaltco[idx] = altlast - wpalt_correction
+            self.nextaltco[idx] = altlast - wpalt_correction
             # print('next altco', (altlast-wpalt_correction) / 0.3048)
             # Remember if a/c can fly continuous descent after next waypoint
             self.prevconst[idx] = cont
@@ -792,6 +803,9 @@ class Autopilot(Entity, replaceable=True):
 
         # Remember if a/c can fly continuous descent after next waypoint
         self.prevconst[idx] = cont
+
+        # REMEMBER only after not flying continuous?
+        self.startdescent[idx] = False
 
         # Distance from next ordinary waypoint to first restricted waypoint
         wpdist_list = [latlondist(r.wplat[k], r.wplon[k], r.wplat[k + 1], r.wplon[k + 1]) for k in
@@ -860,9 +874,11 @@ class Autopilot(Entity, replaceable=True):
             self.geodescent[idx] = False
             self.dist2vscountpassed[idx] = True
 
-        bs.traf.actwp.nextaltco[idx] = altlast - wpalt_correction
+        # bs.traf.actwp.nextaltco[idx] = altlast - wpalt_correction
+        self.nextaltco[idx] = altlast - wpalt_correction
 
         # if self.geodescent[idx]: print('GEO on')
+        # print(bs.traf.id[idx],'going to', round((altlast-wpalt_correction)/0.3048/100,2))
 
         self.prevwptgeo[idx] = prevgeo
 
