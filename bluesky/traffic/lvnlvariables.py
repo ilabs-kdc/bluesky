@@ -406,7 +406,7 @@ class LVNLVariables(Entity):
 
         if addwpts:
             acid = bs.traf.id[idx]
-            cmd = 'PCALL '+ settings.scenario_path_SIDS + "/" + sid.upper()+' '+acid
+            cmd = 'PCALL '+ settings.scenario_path_SIDs + "/" + sid.upper()+' '+acid
             stack.stack(cmd)
 
     @stack.command(name='SIDTO', brief='SID CALLSIGN SID')
@@ -429,7 +429,7 @@ class LVNLVariables(Entity):
 
         if addwpts:
             acid = bs.traf.id[idx]
-            cmd = 'PCALL ' + settings.scenario_path_SIDS + "/" + sid.upper()+' '+acid
+            cmd = 'PCALL ' + settings.scenario_path_SIDs + "/" + sid.upper()+' '+acid
             stack.stack(cmd)
 
     @stack.command(name='SSRCODE', brief='SSRCODE CALLSIGN SSR')
