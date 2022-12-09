@@ -1298,6 +1298,8 @@ class Autopilot(Entity, replaceable=True):
             bs.traf.lvnlvars.sid[idx] = SID.upper()
             bs.traf.lvnlvars.flighttype[idx] = 'OUTBOUND'
             bs.traf.lvnlvars.symbol[idx] = 'TWROUT'
+            bs.traf.lvnlvars.setgrp(idx, 'OUTBOUND')
+            bs.traf.lvnlvars.setgrp(idx, id, color=(np.random.randint(0, 255), np.random.randint(0, 255), np.random.randint(0, 255)))
 
     @stack.command(name='VS')
     def selvspdcmd(self, idx: 'acid', vspd:'vspd'):

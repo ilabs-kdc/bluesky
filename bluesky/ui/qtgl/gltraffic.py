@@ -121,6 +121,10 @@ class Traffic(glh.RenderObject, layer=100):
         self.rwaypoints     = glh.VertexArrayObject(glh.gl.GL_LINE_LOOP)
         self.traillines     = glh.VertexArrayObject(glh.gl.GL_LINES)
 
+        self.trail_objects = {}
+        self.trail_objects_active = {}
+        self.itraillines = {}
+        self.swgrp = {}
         # --------------- Label objects ---------------
 
         self.aclabels       = glh.Text(settings.text_size, (8, 3))  # Default label BlueSky
@@ -314,6 +318,9 @@ class Traffic(glh.RenderObject, layer=100):
         if actdata.show_trail:
             self.traillines.draw()
 
+        for group in self.trail_objects_active:
+            self.trail_objects_active[group].draw()
+
         # --- DRAW THE INSTANCED AIRCRAFT SHAPES ------------------------------
         # update wrap longitude and direction for the instanced objects
         self.shaderset.enable_wrap(True)
@@ -388,6 +395,16 @@ class Traffic(glh.RenderObject, layer=100):
                                     nodedata.traillon0,
                                     nodedata.traillat1,
                                     nodedata.traillon1)
+        if 'ITRAILS' in changed_elems:
+            self.flag_grp_change, self.setgrp, self.flag_swgrp, self.swgrp, self.flag_clrchange, self.clrs, self.time, self.trlreset = nodedata.trailinformation
+            self.update_grptrails()
+            if self.trlreset:
+                self.trail_objects = {}
+                self.trail_objects_active = {}
+                self.swgrp = {}
+                self.trlreset = False
+                self.time = 0
+            self.update_itrails_data(nodedata.trails)
         if 'ATCMODE' in changed_elems:
             self.hist_symbol.set_attribs(color=palette.aircraft)
             self.set_acsymbol(nodedata.atcmode)
@@ -402,6 +419,73 @@ class Traffic(glh.RenderObject, layer=100):
             self.traillines.update(vertex=np.array(
                     list(zip(lat0, lon0,
                              lat1, lon1)), dtype=np.float32))
+
+    def update_grptrails(self):
+        if self.flag_swgrp:
+            for group in self.swgrp:
+                if self.swgrp[group]:
+                    if group not in self.trail_objects_active:
+                        if group in self.trail_objects:
+                            self.trail_objects_active[group] = self.trail_objects[group]
+                        else:
+                            self.trail_objects_active[group] = glh.VertexArrayObject(glh.gl.GL_LINES)
+                            self.trail_objects_active[group].create(vertex=TRAILS_SIZE * 16, color=self.clrs[group])
+                            self.trail_objects_active[group].set_vertex_count(0)
+                elif group in self.trail_objects_active:
+                    self.trail_objects[group] = self.trail_objects_active[group]
+                    self.trail_objects_active.pop(group)
+            self.flag_swgrp = False
+
+        if self.flag_clrchange:
+            for group in self.swgrp:
+                if self.clrs[group] != 'DEFAULT':
+                    if group in self.trail_objects_active:
+                        self.trail_objects_active[group].set_attribs(color=self.clrs[group])
+                    elif group in self.trail_objects:
+                        self.trail_objects[group].set_attribs(color=self.clrs[group])
+                else:
+                    if group in self.trail_objects_active:
+                        self.trail_objects_active[group].set_attribs(color=(0, 255, 0))
+                    elif group in self.trail_objects:
+                        self.trail_objects[group].set_attribs(color=(0, 255, 0))
+            self.flag_clrchange = False
+
+    def update_itrails_data(self, data):
+        ''' Update GPU buffers with route data from simulation. '''
+        if not self.initialized:
+            return
+        if len(data) > 0:
+            self.glsurface.makeCurrent()
+            data = data[data['simt'] >= self.time]
+
+            for group in self.trail_objects_active:
+                if group not in self.setgrp:
+                    continue
+                temp_data = data[data['callsign'].isin(self.setgrp[group])]
+                lat0, lon0, lat1, lon1 = temp_data['lat0'].tolist(), temp_data['lon0'].tolist(), temp_data['lat1'].tolist(), temp_data['lon1'].tolist()
+                self.trail_objects_active[group].set_vertex_count(len(lat0))
+                self.trail_objects_active[group].update(vertex=np.array(list(zip(lat0, lon0, lat1, lon1)), dtype=np.float32))
+
+    # def update_itrails_data(self, data, acdata):
+    #     ''' Update GPU buffers with route data from simulation. '''
+    #     if not self.initialized:
+    #         return
+    #     if len(data) > 0:
+    #         self.glsurface.makeCurrent()
+    #
+    #         groups = data.groupby(['callsign'])
+    #
+    #         for callsign in groups.groups.keys():
+    #
+    #             if callsign not in self.itraillines:
+    #                 self.itraillines[callsign] = glh.VertexArrayObject(glh.gl.GL_LINES)
+    #                 self.itraillines[callsign].create(vertex=TRAILS_SIZE * 16, color=(np.random.randint(0, 255), np.random.randint(0, 255), np.random.randint(0, 255)))
+    #
+    #             temp_data = groups.get_group(callsign)
+    #             self.itraillines[callsign].set_vertex_count(len(temp_data['lat0'].tolist()))
+    #             self.itraillines[callsign].update(vertex=np.array(list(zip(temp_data['lat0'].tolist(), temp_data['lon0'].tolist(), temp_data['lat1'].tolist(), temp_data['lon1'].tolist())), dtype=np.float32))
+    #             self.itraillines[callsign].set_attribs(color=(np.random.randint(0, 255), np.random.randint(0, 255), np.random.randint(0, 255)))
+
 
     def update_route_data(self, data):
         ''' Update GPU buffers with route data from simulation. '''

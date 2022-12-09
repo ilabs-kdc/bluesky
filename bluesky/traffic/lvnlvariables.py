@@ -11,7 +11,7 @@ import bluesky as bs
 from bluesky.core import Entity, timed_function
 from bluesky.tools import misc, geo
 from bluesky import stack
-
+from itertools import combinations
 from bluesky import settings
 
 bs.settings.set_variable_defaults(scenario_path_SIDs = 'scenario/LVNL/Routes/SID_NO_SPDCMDS')
@@ -477,3 +477,211 @@ class LVNLVariables(Entity):
 
         if isinstance(symbol, str):
             self.symbol[idx] = symbol.upper()
+
+    @stack.command(name='SETGRP', brief='SETGRP CALLSIGN GRP')
+    def setgrp(self, idx: 'acid', grp: str = '', **kwargs):
+        """
+        Function: Assign aircraft to group used for trails
+        Args:
+            idx:    index for traffic arrays [int]
+            grp:    group aircraft should belong to
+        Returns: -
+
+        Created by: Lars Dijkstra
+        Date: 29-11-2022
+        """
+        acid = bs.traf.id[idx]
+        if grp.upper() not in bs.traf.iTrails.setgrp:
+            bs.traf.iTrails.setgrp[grp.upper()] = []
+        if grp.upper() not in bs.traf.iTrails.swgrp:
+            bs.traf.iTrails.swgrp[grp.upper()] = False
+        if grp.upper() not in bs.traf.iTrails.clrs:
+            bs.traf.iTrails.clrs[grp.upper()] = (0, 255, 255)
+            if 'color' in kwargs:
+                bs.traf.iTrails.clrs[grp.upper()] = (np.random.randint(0, 255), np.random.randint(0, 255), np.random.randint(0, 255))
+        if acid in bs.traf.iTrails.setgrp[grp.upper()]:
+            bs.scr.echo('{} is already assigned to group {}'.format(acid, grp.upper()))
+        else:
+            bs.traf.iTrails.setgrp[grp.upper()].append(acid)
+            if bs.traf.iTrails.swgrp[grp.upper()]:
+                self.overlap(grp.upper(), callsign = acid)
+        bs.traf.iTrails.grpchange = True
+        bs.traf.iTrails.change = True
+
+    @stack.command(name='DELGRP', brief='SETGRP CALLSIGN GRP')
+    def delgrp(self, idx: 'acid', grp: str = ''):
+        """
+        Function: delete aircraft from group
+        Args:
+            idx:    index for traffic arrays [int]
+            grp:    group aircraft should belong to
+        Returns: -
+
+        Created by: Lars Dijkstra
+        Date: 29-11-2022
+        """
+
+        acid = bs.traf.id[idx]
+
+        if grp.upper() in bs.traf.iTrails.setgrp:
+            if acid in bs.traf.iTrails.setgrp[grp.upper()]:
+                bs.traf.iTrails.setgrp[grp.upper()].remove(acid)
+                if len(bs.traf.iTrails.setgrp[grp.upper()]) == 0:
+                    bs.traf.iTrails.setgrp.pop(grp.upper())
+                    bs.traf.iTrails.swgrp.pop(grp.upper())
+                    bs.traf.iTrails.clrs.pop(grp.upper())
+            else:
+                bs.scr.echo('Could not find {} in group {}'.format(acid, grp.upper()))
+        else:
+            bs.scr.echo('Group {} does not exist'.format(grp.upper()))
+
+        bs.traf.iTrails.grpchange = True
+        bs.traf.iTrails.change = True
+
+
+    def overlap(self, grp, **kwargs):
+
+        grp_combinations = [list(map(str, comb)) for comb in combinations(bs.traf.iTrails.setgrp, 2)]
+
+        for combination in grp_combinations:
+            if bs.traf.iTrails.swgrp[combination[0]] and bs.traf.iTrails.swgrp[combination[1]]:
+                if bool(set(bs.traf.iTrails.setgrp[combination[0]]) & set(bs.traf.iTrails.setgrp[combination[1]])):
+                    if combination[0] == grp:
+                        in_conflict = combination[1]
+                    elif combination[1] == grp:
+                        in_conflict = combination[0]
+                    bs.traf.iTrails.swgrp[in_conflict] = False
+                    if 'callsign' in kwargs:
+                        bs.scr.echo('Turned off trails for group {} due to a conflict with group {}. {} cannot be part of two active groups.'.format(in_conflict, grp, kwargs['callsign']))
+                    else:
+                        bs.scr.echo('Turned off trails for group {} due to a conflict with group {}. An aircraft cannot be part of two active groups.'.format(in_conflict, grp))
+
+
+    @stack.command(name='SWGRP', brief='SWGRP GRP ON/OFF')
+    def swgrp(self, grp: str = '', sw: str = ''):
+        """
+        Function: turn trails on for grp
+        Args:
+            grp:    group
+        Returns: -
+
+        Created by: Lars Dijkstra
+        Date: 29-11-2022
+        """
+
+        if sw.upper() == 'ON':
+            sw = True
+        elif sw.upper() == 'OFF':
+            sw = False
+        else:
+            bs.scr.echo('Please use on/off to turn trails off or on for group {}'.format(grp.upper()))
+            return
+
+        if grp.upper() not in bs.traf.iTrails.setgrp:
+            bs.traf.iTrails.setgrp[grp.upper()] = []
+        if grp.upper() not in bs.traf.iTrails.clrs:
+            bs.traf.iTrails.clrs[grp.upper()] = 'DEFAULT'
+        if grp.upper() in bs.traf.iTrails.swgrp:
+            if bs.traf.iTrails.swgrp[grp.upper()] != sw:
+                bs.traf.iTrails.swgrp[grp.upper()] = sw
+            else:
+                if sw:
+                    bs.scr.echo('Trails are already on for group {}'.format(grp))
+                else:
+                    bs.scr.echo('Trails are already off for group {}'.format(grp))
+                return
+        else:
+            bs.traf.iTrails.swgrp[grp.upper()] = sw
+
+        if sw:
+            self.overlap(grp.upper())
+
+        bs.traf.iTrails.flag_swgrp = True
+        bs.traf.iTrails.change = True
+
+    @stack.command(name='SETCLR', brief='SETCLR GRP COLOR')
+    def setclr(self, grp: str = '', color: str = ''):
+        """
+        Function: set color for trails
+        Args:
+            grp:    group
+        Returns: -
+
+        Created by: Lars Dijkstra
+        Date: 29-11-2022
+        """
+
+        if grp.upper() not in bs.traf.iTrails.setgrp:
+            bs.traf.iTrails.setgrp[grp.upper()] = []
+            bs.traf.iTrails.swgrp[grp.upper()] = False
+
+        color_dict = {'RED': (255, 0, 0), 'ORANGE': (255, 165, 0), 'CYAN': (0, 255, 255), 'BLACK': (0, 0, 0),
+                      'YELLOW': (255, 255, 0), 'MAGENTA': (255, 0, 255), 'TEAL': (0, 128, 128), 'NAVY': (0, 0, 128),
+                      'LIME': (0, 255, 0), 'GREEN': (0, 255, 0), 'GRAY': (169, 169, 169)}
+
+        color = color.upper()
+        if color in color_dict:
+            color = color_dict[color]
+        else:
+            bs.scr.echo('Color {} was not defined in the color dictionary. No changes applied.'.format(color))
+            return
+
+        bs.traf.iTrails.clrs[grp.upper()] = color
+
+        bs.traf.iTrails.flag_clrchange = True
+        bs.traf.iTrails.change = True
+
+    @stack.command(name='TRLTIME', brief='TRLTIME SIMTIME')
+    def settrailtime(self, time: str = ''):
+        """
+        Function: set timestep from which group trails are shown
+        Args:
+            time:    timestep from which trails are shown on screen
+        Returns: -
+
+        Created by: Lars Dijkstra
+        Date: 29-11-2022
+        """
+
+        if time[0] == '-':
+            time = bs.sim.simt - int(time[1:])
+            if time < 0:
+                time = 0
+        if time != bs.traf.iTrails.time:
+            bs.traf.iTrails.time = int(time)
+
+    @stack.command(name='TRLOFF', brief='TRLOFF')
+    def trloff(self):
+        """
+        Function: set all trail switches to false
+        Args:
+            -
+        Returns: -
+
+        Created by: Lars Dijkstra
+        Date: 29-11-2022
+        """
+
+        for group in bs.traf.iTrails.swgrp:
+            bs.traf.iTrails.swgrp[group] = False
+
+        bs.traf.iTrails.flag_swgrp = True
+        bs.traf.iTrails.change = True
+
+    @stack.command(name='DISCO', brief='TRLOFF')
+    def atrloff(self):
+        """
+        Function: set all trail switches to false
+        Args:
+            -
+        Returns: -
+
+        Created by: Lars Dijkstra
+        Date: 29-11-2022
+        """
+
+        for group in bs.traf.iTrails.swgrp:
+            bs.traf.iTrails.swgrp[group] = False
+
+        bs.traf.iTrails.flag_swgrp = True
+        bs.traf.iTrails.change = True

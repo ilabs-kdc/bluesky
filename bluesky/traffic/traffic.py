@@ -25,7 +25,7 @@ from bluesky.tools.aero import cas2tas, casormach2tas, fpm, kts, ft, g0, Rearth,
 from bluesky.traffic.asas import ConflictDetection, ConflictResolution
 from .windsim import WindSim
 from .conditional import Condition
-from .trails import Trails
+from .trails import Trails, INDI_Trails
 from .adsbmodel import ADSB
 from .aporasas import APorASAS
 from .autopilot import Autopilot
@@ -163,6 +163,7 @@ class Traffic(Entity):
             self.aporasas = APorASAS()
             self.adsb     = ADSB()
             self.trails   = Trails()
+            self.iTrails = INDI_Trails()
             self.actwp    = ActiveWaypoint()
             self.perf     = PerfBase()
             self.histsymb = HistorySymbols()
@@ -498,6 +499,8 @@ class Traffic(Entity):
 
         #---------- Aftermath ---------------------------------
         self.trails.update()
+
+        self.iTrails.update()
 
     @timed_function(name='asas', dt=bs.settings.asas_dt, manual=True)
     def update_asas(self):

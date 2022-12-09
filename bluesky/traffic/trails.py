@@ -3,8 +3,7 @@ from math import *
 import numpy as np
 import bluesky as bs
 from bluesky import settings
-from bluesky.core import TrafficArrays
-
+from bluesky.core import TrafficArrays, timed_function
 
 class Trails(TrafficArrays):
     """
@@ -88,9 +87,6 @@ class Trails(TrafficArrays):
         delta = bs.sim.simt - self.lasttim
         idxs = np.where(delta > self.dt)[0]
 
-        # Add all a/c which need the update
-        # if len(idxs)>0:
-        #     print "len(idxs)=",len(idxs)
 
         for i in idxs:
             # Add to lists
@@ -234,3 +230,101 @@ class Trails(TrafficArrays):
         super().reset()
         self.clear()
         self.active = False
+
+class INDI_Trails(TrafficArrays):
+    """
+    Traffic trails class definition    : Data for trails
+
+    Methods:
+        Trails()            :  constructor
+
+    Members: see create
+
+    Created by  : Lars Dijkstra
+    """
+
+    def __init__(self, dttrail=10.):
+        super().__init__()
+        self.active = True
+        self.dt = dttrail    # Resolution of trail pieces in time
+
+        self.setgrp = {}
+        self.clrs = {'INBOUND': (0,255,255), 'OUTBOUND': (255,165,0)}
+        self.grpchange = False
+        self.change = False
+        self.time = 0
+
+        self.swgrp = {}
+        self.flag_swgrp = False
+        self.flag_clrchange = False
+
+        self.swreset = False
+
+        with self.settrafarrays():
+            self.lastlat = np.array([])
+            self.lastlon = np.array([])
+            self.lasttim = np.array([])
+
+        self.clearnew()
+
+        return
+
+    def create(self,n=1):
+        super().create(n)
+
+        self.lastlat[-1] = bs.traf.lat[-1]
+        self.lastlon[-1] = bs.traf.lon[-1]
+
+    @timed_function(dt=1, manual=True)
+    def update(self):
+        self.acid    = bs.traf.id
+
+        """Add linepieces for trails based on traffic data"""
+
+        # Check for update
+        delta = bs.sim.simt - self.lasttim
+        idxs = np.where(delta > self.dt)[0]
+
+        for i in idxs:
+            callsign = self.acid[i]
+
+            self.trail_dict['lat0'].append(self.lastlat[i])
+            self.trail_dict['lon0'].append(self.lastlon[i])
+            self.trail_dict['lat1'].append(bs.traf.lat[i])
+            self.trail_dict['lon1'].append(bs.traf.lon[i])
+            self.trail_dict['simt'].append(self.lasttim[i])
+            self.trail_dict['callsign'].append(callsign)
+
+            # Update aircraft record
+            self.lastlat[i] = bs.traf.lat[i]
+            self.lastlon[i] = bs.traf.lon[i]
+            self.lasttim[i] = bs.sim.simt
+
+        return
+
+    def clearnew(self):
+        # Clear history for QTGL buffer
+        self.trail_dict = {'callsign': [], 'simt': [], 'lat0': [], 'lon0': [], 'lat1': [], 'lon1': []}
+
+
+    def clear(self):
+        """Clear all data, Foreground and background"""
+        self.lastlon = np.array([])
+        self.lastlat = np.array([])
+        self.clearnew()
+        self.setgrp = {}
+        self.clrs = {'INBOUND': (0,255,255), 'OUTBOUND': (255,165,0)}
+        self.grpchange = False
+        self.change = False
+        self.time = 0
+        self.swgrp = {}
+        self.flag_swgrp = False
+        self.flag_clrchange = False
+        return
+
+    def reset(self):
+        # This ensures that the traffic arrays (which size is dynamic)
+        # are all reset as well, so all lat,lon,sdp etc but also objects adsb
+        super().reset()
+        self.clear()
+        self.swreset = True
