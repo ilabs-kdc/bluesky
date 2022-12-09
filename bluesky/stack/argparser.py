@@ -214,7 +214,7 @@ class SIDArg(Parser):
     def parse(self, argstring):
         arg, argstring = re_getarg.match(argstring).groups()
         SID = arg.upper()
-        SIDs = os.listdir(settings.scenario_path_SIDs)
+        SIDs = os.listdir('scenario/' + settings.scenario_path_SIDs)
         if SID + ".scn" in SIDs:
             return SID, argstring
         raise ArgumentError(f'{SID} not found or the wrong folder is defined in the settings.cfg file.')

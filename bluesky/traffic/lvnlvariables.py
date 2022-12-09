@@ -12,8 +12,9 @@ from bluesky.core import Entity, timed_function
 from bluesky.tools import misc, geo
 from bluesky import stack
 
-# from bluesky import settings
+from bluesky import settings
 
+bs.settings.set_variable_defaults(scenario_path_SIDs = 'scenario/LVNL/Routes/SID_NO_SPDCMDS')
 
 """
 Classes
@@ -405,7 +406,7 @@ class LVNLVariables(Entity):
 
         if addwpts:
             acid = bs.traf.id[idx]
-            cmd = 'PCALL LVNL/Routes/SID/'+sid.upper()+' '+acid
+            cmd = 'PCALL '+ settings.scenario_path_SIDS + "/" + sid.upper()+' '+acid
             stack.stack(cmd)
 
     @stack.command(name='SIDTO', brief='SID CALLSIGN SID')
@@ -428,7 +429,7 @@ class LVNLVariables(Entity):
 
         if addwpts:
             acid = bs.traf.id[idx]
-            cmd = 'PCALL LVNL/PLRH/SID/'+sid.upper()+' '+acid
+            cmd = 'PCALL ' + settings.scenario_path_SIDS + "/" + sid.upper()+' '+acid
             stack.stack(cmd)
 
     @stack.command(name='SSRCODE', brief='SSRCODE CALLSIGN SSR')

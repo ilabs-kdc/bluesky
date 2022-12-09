@@ -21,7 +21,7 @@ from bluesky.stack.simstack import pcall
 # from .descent import find_gamma
 from .descentv2 import Descent
 
-
+bs.settings.set_variable_defaults(scenario_path_SIDs = 'LVNL/Routes/SID_NO_SPDCMDS')
 bs.settings.set_variable_defaults(fms_dt=10.5)
 
 
@@ -1291,10 +1291,8 @@ class Autopilot(Entity, replaceable=True):
         self.setdest(acidx = idx, wpname = dest)
 
         self.TOdf[idx], self.TO_slope[idx] = self.EEI.select(id, AC_type, airline = id[:3], dest = dest)
-        print(idx, SID)
         if SID != None:
-            # string = "WILABADA/SID/" + SID
-            string = "LVNL/PLRH/SID/" + SID
+            string = bs.settings.scenario_path_SIDS + "/" + SID
             pcall(string, id)
             bs.traf.lvnlvars.sid[idx] = SID.upper()
             bs.traf.lvnlvars.flighttype[idx] = 'OUTBOUND'
