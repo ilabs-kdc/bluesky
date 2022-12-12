@@ -506,9 +506,10 @@ class LVNLVariables(Entity):
         if grp.upper() not in bs.traf.iTrails.clrs:
             bs.traf.iTrails.clrs[grp.upper()] = (0, 255, 255)
             if 'color' in kwargs:
-                bs.traf.iTrails.clrs[grp.upper()] = (np.random.randint(0, 255), np.random.randint(0, 255), np.random.randint(0, 255))
+                bs.traf.iTrails.clrs[grp.upper()] = kwargs['color']
         if acid in bs.traf.iTrails.setgrp[grp.upper()]:
-            bs.scr.echo('{} is already assigned to group {}'.format(acid, grp.upper()))
+            if grp.upper() is not acid:
+                bs.scr.echo('{} is already assigned to group {}'.format(acid, grp.upper()))
         else:
             bs.traf.iTrails.setgrp[grp.upper()].append(acid)
             if bs.traf.iTrails.swgrp[grp.upper()]:
