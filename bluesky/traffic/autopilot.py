@@ -973,7 +973,7 @@ class Autopilot(Entity, replaceable=True):
 
     def interlatlon(self, lat1, lon1, lat2, lon2):
         bearing, dist = qdrdist(lat1, lon1, lat2, lon2)
-        sep = ceil(dist/1)
+        sep = ceil(dist/5)
         coords = list(zip(np.linspace(lat1, lat2, sep + 1), np.linspace(lon1, lon2, sep + 1)))
         wpqdr = [qdrdist(coords[k][0], coords[k][1], coords[k+1][0], coords[k+1][1]) for k in range(sep)]
         return coords, wpqdr
