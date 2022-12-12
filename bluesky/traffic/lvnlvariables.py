@@ -281,6 +281,10 @@ class LVNLVariables(Entity):
         self.arr[idx] = arr.upper()
         # self.uco[idx] = IP[-11:]
 
+        id = bs.traf.id[idx]
+        bs.traf.lvnlvars.setgrp(idx, 'INBOUND')
+        bs.traf.lvnlvars.setgrp(idx, id, color=(np.random.randint(0, 255), np.random.randint(0, 255), np.random.randint(0, 255)))
+
         if addwpts:
             acid = bs.traf.id[idx]
             # self.uco[idx] = IP[-11:]
@@ -382,6 +386,10 @@ class LVNLVariables(Entity):
         Created by: Bob van Dillen
         Date: 21-12-2021
         """
+
+        id = bs.traf.id[idx]
+        bs.traf.lvnlvars.setgrp(idx, 'INBOUND')
+        bs.traf.lvnlvars.setgrp(idx, id, color=(np.random.randint(0, 255), np.random.randint(0, 255), np.random.randint(0, 255)))
 
         if isinstance(rwy, str):
             self.rwy[idx] = rwy.upper()
