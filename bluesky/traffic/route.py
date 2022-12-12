@@ -517,7 +517,6 @@ class Route(Replaceable):
                 swalt = args[0].upper()=="ALT"
                 swspd = args[0].upper() in ("SPD","SPEED")
                 swat  = args[0].upper() in ("DO","STACK")
-
                 # Use parse from stack.py to interpret alt & speed
 
                 # Edit waypoint altitude constraint
@@ -537,7 +536,11 @@ class Route(Replaceable):
                 # add stack command: args[1] is DO or STACK, args[2:] contains a command
                 elif swat:
                     # Check if first argument is missing aircraft id, if so, use this acid
-
+                    # if args[1].upper() == 'PCALL':
+                    #     cmd = args[1].upper() + " " + args[2].upper() + " " + args[3].upper()
+                    #     stack.stack(cmd)
+                    #     print(cmd)
+                    #     return True
                     # IF command starts with aircraft id, it is not missing
                     cmd = args[1].upper()
                     if not(cmd in bs.traf.id):

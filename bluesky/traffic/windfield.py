@@ -125,7 +125,7 @@ class Windfield():
 
         return idx # return index of added point
 
-    def getnewdata(self, idx, userlat, userlon, useralt = 0.0):
+    def getnewdata(self, userlat, userlon, useralt = 0.0):
         if bs.traf.HighRes == True:
 
             if bs.traf.activate_HR:
