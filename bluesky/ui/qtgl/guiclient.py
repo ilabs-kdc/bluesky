@@ -13,7 +13,7 @@ from bluesky.network.client import Client
 from bluesky.core import Signal
 from bluesky.tools.aero import ft
 from bluesky.tools.files import findfile
-
+import pandas as pd
 
 # TID test
 import bluesky as bs
@@ -56,6 +56,7 @@ class GuiClient(Client):
         self.timer.start(20)
         self.subscribe(b'SIMINFO')
         self.subscribe(b'TRAILS')
+        self.subscribe(b'ITRAILS')
         self.subscribe(b'PLOT' + self.client_id)
         self.subscribe(b'ROUTEDATA' + self.client_id)
 
@@ -90,7 +91,6 @@ class GuiClient(Client):
 
         actdata = self.get_nodedata()
         id_select = console.Console._instance.id_select
-        print('update cmdline id selected:', id_select)
 
         cmdline = id_select.strip() + ' ; '
 
@@ -347,7 +347,11 @@ class GuiClient(Client):
         elif name == b'TRAILS':
             actdata.settrails(**data)
             changed = name.decode('utf8')
-
+        elif name == b'ITRAILS':
+            actdata.settraildata(data[0])
+            actdata.trailinformation = data[1:]
+            actdata.trlreset(data[-1])
+            changed = name.decode('utf8')
         if sender_id == self.act and changed:
             self.actnodedata_changed.emit(sender_id, actdata, changed)
 
@@ -527,6 +531,9 @@ class nodeData:
         # Network route to this node
         self._route = route
 
+        self.itrailstart = False
+        self.trails = []
+
     def setacdata(self, data):
         self.acdata = ACDataEvent(data)
         self.naircraft = len(self.acdata.lat)
@@ -545,6 +552,21 @@ class nodeData:
             self.traillon0.extend(traillon0)
             self.traillat1.extend(traillat1)
             self.traillon1.extend(traillon1)
+
+    def settraildata(self, data):
+        if len(data['callsign']) > 0:
+            if not self.itrailstart:
+                self.trails = pd.DataFrame.from_dict(data)
+                self.itrailstart = True
+            else:
+                self.trails = self.trails.append(pd.DataFrame.from_dict(data), ignore_index=True).sort_values(
+                               ['callsign', 'simt'])
+
+    def trlreset(self, boolean):
+        if boolean:
+            self.trails = []
+            self.itrailstart = False
+
 
     def clear_scen_data(self):
         # Clear all scenario-specific data for sender node

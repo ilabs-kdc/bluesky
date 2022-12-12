@@ -20,8 +20,9 @@ from bluesky.traffic.performance.wilabada.ESTIMATOR import EEI
 from bluesky.stack.simstack import pcall
 # from .descent import find_gamma
 from .descentv2 import Descent
+from bluesky import settings
 
-
+bs.settings.set_variable_defaults(scenario_path_SIDs = 'LVNL/Routes/SID_NO_SPDCMDS')
 bs.settings.set_variable_defaults(fms_dt=10.5)
 
 
@@ -1291,14 +1292,14 @@ class Autopilot(Entity, replaceable=True):
         self.setdest(acidx = idx, wpname = dest)
 
         self.TOdf[idx], self.TO_slope[idx] = self.EEI.select(id, AC_type, airline = id[:3], dest = dest)
-        print(idx, SID)
         if SID != None:
-            # string = "WILABADA/SID/" + SID
-            string = "LVNL/PLRH/SID/" + SID
+            string = settings.scenario_path_SIDs + "/" + SID
             pcall(string, id)
             bs.traf.lvnlvars.sid[idx] = SID.upper()
             bs.traf.lvnlvars.flighttype[idx] = 'OUTBOUND'
             bs.traf.lvnlvars.symbol[idx] = 'TWROUT'
+            bs.traf.lvnlvars.setgrp(idx, 'OUTBOUND')
+            bs.traf.lvnlvars.setgrp(idx, id, color=(np.random.randint(0, 255), np.random.randint(0, 255), np.random.randint(0, 255)))
 
     @stack.command(name='VS')
     def selvspdcmd(self, idx: 'acid', vspd:'vspd'):
