@@ -281,6 +281,10 @@ class LVNLVariables(Entity):
         self.arr[idx] = arr.upper()
         # self.uco[idx] = IP[-11:]
 
+        id = bs.traf.id[idx]
+        bs.traf.lvnlvars.setgrp(idx, 'INBOUND')
+        bs.traf.lvnlvars.setgrp(idx, id, color=(np.random.randint(0, 255), np.random.randint(0, 255), np.random.randint(0, 255)))
+
         if addwpts:
             acid = bs.traf.id[idx]
             # self.uco[idx] = IP[-11:]
@@ -382,6 +386,10 @@ class LVNLVariables(Entity):
         Created by: Bob van Dillen
         Date: 21-12-2021
         """
+
+        id = bs.traf.id[idx]
+        bs.traf.lvnlvars.setgrp(idx, 'INBOUND')
+        bs.traf.lvnlvars.setgrp(idx, id, color=(np.random.randint(0, 255), np.random.randint(0, 255), np.random.randint(0, 255)))
 
         if isinstance(rwy, str):
             self.rwy[idx] = rwy.upper()
@@ -498,9 +506,10 @@ class LVNLVariables(Entity):
         if grp.upper() not in bs.traf.iTrails.clrs:
             bs.traf.iTrails.clrs[grp.upper()] = (0, 255, 255)
             if 'color' in kwargs:
-                bs.traf.iTrails.clrs[grp.upper()] = (np.random.randint(0, 255), np.random.randint(0, 255), np.random.randint(0, 255))
+                bs.traf.iTrails.clrs[grp.upper()] = kwargs['color']
         if acid in bs.traf.iTrails.setgrp[grp.upper()]:
-            bs.scr.echo('{} is already assigned to group {}'.format(acid, grp.upper()))
+            if grp.upper() != acid and acid not in bs.traf.iTrails.setgrp['INBOUND']:
+                bs.scr.echo('{} is already assigned to group {}'.format(acid, grp.upper()))
         else:
             bs.traf.iTrails.setgrp[grp.upper()].append(acid)
             if bs.traf.iTrails.swgrp[grp.upper()]:

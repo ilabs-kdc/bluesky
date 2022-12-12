@@ -1214,92 +1214,56 @@ class Autopilot(Entity, replaceable=True):
                 self.vs[idx] = -999
                 bs.traf.selvs[idx] = -999
 
-    # @stack.command(name='ALT')
-    # def selaltcmd(self, idx: 'acid', alt: 'alt', vspd: 'vspd' = None):
-    #     """ ALT acid, alt, [vspd]
-    #
-    #         Select autopilot altitude command."""
-    #     bs.traf.selalt[idx] = alt
-    #     if bs.traf.swvnav[idx]: self.altdismiss[idx] = True
-    #     if not self.dpswitch[idx]: self.dpswitch[idx] = True
-    #     bs.traf.swvnav[idx] = False
-    #
-    #
-    #     # Check for optional VS argument
-    #     if vspd:
-    #         bs.traf.selvs[idx] = vspd
-    #     else:
-    #         if not isinstance(idx, Collection):
-    #             idx = np.array([idx])
-    #         delalt = alt - bs.traf.alt[idx]
-    #         # Check for VS with opposite sign => use default vs
-    #         # by setting autopilot vs to zero
-    #         oppositevs = np.logical_and(bs.traf.selvs[idx] * delalt < 0., abs(bs.traf.selvs[idx]) > 0.01)
-    #         bs.traf.selvs[idx[oppositevs]] = 0.
-    #
-    # @stack.command(name='FORCEALT')
-    # def selaltcmd(self, idx: 'acid', alt: 'alt', vspd: 'vspd' = None):
-    #     """ ALT acid, alt, [vspd]
-    #
-    #         Select autopilot altitude command."""
-    #     bs.traf.selalt[idx] = alt
-    #     if bs.traf.swvnav[idx]: self.faltdismiss[idx] = True
-    #     if not self.dpswitch[idx]: self.dpswitch[idx] = True
-    #     bs.traf.swvnav[idx] = False
-    #
-    #     # Check for optional VS argument
-    #     if vspd:
-    #         bs.traf.selvs[idx] = vspd
-    #     else:
-    #         if not isinstance(idx, Collection):
-    #             idx = np.array([idx])
-    #         delalt = alt - bs.traf.alt[idx]
-    #         # Check for VS with opposite sign => use default vs
-    #         # by setting autopilot vs to zero
-    #         oppositevs = np.logical_and(bs.traf.selvs[idx] * delalt < 0., abs(bs.traf.selvs[idx]) > 0.01)
-    #         bs.traf.selvs[idx[oppositevs]] = 0.
-    #         if delalt<0:
-    #             self.vs[idx] = -999
-    #             bs.traf.selvs[idx] = -999
-
     @stack.command(name='TO')
     def TOcmd(self, idx: 'acid', SID = None):
         """ TO acid
 
             Select autopilot altitude command."""
-        self.TOsw[idx] = True
-        bs.traf.swvnav[idx] = False
-        id = bs.traf.id[idx]
-        AC_type = bs.traf.type[idx]
 
-        self.TOdf[idx], self.TO_slope[idx] = self.EEI.select(id, AC_type, airline=id[:3])
-        if SID != None:
-            string = "WILABADA/SID/"+SID
-            # string = "LVNL/Routes/SID/"+SID
-            pcall(string, id)
+        if not self.TOsw[idx]:
+            self.TOsw[idx] = True
+            bs.traf.swvnav[idx] = False
+            id = bs.traf.id[idx]
+            AC_type = bs.traf.type[idx]
 
-    @stack.command(name='TOD', annotations = "acid,SID,txt")
-    def TODcmd(self, idx: 'acid', SID: 'SID', dest: 'dest'):
-        """ TO acid
+            self.TOdf[idx], self.TO_slope[idx] = self.EEI.select(id, AC_type, airline=id[:3])
 
-            Select autopilot altitude command."""
-
-        self.TOsw[idx] = True
-        bs.traf.swvnav[idx] = False
-        id = bs.traf.id[idx]
-        AC_type = bs.traf.type[idx]
-
-        self.setdest(acidx = idx, wpname = dest)
-
-        self.TOdf[idx], self.TO_slope[idx] = self.EEI.select(id, AC_type, airline = id[:3], dest = dest)
-        if SID != None:
-            string = settings.scenario_path_SIDs + "/" + SID
-            pcall(string, id)
-            bs.traf.lvnlvars.sid[idx] = SID.upper()
             bs.traf.lvnlvars.flighttype[idx] = 'OUTBOUND'
             bs.traf.lvnlvars.symbol[idx] = 'TWROUT'
             bs.traf.lvnlvars.setgrp(idx, 'OUTBOUND')
             bs.traf.lvnlvars.setgrp(idx, id, color=(np.random.randint(0, 255), np.random.randint(0, 255), np.random.randint(0, 255)))
+
+            if SID != None:
+                string = settings.scenario_path_SIDs + "/" +SID
+                pcall(string, id)
+                bs.traf.lvnlvars.sid[idx] = SID.upper()
+        else:
+            self.TOsw[idx] = False
+
+    @stack.command(name='TOD', annotations = "acid,SID,txt")
+    def TODcmd(self, idx: 'acid', SID: 'SID', dest: 'dest'):
+        """ TOD acid
+
+            Select autopilot altitude command."""
+        if not self.TOsw[idx]:
+            self.TOsw[idx] = True
+            bs.traf.swvnav[idx] = False
+            id = bs.traf.id[idx]
+            AC_type = bs.traf.type[idx]
+
+            self.setdest(acidx = idx, wpname = dest)
+
+            self.TOdf[idx], self.TO_slope[idx] = self.EEI.select(id, AC_type, airline = id[:3], dest = dest)
+            if SID != None:
+                string = settings.scenario_path_SIDs + "/" + SID
+                pcall(string, id)
+                bs.traf.lvnlvars.sid[idx] = SID.upper()
+                bs.traf.lvnlvars.flighttype[idx] = 'OUTBOUND'
+                bs.traf.lvnlvars.symbol[idx] = 'TWROUT'
+                bs.traf.lvnlvars.setgrp(idx, 'OUTBOUND')
+                bs.traf.lvnlvars.setgrp(idx, id, color=(np.random.randint(0, 255), np.random.randint(0, 255), np.random.randint(0, 255)))
+        else:
+            self.TOsw[idx] = False
 
     @stack.command(name='VS')
     def selvspdcmd(self, idx: 'acid', vspd:'vspd'):
