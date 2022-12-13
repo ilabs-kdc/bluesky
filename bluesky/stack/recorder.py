@@ -187,6 +187,8 @@ def savecmd(cmd, line):
 
     # Write in format "HH:MM:SS.hh>
     timtxt = tim2txt(bs.sim.simt - saveict0)
+    if 'WPTARR' in f'{timtxt}>{line}\n':
+        return
     savefile.write(f'{timtxt}>{line}\n')
 
 
