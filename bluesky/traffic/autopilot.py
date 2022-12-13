@@ -114,7 +114,7 @@ class Autopilot(Entity, replaceable=True):
         self.EEI_IAS[-n:] = 0
         self.EEI_ROC[-n:] = 0
 
-        self.dpswitch[-n:] = True
+        self.dpswitch[-n:] = False#True
         self.geodescent[-n:] = False
         self.steepnessv2[-n:] = self.steepness
         self.prevconst[-n:] = False
@@ -1058,7 +1058,7 @@ class Autopilot(Entity, replaceable=True):
 
     def add_decelsegm(self, idx, dsegmi, dist, ds, alt, gammatas, spddismiss, wind, added_dist = 0):
         if dsegmi < len(ds.decel_altspd):
-            if alt > ds.decel_altspd[dsegmi][0] and not spddismiss and (bs.traf.cas[idx]>=ds.decel_altspd[dsegmi][2] or bs.traf.selspd[idx]<3):
+            if alt > ds.decel_altspd[dsegmi][0] and not spddismiss and ( (bs.traf.cas[idx]>=ds.decel_altspd[dsegmi][2]) or bs.traf.selspd[idx]<3):
                 # Should have crossed transition level, and not flying slower than CAS schedule speed
                 d_alt, d_v0, d_v1 = ds.decel_altspd[dsegmi]
                 dsegm_dist, dsegm_alt = ds.decelsegment(idx, d_alt, d_v0, d_v1, gammatas, wind)
@@ -1274,6 +1274,13 @@ class Autopilot(Entity, replaceable=True):
     @stack.command(name='PHASE', annotations='acid,int')
     def selphasecmd(self, idx: 'acid', phase: 'int'):
         bs.traf.selphase[idx] = phase
+
+    #TEMPORARY
+    @stack.command(name='DSND', annotations='acid')
+    def selphasecmd(self, idx: 'acid'):
+        self.prevconst[idx] = False
+        self.descentpath(idx)
+
 
     @stack.command(name='RESUME', annotations='acid')
     def resumecmd(self, idx: 'acid'):
@@ -1509,6 +1516,7 @@ class Autopilot(Entity, replaceable=True):
                 # All aircraft are targeted
                 bs.traf.swvnav    = np.array(bs.traf.ntraf * [flag])
                 bs.traf.swvnavspd = np.array(bs.traf.ntraf * [flag])
+                self.dpswitch = np.array(bs.traf.ntraf * [flag])
             else:
                 # Prepare for the loop
                 idx = np.array([idx])
@@ -1530,6 +1538,7 @@ class Autopilot(Entity, replaceable=True):
                 if route.nwp > 0:
                     bs.traf.swvnav[i]    = True
                     bs.traf.swvnavspd[i] = True
+                    self.dpswitch[i] = True
                     self.route[i].calcfp()
                     actwpidx = self.route[i].iactwp
                     self.ComputeVNAV(i,self.route[i].wptoalt[actwpidx],self.route[i].wpxtoalt[actwpidx],\

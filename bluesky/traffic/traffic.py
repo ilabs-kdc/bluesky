@@ -328,7 +328,7 @@ class Traffic(Entity):
             self.windeast[-n:]  = 0.0
 
         # Traffic autopilot settings
-        self.selspd[-n:] = self.cas[-n:]
+        self.selspd[-n:] = acspd # Removes problem with constant mach speeds self.cas[-n:]
         self.aptas[-n:]  = self.tas[-n:]
         self.selalt[-n:] = self.alt[-n:]
 
