@@ -49,12 +49,16 @@ class Descent():
 
         self.decel_altspd = []
 
-        for index, i in enumerate(self.decel_alts):
-            if i > altitude: continue
-            if self.vsegm[index + 1] <= cas:
-                self.decel_altspd.append( (i, self.vsegm[index], self.vsegm[index + 1]) )
-            elif self.vsegm[index + 1] > cas and self.vsegm[index]< cas:
-                self.decel_altspd.append((i, self.vsegm[index], cas))
+
+        if altitude > self.decel_alts[-1]:
+            self.decel_altspd = [(i, self.vsegm[index], self.vsegm[index + 1]) for index, i in enumerate(self.decel_alts)]
+        else:
+            for index, i in enumerate(self.decel_alts):
+                if i > altitude: continue
+                if self.vsegm[index + 1] <= cas:
+                    self.decel_altspd.append( (i, self.vsegm[index], self.vsegm[index + 1]) )
+                elif self.vsegm[index + 1] > cas and self.vsegm[index]< cas:
+                    self.decel_altspd.append((i, self.vsegm[index], cas))
 
 
         self.added_alt = 0

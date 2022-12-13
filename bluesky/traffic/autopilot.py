@@ -784,7 +784,7 @@ class Autopilot(Entity, replaceable=True):
 
 
         """Aircraft find top of descent distance to next ordinary waypoint"""
-        # print('current')
+        # print(bs.traf.id[idx], 'current going to', altlast/0.3048)
 
         # Skip calculations if continuous descent is possible
         if self.prevconst[idx]:
@@ -888,8 +888,6 @@ class Autopilot(Entity, replaceable=True):
     def descentaltitude(self, idx, altlast, ds, spddismiss, wpdist, qdrdist, latlon):
         # calculate altitude reached within given distance using nominal descent rates (gammaTAS)
 
-        # print('Altitude from:', altlast/0.3048, wpdist/1852)
-
 
         dsegmi = 0  # Index of decel. segment altitudes
 
@@ -936,7 +934,6 @@ class Autopilot(Entity, replaceable=True):
                 # dsegmi, dist = self.add_decelsegm(idx, dsegmi, dist, ds, alt, gammatas, spddismiss, windbearing)
                 # if dist > wpdist: return alt + abs(ds.added_alt), (dist-wpdist), -abs(ds.added_alt)
 
-                # print('return 1', wpdist/1852, dist/1852, add_dist/1852, add_alt/0.3048, alt/0.3048)
                 return alt, 0, 0
 
             dist += add_dist
@@ -1061,7 +1058,7 @@ class Autopilot(Entity, replaceable=True):
 
     def add_decelsegm(self, idx, dsegmi, dist, ds, alt, gammatas, spddismiss, wind, added_dist = 0):
         if dsegmi < len(ds.decel_altspd):
-            if alt > ds.decel_altspd[dsegmi][0] and not spddismiss and vmach2cas(bs.traf.M[idx], bs.traf.alt[idx])>=ds.decel_altspd[dsegmi][2]:
+            if alt > ds.decel_altspd[dsegmi][0] and not spddismiss and (bs.traf.cas[idx]>=ds.decel_altspd[dsegmi][2] or bs.traf.selspd[idx]<3):
                 # Should have crossed transition level, and not flying slower than CAS schedule speed
                 d_alt, d_v0, d_v1 = ds.decel_altspd[dsegmi]
                 dsegm_dist, dsegm_alt = ds.decelsegment(idx, d_alt, d_v0, d_v1, gammatas, wind)
