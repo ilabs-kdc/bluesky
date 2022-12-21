@@ -1232,7 +1232,6 @@ class Autopilot(Entity, replaceable=True):
             bs.traf.lvnlvars.flighttype[idx] = 'OUTBOUND'
             bs.traf.lvnlvars.symbol[idx] = 'TWROUT'
             bs.traf.lvnlvars.setgrp(idx, 'OUTBOUND')
-            bs.traf.lvnlvars.setgrp(idx, id, color=(np.random.randint(0, 255), np.random.randint(0, 255), np.random.randint(0, 255)))
 
             if SID != None:
                 string = settings.scenario_path_SIDs + "/" +SID
@@ -1262,7 +1261,6 @@ class Autopilot(Entity, replaceable=True):
                 bs.traf.lvnlvars.flighttype[idx] = 'OUTBOUND'
                 bs.traf.lvnlvars.symbol[idx] = 'TWROUT'
                 bs.traf.lvnlvars.setgrp(idx, 'OUTBOUND')
-                bs.traf.lvnlvars.setgrp(idx, id, color=(np.random.randint(0, 255), np.random.randint(0, 255), np.random.randint(0, 255)))
         else:
             self.TOsw[idx] = False
 

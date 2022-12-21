@@ -283,7 +283,6 @@ class LVNLVariables(Entity):
 
         id = bs.traf.id[idx]
         bs.traf.lvnlvars.setgrp(idx, 'INBOUND')
-        bs.traf.lvnlvars.setgrp(idx, id, color=(np.random.randint(0, 255), np.random.randint(0, 255), np.random.randint(0, 255)))
 
         if addwpts:
             acid = bs.traf.id[idx]
@@ -389,7 +388,6 @@ class LVNLVariables(Entity):
 
         id = bs.traf.id[idx]
         bs.traf.lvnlvars.setgrp(idx, 'INBOUND')
-        bs.traf.lvnlvars.setgrp(idx, id, color=(np.random.randint(0, 255), np.random.randint(0, 255), np.random.randint(0, 255)))
 
         if isinstance(rwy, str):
             self.rwy[idx] = rwy.upper()
@@ -588,6 +586,9 @@ class LVNLVariables(Entity):
 
         if grp.upper() not in bs.traf.iTrails.setgrp:
             bs.traf.iTrails.setgrp[grp.upper()] = []
+            if grp.upper() in bs.traf.id:
+                bs.traf.iTrails.setgrp[grp.upper()].append(grp.upper())
+                bs.traf.iTrails.clrs[grp.upper()] = (np.random.randint(0, 255), np.random.randint(0, 255), 255)
         if grp.upper() not in bs.traf.iTrails.clrs:
             bs.traf.iTrails.clrs[grp.upper()] = 'DEFAULT'
         if grp.upper() in bs.traf.iTrails.swgrp:
