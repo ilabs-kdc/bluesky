@@ -18,8 +18,12 @@ class EEI:
         Created by: Lars Dijkstra
         Date: 14-10-2022
         '''
+        file = 'WILABADA_TAKE_OFF_PERFORMANCE.csv'
 
-        file = os.path.join(settings.perf_path_WILABADA, 'AC_DATA_S3_FINAL_MT.csv')
+        try:
+            file = os.path.join(settings.perf_path_WILABADA, file)
+        except:
+            raise FileNotFoundError("Error, could not find file {}.".format(file))
 
         data = pd.read_csv(file, sep='\t')
         data = data.groupby(["data_type"])
@@ -52,9 +56,9 @@ class EEI:
         # self.AC_types = self.TT['ac_type'].unique()
         self.AC_types = self.TAD['ac_type'].unique()
 
-        self.airports = pd.read_csv(os.path.join(settings.perf_path_WILABADA, 'airports.csv'), sep=',', usecols = [1, 8])
+        self.airports = pd.read_csv(os.path.join(settings.perf_path_WILABADA, 'WILABADA_AIRPORTS.csv'), sep=',', usecols = [1, 8])
 
-        self.continents = pd.read_csv(os.path.join(settings.perf_path_WILABADA, 'countries.txt'), sep ='\t')
+        self.continents = pd.read_csv(os.path.join(settings.perf_path_WILABADA, 'WILABADA_COUNTRIES.txt'), sep ='\t')
         self.continents["two_code"] = self.continents["two_code"].apply(lambda x: x if not pd.isnull(x) else "NA")
 
         self.kind = "linear"
