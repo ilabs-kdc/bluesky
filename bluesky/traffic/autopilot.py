@@ -85,6 +85,7 @@ class Autopilot(Entity, replaceable=True):
             self.TO_slope = np.array([])
             self.EEI_IAS = np.array([])
             self.EEI_ROC = np.array([])
+            self.setspd = np.array([])
 
             # Descent path switch
             self.dpswitch = np.array([])
@@ -113,6 +114,7 @@ class Autopilot(Entity, replaceable=True):
         self.TO_slope[-n:] = False
         self.EEI_IAS[-n:] = 0
         self.EEI_ROC[-n:] = 0
+        self.setspd[-n:] = 0
 
         self.dpswitch[-n:] = False#True
         self.geodescent[-n:] = False
@@ -549,6 +551,8 @@ class Autopilot(Entity, replaceable=True):
         self.ESTspeeds()
         spdcon = np.logical_not(bs.traf.actwp.nextspd <= 0)
         self.EEI_IAS = np.where(spdcon, np.minimum(bs.traf.actwp.nextspd, self.EEI_IAS), self.EEI_IAS)
+        spdcon = np.logical_not(self.setspd <= 0)
+        self.EEI_IAS = np.where(spdcon, np.minimum(self.setspd, self.EEI_IAS), self.EEI_IAS)
         bs.traf.selspd = np.where(self.TOsw, self.EEI_IAS, bs.traf.selspd)
 
         sw = np.logical_not(bs.traf.cas < bs.traf.perf.vmto*0.97)
@@ -1228,7 +1232,6 @@ class Autopilot(Entity, replaceable=True):
             bs.traf.lvnlvars.flighttype[idx] = 'OUTBOUND'
             bs.traf.lvnlvars.symbol[idx] = 'TWROUT'
             bs.traf.lvnlvars.setgrp(idx, 'OUTBOUND')
-            bs.traf.lvnlvars.setgrp(idx, id, color=(np.random.randint(0, 255), np.random.randint(0, 255), np.random.randint(0, 255)))
 
             if SID != None:
                 string = settings.scenario_path_SIDs + "/" +SID
@@ -1258,7 +1261,6 @@ class Autopilot(Entity, replaceable=True):
                 bs.traf.lvnlvars.flighttype[idx] = 'OUTBOUND'
                 bs.traf.lvnlvars.symbol[idx] = 'TWROUT'
                 bs.traf.lvnlvars.setgrp(idx, 'OUTBOUND')
-                bs.traf.lvnlvars.setgrp(idx, id, color=(np.random.randint(0, 255), np.random.randint(0, 255), np.random.randint(0, 255)))
         else:
             self.TOsw[idx] = False
 
@@ -1395,11 +1397,11 @@ class Autopilot(Entity, replaceable=True):
         # we will maintain CAS or Mach when altitude changes
         # We will convert values when needed
         bs.traf.selspd[idx] = casmach
-
+        self.setspd[idx] = casmach
         # Used to be: Switch off VNAV: SPD command overrides
         if bs.traf.swvnavspd[idx]: self.spddismiss[idx] = True  # to later turn back on swvnavspd
         bs.traf.swvnavspd[idx]   = False
-        if not self.dpswitch[idx]:
+        if not self.dpswitch[idx] and not self.TOsw:
             self.descentpath(idx)   # recalculate descentpath if it has been calculated already
 
         return True
@@ -1532,7 +1534,8 @@ class Autopilot(Entity, replaceable=True):
                 # All aircraft are targeted
                 bs.traf.swvnav    = np.array(bs.traf.ntraf * [flag])
                 bs.traf.swvnavspd = np.array(bs.traf.ntraf * [flag])
-                self.dpswitch = np.array(bs.traf.ntraf * [flag])
+                if not self.TOsw:
+                    self.dpswitch = np.array(bs.traf.ntraf * [flag])
             else:
                 # Prepare for the loop
                 idx = np.array([idx])
