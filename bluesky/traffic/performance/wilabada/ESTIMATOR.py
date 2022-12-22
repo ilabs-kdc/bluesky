@@ -20,7 +20,6 @@ class EEI:
         '''
 
         file = os.path.join(settings.perf_path_WILABADA, 'AC_DATA_S3_FINAL_MT.csv')
-        # file = r'C:\Users\LVNL_ILAB3\PycharmProjects\bluesky\bluesky\traffic\performance\wilabada\Compare\TAKE_OFF_S3_FL410_ONDERZOEKWEGGEGOOID.csv'
 
         data = pd.read_csv(file, sep='\t')
         data = data.groupby(["data_type"])
