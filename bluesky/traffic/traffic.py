@@ -95,6 +95,10 @@ class Traffic(Entity):
         self.HR_Loaded = False
         self.activate_HR = False
 
+        self.meterpoints = np.array([])
+        self.metering = False
+
+
         self.id_select = ''  # aircraft that previously received a command
 
         self.trafdatafeed = TrafficDataFeed()
@@ -194,7 +198,7 @@ class Traffic(Entity):
             self.thrust = np.array([])
             self.drag = np.array([])
             self.trkmiles = np.array([])
-            self.pointreached = np.array([])
+            self.meterreached = np.array([])
 
         # Default bank angles per flight phase
         self.bphase = np.deg2rad(np.array([15, 25, 25, 25, 15, 45]))
@@ -279,7 +283,7 @@ class Traffic(Entity):
         self.alt[-n:]  = acalt
 
         self.trkmiles[-n:] = 0
-        self.pointreached[-n:] = 0
+        self.meterreached[-n:] = 0
 
         if isinstance(achdg, str):
             if achdg.upper() in bs.navdb.wpid:
@@ -472,17 +476,6 @@ class Traffic(Entity):
             self.perf.limits(self.aporasas.tas, self.aporasas.vs,
                              self.aporasas.alt, self.ax)
 
-        # for aircraft in range(len(bs.traf.alt)):
-        #     print(aircraft)
-        #     wpname_temp = bs.traf.ap.route[aircraft].wpname[bs.traf.ap.route[aircraft].iactwp]
-        #
-        #     if wpname_temp == "MRG8C" or wpname_temp == "RIVMW" or wpname_temp == "SUGOL":
-        #         wpname_temp = 1
-        #     else:
-        #         wpname_temp = 0
-        #
-        #     self.pointreached[aircraft] = wpname_temp
-
         #---------- Kinematics --------------------------------
         self.update_airspeed()
         self.update_groundspeed()
@@ -501,6 +494,7 @@ class Traffic(Entity):
         self.trails.update()
 
         self.iTrails.update()
+        self.metermethod()
 
     @timed_function(name='asas', dt=bs.settings.asas_dt, manual=True)
     def update_asas(self):
@@ -584,6 +578,21 @@ class Traffic(Entity):
         # Update distflown only for simulated aircraft
         itrafsim = np.setdiff1d(np.arange(0, self.ntraf), get_indices(self.id, bs.traf.trafdatafeed.datafeedids))
         self.distflown[itrafsim] += self.gs[itrafsim] * bs.sim.simdt
+
+    def metermethod(self):
+        if self.metering:
+
+            for aircraft in range(len(self.alt)):
+                route =  bs.traf.ap.route[aircraft]
+                if len(route.wpname)<1: continue
+
+                actwp =route.wpname[route.iactwp]
+                if actwp in self.meterpoints:
+                    actwp = 1
+                else:
+                    actwp = 0
+
+                self.meterreached[aircraft] = actwp
 
     def id2idx(self, acid):
         """Find index of aircraft id"""

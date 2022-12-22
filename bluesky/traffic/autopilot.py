@@ -1062,7 +1062,7 @@ class Autopilot(Entity, replaceable=True):
 
     def add_decelsegm(self, idx, dsegmi, dist, ds, alt, gammatas, spddismiss, wind, added_dist = 0):
         if dsegmi < len(ds.decel_altspd):
-            if alt > ds.decel_altspd[dsegmi][0] and not spddismiss and ( (bs.traf.cas[idx]>=ds.decel_altspd[dsegmi][2]) or bs.traf.selspd[idx]<3):
+            if alt > ds.decel_altspd[dsegmi][0] and not spddismiss and ( (bs.traf.cas[idx]*1.01>=ds.decel_altspd[dsegmi][2]) or bs.traf.selspd[idx]<3):
                 # Should have crossed transition level, and not flying slower than CAS schedule speed
                 d_alt, d_v0, d_v1 = ds.decel_altspd[dsegmi]
                 dsegm_dist, dsegm_alt = ds.decelsegment(idx, d_alt, d_v0, d_v1, gammatas, wind)
@@ -1282,6 +1282,22 @@ class Autopilot(Entity, replaceable=True):
     def selphasecmd(self, idx: 'acid'):
         self.prevconst[idx] = False
         self.descentpath(idx)
+
+    @stack.command(name='METERING', annotations='wpt')
+    def addmetering(self, wpname: 'wpt'):
+
+        if not bs.traf.metering:
+            bs.traf.metering = True
+
+            cmd1 = 'CRELOG meterfile 1'
+            cmd2 = 'meterfile add traf.id, traf.meterreached'
+            cmd3 = 'meterfile on'
+            stack.stack(cmd1)
+            stack.stack(cmd2)
+            stack.stack(cmd3)
+
+        if wpname not in bs.traf.meterpoints:
+            bs.traf.meterpoints = np.append(bs.traf.meterpoints, wpname)
 
 
     @stack.command(name='RESUME', annotations='acid')
