@@ -94,6 +94,10 @@ ssd.obj
 
 # LVNL
 
+# GUI
+extra/LVNLGui/*
+!/extra/LVNLGui/README.md
+
 # Scenarios
 scenario/LVNL/*
 !/scenario/LVNL/README.md
