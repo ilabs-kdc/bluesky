@@ -299,8 +299,12 @@ class Traffic(Entity):
 
                 achdg = angleFromCoordinate(templat_ac, templon_ac, templat_hdg, templon_hdg)
 
-            else:
+            elif achdg.isnumeric():
                 achdg = float(achdg)
+
+            else:
+                bs.scr.echo("CRE: HDG WPT Not found, 360 degrees set as default")
+                achdg = 0.
         elif isinstance(achdg, (int, float)):
             achdg = np.array(n * [achdg])
 
