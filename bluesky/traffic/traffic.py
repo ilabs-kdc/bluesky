@@ -190,6 +190,8 @@ class Traffic(Entity):
             self.eps    = np.array([])  # Small nonzero numbers
             self.work   = np.array([])  # Work done throughout the flight
 
+            self.trkmiles = np.array([])
+
             # LVNL Variables
             self.lvnlvars = LVNLVariables()  # Variables used by LVNL
 
@@ -284,6 +286,8 @@ class Traffic(Entity):
 
         self.trkmiles[-n:] = 0
         self.meterreached[-n:] = 0
+
+        self.trkmiles[-n:] = 0
 
         if isinstance(achdg, str):
             if achdg.upper() in bs.navdb.wpid:
@@ -568,6 +572,8 @@ class Traffic(Entity):
         self.trkmiles += self.gs * bs.sim.simdt
 
         self.work += (self.perf.thrust * bs.sim.simdt * np.sqrt(self.gs * self.gs + self.vs * self.vs))
+
+        self.trkmiles += self.gs * bs.sim.simdt
 
     def update_pos(self):
         # Update position
