@@ -3,7 +3,7 @@ import scipy.interpolate as sc
 import numpy as np
 import os
 from bluesky import settings
-
+#
 settings.set_variable_defaults(perf_path_WILABADA = 'data/performance/WILABADA')
 
 class EEI:
