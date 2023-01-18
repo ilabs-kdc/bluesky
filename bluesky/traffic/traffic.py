@@ -190,6 +190,8 @@ class Traffic(Entity):
             self.eps    = np.array([])  # Small nonzero numbers
             self.work   = np.array([])  # Work done throughout the flight
 
+            self.trkmiles = np.array([])
+
             # LVNL Variables
             self.lvnlvars = LVNLVariables()  # Variables used by LVNL
 
@@ -285,6 +287,8 @@ class Traffic(Entity):
         self.trkmiles[-n:] = 0
         self.meterreached[-n:] = 0
 
+        self.trkmiles[-n:] = 0
+
         if isinstance(achdg, str):
             if achdg.upper() in bs.navdb.wpid:
                 index = bs.navdb.wpid.index(achdg.upper())
@@ -295,8 +299,12 @@ class Traffic(Entity):
 
                 achdg = angleFromCoordinate(templat_ac, templon_ac, templat_hdg, templon_hdg)
 
-            else:
+            elif achdg.isnumeric():
                 achdg = float(achdg)
+
+            else:
+                bs.scr.echo("CRE: HDG WPT Not found, 360 degrees set as default")
+                achdg = 0.
         elif isinstance(achdg, (int, float)):
             achdg = np.array(n * [achdg])
 
@@ -568,6 +576,8 @@ class Traffic(Entity):
         self.trkmiles += self.gs * bs.sim.simdt
 
         self.work += (self.perf.thrust * bs.sim.simdt * np.sqrt(self.gs * self.gs + self.vs * self.vs))
+
+        self.trkmiles += self.gs * bs.sim.simdt
 
     def update_pos(self):
         # Update position

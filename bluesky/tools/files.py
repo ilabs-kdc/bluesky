@@ -31,7 +31,7 @@ def findfile(filename, directory):
 
         # Loop through files
         for f in files:
-            if f == filename:
+            if f.upper() == filename.upper():
                 return os.path.join(root, f)
 
         # Loop through directories

@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+	<base>
+		<button id="a1" text="UCO" function0="setcmd('UCO')"/>
+		<button id="a2" text="HDG" function0="setcmd('HDG')"/>
+		<button id="a3" text="EFL" function0="setcmd('ALT')"/>
+		<button id="a4" text="SPD" function0="setcmd('SPD')"/>
+		<button id="b1" text="WPTS" function0="change_tid('wpts')"/>
+		<button id="b2" text="MAPS" function0="change_tid('maps')"/>
+		<button id="b3" text="" function0="None"/>
+		<button id="b4" text="" function0="None"/>
+		<button id="c1" text="7" function0="addchar('7')"/>
+		<button id="c2" text="4" function0="addchar('4')"/>
+		<button id="c3" text="1" function0="addchar('1')"/>
+		<button id="c4" text="0" function0="addchar('0')"/>
+		<button id="d1" text="8" function0="addchar('8')"/>
+		<button id="d2" text="5" function0="addchar('5')"/>
+		<button id="d3" text="2" function0="addchar('2')"/>
+		<button id="d4" text="SPACE" function0="addchar(' ')"/>
+		<button id="e1" text="9" function0="addchar('9')"/>
+		<button id="e2" text="6" function0="addchar('6')"/>
+		<button id="e3" text="3" function0="addchar('3')"/>
+		<button id="e4" text="FL" function0="addchar('FL')"/>
+		<button id="f1" text="COR" function0="cor()"/>
+		<button id="f2" text="CLR" function0="clr()"/>
+		<button id="f3" text="" function0="None"/>
+		<button id="f4" text="EXQ" function0="exq()"/>
+	</base>
+	<wpts>
+		<button id="a1" text="RIVER" function0="setarg('RIVER', 1)" function1="change_tid('base')"/>
+		<button id="a2" text="" function0="None"/>
+		<button id="a3" text="" function0="None"/>
+		<button id="a4" text="" function0="None"/>
+		<button id="b1" text="SUGOL" function0="setarg('SUGOL', 1)" function1="change_tid('base')"/>
+		<button id="b2" text="" function0="None"/>
+		<button id="b3" text="" function0="None"/>
+		<button id="b4" text="" function0="None"/>
+		<button id="c1" text="ARTIP" function0="setarg('ARTIP', 1)" function1="change_tid('base')"/>
+		<button id="c2" text="" function0="None"/>
+		<button id="c3" text="" function0="None"/>
+		<button id="c4" text="" function0="None"/>
+		<button id="d1" text="" function0="None"/>
+		<button id="d2" text="" function0="None"/>
+		<button id="d3" text="" function0="None"/>
+		<button id="d4" text="" function0="None"/>
+		<button id="e1" text="" function0="None"/>
+		<button id="e2" text="" function0="None"/>
+		<button id="e3" text="" function0="None"/>
+		<button id="e4" text="" function0="None"/>
+		<button id="f1" text="BACK" function0="change_tid('base')"/>
+		<button id="f2" text="" function0="None"/>
+		<button id="f3" text="" function0="None"/>
+		<button id="f4" text="" function0="None"/>
+	</wpts>
+	<maps>
+		<button id="a1" text="FIR" function0="exqcmd('PCALL Sectors/NL/fir')" function1="change_tid('base')"/>
+		<button id="a2" text="CTA" function0="exqcmd('PCALL Sectors/NL/cta')" function1="change_tid('base')"/>
+		<button id="a3" text="TMA" function0="exqcmd('PCALL Sectors/NL/tma')" function1="change_tid('base')"/>
+		<button id="a4" text="" function0="None"/>
+		<button id="b1" text="" function0="None"/>
+		<button id="b2" text="" function0="None"/>
+		<button id="b3" text="" function0="None"/>
+		<button id="b4" text="" function0="None"/>
+		<button id="c1" text="" function0="None"/>
+		<button id="c2" text="" function0="None"/>
+		<button id="c3" text="" function0="None"/>
+		<button id="c4" text="" function0="None"/>
+		<button id="d1" text="" function0="None"/>
+		<button id="d2" text="" function0="None"/>
+		<button id="d3" text="" function0="None"/>
+		<button id="d4" text="" function0="None"/>
+		<button id="e1" text="" function0="None"/>
+		<button id="e2" text="" function0="None"/>
+		<button id="e3" text="" function0="None"/>
+		<button id="e4" text="" function0="None"/>
+		<button id="f1" text="BACK" function0="change_tid('base')"/>
+		<button id="f2" text="" function0="None"/>
+		<button id="f3" text="" function0="None"/>
+		<button id="f4" text="" function0="None"/>
+	</maps>
+	<blank>
+		<button id="a1" text="" function0="None"/>
+		<button id="a2" text="" function0="None"/>
+		<button id="a3" text="" function0="None"/>
+		<button id="a4" text="" function0="None"/>
+		<button id="b1" text="" function0="None"/>
+		<button id="b2" text="" function0="None"/>
+		<button id="b3" text="" function0="None"/>
+		<button id="b4" text="" function0="None"/>
+		<button id="c1" text="" function0="None"/>
+		<button id="c2" text="" function0="None"/>
+		<button id="c3" text="" function0="None"/>
+		<button id="c4" text="" function0="None"/>
+		<button id="d1" text="" function0="None"/>
+		<button id="d2" text="" function0="None"/>
+		<button id="d3" text="" function0="None"/>
+		<button id="d4" text="" function0="None"/>
+		<button id="e1" text="" function0="None"/>
+		<button id="e2" text="" function0="None"/>
+		<button id="e3" text="" function0="None"/>
+		<button id="e4" text="" function0="None"/>
+		<button id="f1" text="" function0="None"/>
+		<button id="f2" text="" function0="None"/>
+		<button id="f3" text="" function0="None"/>
+		<button id="f4" text="" function0="None"/>
+	</blank>
+</root>
