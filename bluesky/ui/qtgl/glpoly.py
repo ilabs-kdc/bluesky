@@ -162,7 +162,8 @@ class Poly(glh.RenderObject, layer=-20):
 
             # Points (set vertex is screen size)
             self.shaderset.set_vertex_scale_type(self.shaderset.VERTEX_IS_SCREEN)
-            self.allpoints.draw(n_instances=len(actdata.points))
+            if len(actdata.points) != 0:
+                self.allpoints.draw(n_instances=len(actdata.points))
 
             # Draw fills
             if actdata.show_poly > 1:
