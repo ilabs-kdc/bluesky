@@ -372,7 +372,8 @@ class ScreenIO:
         self.prevcount = self.samplecount
 
     def send_trails(self):
-        # Full send, only new line segments to be added
+        # Full send, only new line segments to be added. This streams the information from the INDI_TRAILS() class to
+        # the client side. All events are also forwarded in one tuple.
         if bs.traf.iTrails.active:
             bs.net.send_stream(b'ITRAILS', (bs.traf.iTrails.trail_dict, bs.traf.iTrails.grpchange, bs.traf.iTrails.setgrp, bs.traf.iTrails.flag_swgrp, bs.traf.iTrails.swgrp, bs.traf.iTrails.flag_clrchange, bs.traf.iTrails.clrs, bs.traf.iTrails.time, bs.traf.iTrails.swreset))
             if bs.traf.iTrails.change:
@@ -386,7 +387,6 @@ class ScreenIO:
             if bs.traf.iTrails.swreset:
                 bs.traf.iTrails.swreset = False
             bs.traf.iTrails.clearnew()
-
 
         # Trails, send only new line segments to be added
         if bs.traf.trails.active and len(bs.traf.trails.newlat0) > 0:

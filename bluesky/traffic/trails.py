@@ -232,33 +232,50 @@ class Trails(TrafficArrays):
         self.active = False
 
 class INDI_Trails(TrafficArrays):
-    """
-    Traffic trails class definition    : Data for trails
+    '''
+    Definition: class for the improved trails. All Pygame elements have been removed.
 
     Methods:
-        Trails()            :  constructor
+        update():   update trail data
+        clearnew(): After data has been sent, this function clears all collected data and new data will be stored after-
+                    wards. Please note that the trail data is stored on the client side, and that this class just serves
+                    as a collector. Therefore, not all trail data is accessible in this class, only the data that has
+                    been collected in the past X seconds;
+        clear():    Clear all data, foreground and background;
+        reset():    Reset class
 
-    Members: see create
-
-    Created by  : Lars Dijkstra
-    """
+    Created by: Lars Dijkstra
+    Date: Somewhere end November 2022
+    '''
 
     def __init__(self, dttrail=10.):
         super().__init__()
+
+        # Whether trails are on or off. When trails are off less computations are required (improving fastforward
+        # capability).
         self.active = True
-        self.dt = dttrail    # Resolution of trail pieces in time
 
+        # Resolution of trail pieces in time
+        self.dt = dttrail
+
+        # Dictionary that will contain all (defined) groups and their members.
         self.setgrp = {}
-        self.clrs = {'INBOUND': (0,255,255), 'OUTBOUND': (255,165,0)}
-        self.grpchange = False
-        self.change = False
-        self.time = 0
 
+        # Dictionary that will contain all (defined) groups and whether they should be displayed or not.
         self.swgrp = {}
+
+        # Create groups inbound and outbound, which are cyan and orange respectively.
+        self.clrs = {'INBOUND': (0,255,255), 'OUTBOUND': (255,165,0)}
+
+        # Variables which indicate a change in element X. When True, the change will be incorporated on the client side.
+        self.grpchange = False
         self.flag_swgrp = False
         self.flag_clrchange = False
-
+        self.change = False
         self.swreset = False
+
+        # Simtime from which trails are shown is 0 [s].
+        self.time = 0
 
         with self.settrafarrays():
             self.lastlat = np.array([])
@@ -275,11 +292,13 @@ class INDI_Trails(TrafficArrays):
         self.lastlat[-1] = bs.traf.lat[-1]
         self.lastlon[-1] = bs.traf.lon[-1]
 
+    # This became a timed function in order to decrease the computations required.
     @timed_function(dt=1, manual=True)
     def update(self):
-        self.acid    = bs.traf.id
-
         """Add linepieces for trails based on traffic data"""
+
+        # Obtain callsigns of all aircraft agents
+        self.acid    = bs.traf.id
 
         # Check for update
         delta = bs.sim.simt - self.lasttim

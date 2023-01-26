@@ -3,17 +3,18 @@ import scipy.interpolate as sc
 import numpy as np
 import os
 from bluesky import settings
-#
 settings.set_variable_defaults(perf_path_WILABADA = 'data/performance/WILABADA')
 
 class EEI:
     def __init__(self):
         '''
-        Definition: (Purpose of the class)
+        Definition: Return data-set of highest degree of accuracy, and return elements of this data to the Traffic
+                    object;
         Methods:
-            method_name_1(): (Purpose of method 1)
-            method_name_2(): (Purpose of method 2)
-            ...
+            select(): Given inputs of type, airline and/or destination, return data-set with highest degree of accuracy;
+            TXXf(): Subfunction of select(), where the data-set is obtained from the data-set and interpolated;
+            IAS_ROC(): Function to return IAS/CAS and ROC to the Traffic object;
+            values(): Subfunction of IAS_ROC(), which computes the IAS/CAS and ROC for every aircraft agent;
 
         Created by: Lars Dijkstra
         Date: 14-10-2022
@@ -25,8 +26,13 @@ class EEI:
         except:
             raise FileNotFoundError("Error, could not find file {}.".format(file))
 
+        # Read file containing all datasets
         data = pd.read_csv(file, sep='\t')
+
+        # Group by defined degrees of accuracy
         data = data.groupby(["data_type"])
+
+        # Store all degrees of accuracy in data types in different variables
         self.TAD = data.get_group("TAD").reset_index(drop=True)
         self.TADL = data.get_group("TADL").reset_index(drop=True)
         self.TADC = data.get_group("TADC").reset_index(drop=True)
@@ -36,6 +42,7 @@ class EEI:
         self.TCON = data.get_group("TCON").reset_index(drop=True)
         self.TT = data.get_group("TT").reset_index(drop=True)
 
+        # Group dataframes by their respective parameters
         self.TADG = self.TAD.groupby(["ac_type", "airline", "dest"])
         self.TADLG = self.TADL.groupby(["ac_type", "airline", "country"])
         self.TADCG = self.TADC.groupby(["ac_type", "airline", "continent"])
@@ -45,27 +52,48 @@ class EEI:
         self.TCONG = self.TCON.groupby(["ac_type", "continent"])
         self.TTG = self.TT.groupby(["ac_type"])
 
+        # Obtain the keys from the grouped dataframes. E.g. for type, airline and destination this could be (A320, EZY,
+        # EGGW)
         self.ac_airline_dest = self.TADG.groups.keys()
         self.ac_airline_country = self.TADLG.groups.keys()
-        self.ac_airline = self.TAG.groups.keys()
         self.ac_airline_continent = self.TADCG.groups.keys()
+        self.ac_airline = self.TAG.groups.keys()
         self.ac_dest = self.TDG.groups.keys()
         self.ac_country = self.TCOUG.groups.keys()
         self.ac_continent = self.TCONG.groups.keys()
-
-        # self.AC_types = self.TT['ac_type'].unique()
         self.AC_types = self.TAD['ac_type'].unique()
 
+        # We require the location of the airports to find the respective countries they are located in.
         self.airports = pd.read_csv(os.path.join(settings.perf_path_WILABADA, 'WILABADA_AIRPORTS.csv'), sep=',', usecols = [1, 8])
 
+        # We require to know which countries are located in which continent
         self.continents = pd.read_csv(os.path.join(settings.perf_path_WILABADA, 'WILABADA_COUNTRIES.txt'), sep ='\t')
         self.continents["two_code"] = self.continents["two_code"].apply(lambda x: x if not pd.isnull(x) else "NA")
 
+        # Type of interpolation
         self.kind = "linear"
+
+        # Constants
         self.kts = 0.514444
         self.fpm = 0.3048/60
 
     def select(self, ID, AC_type, **kwargs):
+        '''
+        Function: Returns the dataframe with the highest degree of accuracy to the Traffic object;
+
+        Args:
+            ID:         Callsign
+            AC_type:    Aircraft type. Use ICAO code (e.g. "A320")
+            airline:    Airline code. Use ICAO code (e.g. "KLM")
+            dest:       Destination airport. Use ICAO code (e.g. "EDDW")
+
+        Returns:
+            TXX_df:     Dataframe with IAS/CAS and ROC for aircraft agent
+            IAS_slope_max: maximum slope of IAS per flight level from the dataframe
+
+        Created by: Lars Dijkstra
+        Date: 14-10-2022
+        '''
         if "dest" in kwargs:
             country = self.airports.loc[self.airports["ident"] == kwargs["dest"]].reset_index()
 
@@ -77,27 +105,21 @@ class EEI:
                 continent = None
 
         swA = False
-        swT = False
-        min_datapoints = 20
 
         if "airline" in kwargs:
             if "dest" in kwargs:
                 if (AC_type, kwargs["airline"], kwargs["dest"]) in self.ac_airline_dest:
-                    if len(self.TADG.get_group((AC_type, kwargs["airline"], kwargs["dest"]))) > min_datapoints:
-                        print("{} ({}) uses airline and airport specific data to {}.".format(ID, AC_type, kwargs["dest"]))
-                        return self.TADf(AC_type, kwargs["airline"], kwargs["dest"])
+                    print("{} ({}) uses airline and airport specific data to {}.".format(ID, AC_type, kwargs["dest"]))
+                    return self.TADf(AC_type, kwargs["airline"], kwargs["dest"])
                 if (AC_type, kwargs["airline"], country) in self.ac_airline_country:
-                    if len(self.TADLG.get_group((AC_type, kwargs["airline"], country))) > min_datapoints:
                         print("{} ({}) is defaulting to airline and country ({}) specific data".format(ID, AC_type, country))
                         return self.TADLf(AC_type, kwargs["airline"], country)
                 if (AC_type, kwargs["airline"], continent) in self.ac_airline_continent:
-                    if len(self.TADCG.get_group((AC_type, kwargs["airline"], continent))) > min_datapoints:
-                        print("{} ({}) is defaulting to airline and continent ({}) specific data".format(ID, AC_type, continent))
-                        return self.TADCf(AC_type, kwargs["airline"], continent)
+                    print("{} ({}) is defaulting to airline and continent ({}) specific data".format(ID, AC_type, continent))
+                    return self.TADCf(AC_type, kwargs["airline"], continent)
             if (AC_type, kwargs["airline"]) in self.ac_airline:
-                if len(self.TAG.get_group((AC_type, kwargs["airline"]))) > min_datapoints:
-                    print("Defaulting to average airline performance for {} ({}). Aircraft type specific destination/country/continent data not found.".format(ID, AC_type))
-                    return self.TAf(AC_type, kwargs["airline"])
+                print("Defaulting to average airline performance for {} ({}). Aircraft type specific destination/country/continent data not found.".format(ID, AC_type))
+                return self.TAf(AC_type, kwargs["airline"])
             print("Insufficient data is available for ({}, {}) or {} does not operate the {}.".format(ID, AC_type, kwargs["airline"], AC_type))
             swA = True
         if "airline" not in kwargs or swA:
@@ -118,49 +140,6 @@ class EEI:
             print("No data available for {} ({}). Using B744 average performance.".format(ID, AC_type))
             return self.TTf("B744")
 
-    def select_type(self, AC_type, **kwargs):
-        if "dest" in kwargs:
-            country = self.airports.loc[self.airports["ident"] == kwargs["dest"]].reset_index()
-
-            if len(country) > 0:
-                country = country.at[0, "iso_country"]
-                continent = self.continents.loc[self.continents["two_code"] == country].reset_index().at[0, "continent"]
-            else:
-                country = None
-                continent = None
-
-        swA = False
-        swT = False
-        min_datapoints = 20
-
-        if "airline" in kwargs:
-            if "dest" in kwargs:
-                if (AC_type, kwargs["airline"], kwargs["dest"]) in self.ac_airline_dest:
-                    if len(self.TADG.get_group((AC_type, kwargs["airline"], kwargs["dest"]))) > min_datapoints:
-                        return "TAD"
-                if (AC_type, kwargs["airline"], country) in self.ac_airline_country:
-                    if len(self.TADLG.get_group((AC_type, kwargs["airline"], country))) > min_datapoints:
-                        return "TADL"
-                if (AC_type, kwargs["airline"], continent) in self.ac_airline_continent:
-                    if len(self.TADCG.get_group((AC_type, kwargs["airline"], continent))) > min_datapoints:
-                        return "TADC"
-            if (AC_type, kwargs["airline"]) in self.ac_airline:
-                if len(self.TAG.get_group((AC_type, kwargs["airline"]))) > min_datapoints:
-                    return "TA"
-            swA = True
-        if "airline" not in kwargs or swA:
-            if "dest" in kwargs:
-                if (AC_type, kwargs["dest"]) in self.ac_dest:
-                    return "TD"
-                elif (AC_type, country) in self.ac_country:
-                    return "TCOU"
-                elif (AC_type, continent) in self.ac_continent:
-                    return "TCON"
-            if AC_type in self.AC_types:
-                return "TT"
-        if AC_type not in self.AC_types:
-            return "BASIC"
-
     def TADf(self, ac_type, airline, dest):
         '''
         Function: Returns interpolate functions based upon airline and destination airport specific performance data.
@@ -170,9 +149,8 @@ class EEI:
             airline:    Airline code. Use ICAO code (e.g. "KLM")
             dest:       Airport code. Use four letter code (e.g. "EHAM")
         Returns:
-            TADf_IAS: Interpolate function that returns IAS when input is given in FL.
-            TADf_ROC: Interpolate function that returns ROC when input is given in FL.
-            IAS_slope_max: maximum slope of IAS per flight level
+            TAD_df:     Dataframe with IAS/CAS and ROC for aircraft agent
+            IAS_slope_max: maximum slope of IAS per flight level from the dataframe
 
         Created by: Lars Dijkstra
         Date: 14-10-2022
@@ -199,8 +177,8 @@ class EEI:
             airline:    Airline code. Use ICAO code (e.g. "KLM")
             country:    Country code. Use two letter (alpha-2) code (e.g. "NL")
         Returns:
-            return_1: (Description of returned item 1)
-            return_2: (Description of returned item 2)
+            TADL_df:     Dataframe with IAS/CAS and ROC for aircraft agent
+            IAS_slope_max: maximum slope of IAS per flight level
 
         Created by: Lars Dijkstra
         Date: 14-10-2022
@@ -227,9 +205,8 @@ class EEI:
             airline:    Airline code. Use ICAO code (e.g. "KLM")
             continent:  Continent. Use full name of continent (e.g. "South America")
         Returns:
-            return_1: (Description of returned item 1)
-            return_2: (Description of returned item 2)
-            ....
+            TADC_df:     Dataframe with IAS/CAS and ROC for aircraft agent
+            IAS_slope_max: maximum slope of IAS per flight level
 
         Created by: Lars Dijkstra
         Date: 14-10-2022
@@ -254,9 +231,8 @@ class EEI:
             ac_type:    Aircraft type. Use ICAO code (e.g. "B744")
             airline:    Airline code. Use ICAO code (e.g. "KLM")
         Returns:
-            return_1: (Description of returned item 1)
-            return_2: (Description of returned item 2)
-            ....
+            TA_df:     Dataframe with IAS/CAS and ROC for aircraft agent
+            IAS_slope_max: maximum slope of IAS per flight level
 
         Created by: Lars Dijkstra
         Date: 14-10-2022
@@ -281,9 +257,8 @@ class EEI:
             ac_type:    Aircraft type. Use ICAO code (e.g. "B744")
             dest:       Airport code. Use four letter code (e.g. "EHAM")
         Returns:
-            return_1: (Description of returned item 1)
-            return_2: (Description of returned item 2)
-            ....
+            TD_df:     Dataframe with IAS/CAS and ROC for aircraft agent
+            IAS_slope_max: maximum slope of IAS per flight level
 
         Created by: Lars Dijkstra
         Date: 14-10-2022
@@ -308,9 +283,8 @@ class EEI:
             ac_type:    Aircraft type. Use ICAO code (e.g. "B744")
             country:    Country code. Use two letter (alpha-2) code (e.g. "NL")
         Returns:
-            return_1: (Description of returned item 1)
-            return_2: (Description of returned item 2)
-            ....
+            TCOU_df:     Dataframe with IAS/CAS and ROC for aircraft agent
+            IAS_slope_max: maximum slope of IAS per flight level
 
         Created by: Lars Dijkstra
         Date: 14-10-2022
@@ -335,9 +309,8 @@ class EEI:
             ac_type:    Aircraft type. Use ICAO code (e.g. "B744")
             continent:  Continent. Use full name of continent (e.g. "South America")
         Returns:
-            return_1: (Description of returned item 1)
-            return_2: (Description of returned item 2)
-            ....
+            TCON_df:     Dataframe with IAS/CAS and ROC for aircraft agent
+            IAS_slope_max: maximum slope of IAS per flight level
 
         Created by: Lars Dijkstra
         Date: 14-10-2022
@@ -363,9 +336,8 @@ class EEI:
             arg_2:    (Description of input 1)
             ...
         Returns:
-            return_1: (Description of returned item 1)
-            return_2: (Description of returned item 2)
-            ....
+            TT_df:     Dataframe with IAS/CAS and ROC for aircraft agent
+            IAS_slope_max: maximum slope of IAS per flight level
 
         Created by: Lars Dijkstra
         Date: 14-10-2022
@@ -383,6 +355,19 @@ class EEI:
         return TT_df, IAS_slope_max
 
     def IAS_ROC(self, dfs, alts):
+        '''
+        Function: Return estimated speed (IAS/CAS) and ROC for all aircraft agents with take-off switch set to True.
+
+        Args:
+            dfs:    Array with dataframes of all agents
+            alts:   Array with the flight altitude of all agents
+        Returns:
+            return_1: IAS/CAS array with all estimated aircraft speeds
+            return_2: IAS/CAS array with all estimated aircraft rate of climb
+
+        Created by: Lars Dijkstra
+        Date: Somewhere early/mid October 2022
+        '''
 
         alts = alts/0.3048/100
         array = np.array([self.values(dfs[i], alts[i]) for i in range(len(alts))])
@@ -390,9 +375,28 @@ class EEI:
         return np.array([element[0]*self.kts for element in array]), np.array([element[1]*self.fpm for element in array])
 
     def values(self, df, alt):
+        '''
+        Function: Return estimated speed (IAS/CAS) and ROC for one aircraft agent with take-off switch set to True. For
+                  agents with a take-off switch set to False, the program returns (False, False) (reducing computations).
+                  Moreover, it also prohibits aircraft from climbing higher than their maximum altitude available in
+                  the specific data-set.
+
+        Args:
+            df:    Array with dataframes of one agent
+            alt:   Array with the flight altitude of one agent
+        Returns:
+            return_1: IAS/CAS array with all estimated aircraft speeds
+            return_2: IAS/CAS array with all estimated aircraft rate of climb
+
+        Created by: Lars Dijkstra
+        Date: Somewhere early/mid October 2022
+        '''
+        # Check whether we should return a value, by checking whether there is a dataframe available (an aircraft agent
+        # only receives a dataframe when it has received a take-off switch, else 'False' is assigned).
         if isinstance(df, bool):
             return False, False
 
+        # Flag is True if max altitude is reached.
         flag = False
 
         if alt > df['alt'].max():
@@ -402,11 +406,15 @@ class EEI:
         if alt < 0:
             alt = 0
 
+        # Obtain row in dataframe corresponding to the altitude input.
         temp = df.loc[df['alt'] == int(alt)].iloc[:1]
 
+        # If row not found, return (False, False)
         if temp.empty:
             return False, False
 
+        # An aircraft may not climb higher than its max altitude from the data-set, therefore return a ROC of 0. Else,
+        # return corresponding ROC.
         if flag == True:
             return temp.iloc[0]["IAS"], 0
         else:

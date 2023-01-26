@@ -77,13 +77,15 @@ class Autopilot(Entity, replaceable=True):
             # Route objects
             self.route = []
 
-            self.EEI = EEI()
-            self.TOsw = np.array([])
-            self.TOdf = np.array([], dtype='object')
-            self.TO_slope = np.array([])
-            self.EEI_IAS = np.array([])
-            self.EEI_ROC = np.array([])
-            self.setspd = np.array([])
+
+            self.EEI = EEI()                                # Estimator class
+            self.TOsw = np.array([])                        # Array containing the take-off switches for the agents
+            self.TOdf = np.array([], dtype='object')        # Array containing the dataframe objects
+            self.TO_slope = np.array([])                    # Not used currently
+            self.EEI_IAS = np.array([])                     # Array with speeds for all aircraft agents with a TOsw
+            self.EEI_ROC = np.array([])                     # Array with ROC for all aircraft agents with a TOsw
+            self.setspd = np.array([])                      # This array is required for the event where somebody uses
+                                                            # the SPD command, and makes sure that this speed is selected.
 
             # Descent path switch
             self.dpswitch = np.array([])
@@ -487,26 +489,48 @@ class Autopilot(Entity, replaceable=True):
         bs.traf.selspd = np.where(inoldturn*(bs.traf.actwp.oldturnspd>0.)*bs.traf.swvnavspd*bs.traf.swvnav*bs.traf.swlnav,
                                   bs.traf.actwp.oldturnspd,bs.traf.selspd)
 
-        # Another overwrite
+        # ==============================================================================================================
+        # The following lines consider with the implementation of the estimator function required for the realistic
+        # take-off and climb performance.
+        # ==============================================================================================================
+        # Timed function which every dt seconds aims to update the self.EEI_IAS and self.EEI_ROC arrays.
         self.ESTspeeds()
+
+        # Check whether the agent has a speed constraint. If yes, use the minimum of the speed constraint and estimation in the IAS array.
         spdcon = np.logical_not(bs.traf.actwp.nextspd <= 0)
         self.EEI_IAS = np.where(spdcon, np.minimum(bs.traf.actwp.nextspd, self.EEI_IAS), self.EEI_IAS)
+
+        # Check whether the agent has been issued a SPD command. If yes, use the minimum of the SPD command and estimation in the IAS array.
         spdcon = np.logical_not(self.setspd <= 0)
         self.EEI_IAS = np.where(spdcon, np.minimum(self.setspd, self.EEI_IAS), self.EEI_IAS)
+
+        # Selected speed is equal to the estimation in the array.
         bs.traf.selspd = np.where(self.TOsw, self.EEI_IAS, bs.traf.selspd)
 
+        # These switches are required to prohibit aircraft from taking off as soon as they have a velocity greater than 0.
+        # Select either 0 or the estimated ROC.
         sw = np.logical_not(bs.traf.cas < bs.traf.perf.vmto*0.97)
         bs.traf.actwp.vs = np.where(self.TOsw, self.EEI_ROC, bs.traf.actwp.vs)
         sw_alt = np.logical_not(bs.traf.alt < 1)
         sw = np.where(sw_alt, True, sw)
         sw_vs_restr = np.logical_not(self.alt == bs.traf.alt)
-
         bs.traf.vs = np.where(self.TOsw, np.where(sw_vs_restr, np.where(self.TOsw, np.where(sw, self.EEI_ROC, 0), selvs), 0), bs.traf.vs)
+
+        # Update vertical speed
         self.vs = np.where(self.TOsw, self.EEI_ROC, self.vs)
+        # ==============================================================================================================
+
         self.tas = vcasormach2tas(bs.traf.selspd, bs.traf.alt)
 
     @timed_function(dt=3, manual = True)
     def ESTspeeds(self):
+        '''
+        Function: Update the speed and ROC in the self.EEI_IAS and self.EEI_ROC arrays. This function is only executed
+                  every 3 seconds (simtime) to decrease the computations required.
+
+        Created by: Lars Dijkstra
+        Date: somewhere early November 2022
+        '''
         self.EEI_IAS, self.EEI_ROC = self.EEI.IAS_ROC(self.TOdf, bs.traf.alt)
 
     def ComputeVNAV(self, idx, toalt, xtoalt, torta, xtorta):
@@ -1217,9 +1241,21 @@ class Autopilot(Entity, replaceable=True):
 
     @stack.command(name='TO')
     def TOcmd(self, idx: 'acid', SID = None):
-        """ TO acid
+        '''
+        Function: Set the take-off switch for aircraft agent X to True or False. In case the take-off switch is False,
+                  the take-off switch is set to True and the aircraft will select the speed as obtained from the esti-
+                  mations. If the switch was True, the take-off switch will be set to False for this aircraft agent and
+                  its speed and ROC will no longer be prescribed by the estimation class.
 
-            Select autopilot altitude command."""
+        Args:
+            acid:  Aircraft ID
+            SID:   Standard Instrument Departure
+        Returns:
+            None
+
+        Created by: Lars Dijkstra
+        Date: somewhere early October 2022
+        '''
 
         if not self.TOsw[idx]:
             self.TOsw[idx] = True
@@ -1242,9 +1278,25 @@ class Autopilot(Entity, replaceable=True):
 
     @stack.command(name='TOD', annotations = "acid,SID,txt")
     def TODcmd(self, idx: 'acid', SID: 'SID', dest: 'dest'):
-        """ TOD acid
+        '''
+        Function: Set the take-off switch for aircraft agent X to True or False. In case the take-off switch is False,
+                  the take-off switch is set to True and the aircraft will select the speed as obtained from the esti-
+                  mations. If the switch was True, the take-off switch will be set to False for this aircraft agent and
+                  its speed and ROC will no longer be prescribed by the estimation class.
 
-            Select autopilot altitude command."""
+                  This function ensures that the highest degree of accuracy in take-off performance is obtained from the
+                  data-set file given the inputs.
+
+        Args:
+            acid:  Aircraft ID
+            SID:   Standard Instrument Departure
+            dest:  Destination airport
+        Returns:
+            None
+
+        Created by: Lars Dijkstra
+        Date: somewhere early October 2022
+        '''
         if not self.TOsw[idx]:
             self.TOsw[idx] = True
             bs.traf.swvnav[idx] = False
@@ -1269,7 +1321,6 @@ class Autopilot(Entity, replaceable=True):
         """ VS acid,vspd (ft/min)
             Vertical speed command (autopilot) """
         bs.traf.selvs[idx] = vspd #[fpm]
-        # bs.traf.vs[idx] = vspd
         bs.traf.swvnav[idx] = False
         self.TOsw[idx] = False
 
