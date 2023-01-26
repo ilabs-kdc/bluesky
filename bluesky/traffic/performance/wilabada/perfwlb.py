@@ -4,7 +4,7 @@ import bluesky as bs
 from bluesky.tools.aero import kts, ft, g0, vtas2cas, vcas2tas
 from bluesky.traffic.performance.perfbase import PerfBase
 from bluesky.traffic.performance.wilabada.performance import esf, phases, calclimits, PHASE
-
+from os import path
 from bluesky import settings
 from . import coeff_bada
 from bluesky.traffic.route import Route
@@ -14,10 +14,28 @@ from bluesky.traffic.performance.wilabada.ESTIMATOR import EEI
 settings.set_variable_defaults(perf_path_bada='data/performance/BADA',
                                performance_dt=1.0, verbose=False)
 
-EEI = EEI()
+def check(WILABADA_path=''):
+    ''' Import check for WILABADA performance model. '''
+    data = path.join(path.normpath(WILABADA_path), 'WILABADA_TAKE_OFF_PERFORMANCE.csv')
+    if not path.isfile(data):
+        return False
+    countries = path.join(path.normpath(WILABADA_path), 'WILABADA_COUNTRIES.txt')
+    if not path.isfile(countries):
+        return False
+    airports = path.join(path.normpath(WILABADA_path), 'WILABADA_AIRPORTS.csv')
+    if not path.isfile(airports):
+        return False
+    return True
+
+if not check(settings.perf_path_WILABADA):
+    raise ImportError('WILABADA performance model: Error trying to find WILABADA files in ' + settings.perf_path_WILABADA + '!')
+else:
+    print('Succesfully loaded WILABADA performance model.')
 
 if not coeff_bada.check(settings.perf_path_bada):
-    raise ImportError('WILABADA performance model: Error trying to find BADA files in ' + settings.perf_path_bada + '!')
+    raise ImportError('BADA performance model: Error trying to find BADA files in ' + settings.perf_path_bada + '!')
+
+EEI = EEI()
 
 class WILABADA(PerfBase):
     """
@@ -702,5 +720,3 @@ class WILABADA(PerfBase):
         bs.scr.echo("Ceiling: %d ft" % (int(self.hmax[acid] / ft)))
         # self.drag.astype(int)
         return True
-
-

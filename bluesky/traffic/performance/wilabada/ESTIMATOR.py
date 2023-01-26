@@ -21,11 +21,7 @@ class EEI:
         '''
         file = 'WILABADA_TAKE_OFF_PERFORMANCE.csv'
 
-        try:
-            file = os.path.join(settings.perf_path_WILABADA, file)
-        except:
-            raise FileNotFoundError("Error, could not find file {}.".format(file))
-
+        file = os.path.join(settings.perf_path_WILABADA, file)
         # Read file containing all datasets
         data = pd.read_csv(file, sep='\t')
 
