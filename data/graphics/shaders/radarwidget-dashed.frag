@@ -35,7 +35,7 @@ void main()
 
     // Discard fragments on the gap
     if (fract(dist / (dashSize + gapSize)) > dashSize/(dashSize + gapSize))
-        discard;
+        return;
 
     // Color
     color_out = color_fs;
