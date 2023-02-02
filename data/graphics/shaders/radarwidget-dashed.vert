@@ -26,7 +26,6 @@ layout (location = 3) in float lon;
 flat out vec2 startPos_fs;
 out vec2 vertPos_fs;
 out vec4 color_fs;
-out vec2 resolution;
 
 
 void main()
@@ -86,8 +85,5 @@ void main()
 
 	// Colour
 	color_fs = color;
-
-	// Resolution
-	resolution = vec2(float(screen_width), float(screen_height));
 
 }
