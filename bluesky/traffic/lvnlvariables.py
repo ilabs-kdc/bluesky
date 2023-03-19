@@ -590,7 +590,7 @@ class LVNLVariables(Entity):
                 bs.traf.iTrails.setgrp[grp.upper()].append(grp.upper())
                 bs.traf.iTrails.clrs[grp.upper()] = (np.random.randint(0, 255), np.random.randint(0, 255), 255)
         if grp.upper() not in bs.traf.iTrails.clrs:
-            bs.traf.iTrails.clrs[grp.upper()] = 'DEFAULT'
+            bs.traf.iTrails.clrs[grp.upper()] = (np.random.randint(0, 255), np.random.randint(0, 255), 255)
         if grp.upper() in bs.traf.iTrails.swgrp:
             if bs.traf.iTrails.swgrp[grp.upper()] != sw:
                 bs.traf.iTrails.swgrp[grp.upper()] = sw
