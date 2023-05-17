@@ -15,10 +15,17 @@ from bluesky.tools.aero import ft, nm, fpm, vcasormach2tas, vcas2tas, tas2cas, c
 from bluesky.tools.geo import latlondist, qdrdist
 from bluesky.core import Entity, timed_function
 from .route import Route
-from bluesky.traffic.performance.wilabada.ESTIMATOR import EEI
 from bluesky.stack.simstack import pcall
 from .descent import Descent
 from bluesky import settings
+
+WILA_success = False
+if settings.performance_model.upper() == 'WILABADA':
+    try:
+        from bluesky.traffic.performance.wilabada.ESTIMATOR import EEI
+        WILA_success = True
+    except:
+        pass
 
 bs.settings.set_variable_defaults(scenario_path_SIDs = 'LVNL/Routes/SID_NO_SPDCMDS')
 bs.settings.set_variable_defaults(fms_dt=10.5)
@@ -77,27 +84,27 @@ class Autopilot(Entity, replaceable=True):
             # Route objects
             self.route = []
 
+            if WILA_success:
+                self.EEI = EEI()                                # Estimator class
+                self.TOsw = np.array([])                        # Array containing the take-off switches for the agents
+                self.TOdf = np.array([], dtype='object')        # Array containing the dataframe objects
+                self.TO_slope = np.array([])                    # Not used currently
+                self.EEI_IAS = np.array([])                     # Array with speeds for all aircraft agents with a TOsw
+                self.EEI_ROC = np.array([])                     # Array with ROC for all aircraft agents with a TOsw
+                self.setspd = np.array([])                      # This array is required for the event where somebody uses
+                                                                # the SPD command, and makes sure that this speed is selected.
 
-            self.EEI = EEI()                                # Estimator class
-            self.TOsw = np.array([])                        # Array containing the take-off switches for the agents
-            self.TOdf = np.array([], dtype='object')        # Array containing the dataframe objects
-            self.TO_slope = np.array([])                    # Not used currently
-            self.EEI_IAS = np.array([])                     # Array with speeds for all aircraft agents with a TOsw
-            self.EEI_ROC = np.array([])                     # Array with ROC for all aircraft agents with a TOsw
-            self.setspd = np.array([])                      # This array is required for the event where somebody uses
-                                                            # the SPD command, and makes sure that this speed is selected.
+                # Descent path switch
+                self.dpswitch = np.array([])
+                self.geodescent = np.array([])
+                self.steepnessv2 = np.array([])
+                self.prevconst = np.array([], dtype=bool)   # Remember if wpt can be flown in continuous descent
+                self.prevwptgeo = np.array([], dtype=bool)  # Remember if last wpt has geo/tod switch
 
-            # Descent path switch
-            self.dpswitch = np.array([])
-            self.geodescent = np.array([])
-            self.steepnessv2 = np.array([])
-            self.prevconst = np.array([], dtype=bool)   # Remember if wpt can be flown in continuous descent
-            self.prevwptgeo = np.array([], dtype=bool)  # Remember if last wpt has geo/tod switch
-
-            self.altdismiss = np.array([], dtype=bool)
-            self.faltdismiss = np.array([], dtype=bool)
-            self.hdgdismiss = np.array([], dtype=bool)
-            self.spddismiss = np.array([], dtype=bool)
+                self.altdismiss = np.array([], dtype=bool)
+                self.faltdismiss = np.array([], dtype=bool)
+                self.hdgdismiss = np.array([], dtype=bool)
+                self.spddismiss = np.array([], dtype=bool)
 
             self.initiallog = np.array([], dtype=bool)
 
@@ -109,25 +116,26 @@ class Autopilot(Entity, replaceable=True):
         self.trk[-n:] = bs.traf.trk[-n:]
         self.alt[-n:] = bs.traf.alt[-n:]
 
-        self.TOsw[-n:] = False
-        self.TOdf[-n:] = False
-        self.TO_slope[-n:] = False
-        self.EEI_IAS[-n:] = 0
-        self.EEI_ROC[-n:] = 0
-        self.setspd[-n:] = 0
+        if WILA_success:
+            self.TOsw[-n:] = False
+            self.TOdf[-n:] = False
+            self.TO_slope[-n:] = False
+            self.EEI_IAS[-n:] = 0
+            self.EEI_ROC[-n:] = 0
+            self.setspd[-n:] = 0
 
-        self.dpswitch[-n:] = False#True
-        self.geodescent[-n:] = False
-        self.steepnessv2[-n:] = self.steepness
-        self.prevconst[-n:] = False
-        self.prevconst[-n:] = None
-        self.startdescent[-n:] = False
-        self.nextaltco[-n:] = -1
+            self.dpswitch[-n:] = False#True
+            self.geodescent[-n:] = False
+            self.steepnessv2[-n:] = self.steepness
+            self.prevconst[-n:] = False
+            self.prevconst[-n:] = None
+            self.startdescent[-n:] = False
+            self.nextaltco[-n:] = -1
 
-        self.altdismiss[-n:] = False
-        self.faltdismiss[-n:] = False
-        self.hdgdismiss[-n:] = False
-        self.spddismiss[-n:] = False
+            self.altdismiss[-n:] = False
+            self.faltdismiss[-n:] = False
+            self.hdgdismiss[-n:] = False
+            self.spddismiss[-n:] = False
 
         self.initiallog[-n:] = False
 
@@ -373,12 +381,13 @@ class Autopilot(Entity, replaceable=True):
         # FMS route update and possibly waypoint shift. Note: qdr, dist2wp will be updated accordingly in case of wp switch
         self.update_fms(qdr, self.dist2wp) # Updates self.qdr2wp when necessary
 
-        bs.traf.swvnav = np.where( (self.altdismiss) & (abs(bs.traf.alt-bs.traf.selalt)<10), True, bs.traf.swvnav)
+        if WILA_success:
+            bs.traf.swvnav = np.where( (self.altdismiss) & (abs(bs.traf.alt-bs.traf.selalt)<10), True, bs.traf.swvnav)
 
-        for index, i in enumerate(bs.traf.id):
-            if self.altdismiss[index] and bs.traf.swvnav[index]:
-                self.setVNAV(index, True)
-                self.altdismiss[index] = False
+            for index, i in enumerate(bs.traf.id):
+                if self.altdismiss[index] and bs.traf.swvnav[index]:
+                    self.setVNAV(index, True)
+                    self.altdismiss[index] = False
 
         #================= Continuous FMS guidance ========================
 
@@ -403,7 +412,8 @@ class Autopilot(Entity, replaceable=True):
 
         self.swvnavvs = bs.traf.swvnav * np.where(bs.traf.swlnav, self.startdescent,
                                                   self.dist2wp <= np.maximum(185.2, bs.traf.actwp.turndist))
-        bs.traf.actwp.vs = np.where(self.geodescent, self.steepnessv2*bs.traf.gs, -999)
+        if WILA_success:
+            bs.traf.actwp.vs = np.where(self.geodescent, self.steepnessv2*bs.traf.gs, -999)
 
         bs.traf.actwp.nextaltco = np.where(self.nextaltco<0, bs.traf.actwp.nextaltco, self.nextaltco)
 
@@ -446,7 +456,8 @@ class Autopilot(Entity, replaceable=True):
         dxspdconchg = distaccel(bs.traf.tas, nexttas, bs.traf.perf.axmax)
 
         # ADDED Update speed schedule speeds
-        self.speedschedule()
+        if WILA_success:
+            self.speedschedule()
 
         # ADDED Turn on speed schedule bool
         usespds = (self.spds < bs.traf.actwp.spdcon) * bs.traf.swdescent #or bs.traf.actwp.spdcon < 0)
@@ -488,37 +499,37 @@ class Autopilot(Entity, replaceable=True):
         # Temporary override when still in old turn
         bs.traf.selspd = np.where(inoldturn*(bs.traf.actwp.oldturnspd>0.)*bs.traf.swvnavspd*bs.traf.swvnav*bs.traf.swlnav,
                                   bs.traf.actwp.oldturnspd,bs.traf.selspd)
+        if WILA_success:
+            # ==========================================================================================================
+            # The following lines consider with the implementation of the estimator function required for the realistic
+            # take-off and climb performance.
+            # ==========================================================================================================
+            # Timed function which every dt seconds aims to update the self.EEI_IAS and self.EEI_ROC arrays.
+            self.ESTspeeds()
 
-        # ==============================================================================================================
-        # The following lines consider with the implementation of the estimator function required for the realistic
-        # take-off and climb performance.
-        # ==============================================================================================================
-        # Timed function which every dt seconds aims to update the self.EEI_IAS and self.EEI_ROC arrays.
-        self.ESTspeeds()
+            # Check whether the agent has a speed constraint. If yes, use the minimum of the speed constraint and estimation in the IAS array.
+            spdcon = np.logical_not(bs.traf.actwp.nextspd <= 0)
+            self.EEI_IAS = np.where(spdcon, np.minimum(bs.traf.actwp.nextspd, self.EEI_IAS), self.EEI_IAS)
 
-        # Check whether the agent has a speed constraint. If yes, use the minimum of the speed constraint and estimation in the IAS array.
-        spdcon = np.logical_not(bs.traf.actwp.nextspd <= 0)
-        self.EEI_IAS = np.where(spdcon, np.minimum(bs.traf.actwp.nextspd, self.EEI_IAS), self.EEI_IAS)
+            # Check whether the agent has been issued a SPD command. If yes, use the minimum of the SPD command and estimation in the IAS array.
+            spdcon = np.logical_not(self.setspd <= 0)
+            self.EEI_IAS = np.where(spdcon, np.minimum(self.setspd, self.EEI_IAS), self.EEI_IAS)
 
-        # Check whether the agent has been issued a SPD command. If yes, use the minimum of the SPD command and estimation in the IAS array.
-        spdcon = np.logical_not(self.setspd <= 0)
-        self.EEI_IAS = np.where(spdcon, np.minimum(self.setspd, self.EEI_IAS), self.EEI_IAS)
+            # Selected speed is equal to the estimation in the array.
+            bs.traf.selspd = np.where(self.TOsw, self.EEI_IAS, bs.traf.selspd)
 
-        # Selected speed is equal to the estimation in the array.
-        bs.traf.selspd = np.where(self.TOsw, self.EEI_IAS, bs.traf.selspd)
+            # These switches are required to prohibit aircraft from taking off as soon as they have a velocity greater than 0.
+            # Select either 0 or the estimated ROC.
+            sw = np.logical_not(bs.traf.cas < bs.traf.perf.vmto*0.97)
+            bs.traf.actwp.vs = np.where(self.TOsw, self.EEI_ROC, bs.traf.actwp.vs)
+            sw_alt = np.logical_not(bs.traf.alt < 1)
+            sw = np.where(sw_alt, True, sw)
+            sw_vs_restr = np.logical_not(self.alt == bs.traf.alt)
+            bs.traf.vs = np.where(self.TOsw, np.where(sw_vs_restr, np.where(self.TOsw, np.where(sw, self.EEI_ROC, 0), selvs), 0), bs.traf.vs)
 
-        # These switches are required to prohibit aircraft from taking off as soon as they have a velocity greater than 0.
-        # Select either 0 or the estimated ROC.
-        sw = np.logical_not(bs.traf.cas < bs.traf.perf.vmto*0.97)
-        bs.traf.actwp.vs = np.where(self.TOsw, self.EEI_ROC, bs.traf.actwp.vs)
-        sw_alt = np.logical_not(bs.traf.alt < 1)
-        sw = np.where(sw_alt, True, sw)
-        sw_vs_restr = np.logical_not(self.alt == bs.traf.alt)
-        bs.traf.vs = np.where(self.TOsw, np.where(sw_vs_restr, np.where(self.TOsw, np.where(sw, self.EEI_ROC, 0), selvs), 0), bs.traf.vs)
-
-        # Update vertical speed
-        self.vs = np.where(self.TOsw, self.EEI_ROC, self.vs)
-        # ==============================================================================================================
+            # Update vertical speed
+            self.vs = np.where(self.TOsw, self.EEI_ROC, self.vs)
+            # ==========================================================================================================
 
         self.tas = vcasormach2tas(bs.traf.selspd, bs.traf.alt)
 
