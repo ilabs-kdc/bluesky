@@ -299,7 +299,7 @@ class Traffic(glh.RenderObject, layer=100):
         ''' Draw all traffic graphics. '''
         # Get data for active node
         actdata = bs.net.get_nodedata()
-        IP = socket.gethostbyname(socket.gethostname())
+        IP = socket.getfqdn()
 
         if actdata.naircraft == 0 or not actdata.show_traf:
             return
@@ -463,7 +463,7 @@ class Traffic(glh.RenderObject, layer=100):
 
         self.glsurface.makeCurrent()
         actdata = bs.net.get_nodedata()
-        IP = socket.gethostbyname(socket.gethostname())
+        IP = socket.getfqdn()
         ac_size = settings.ac_size
         text_size = settings.text_size
 
@@ -905,7 +905,7 @@ class Traffic(glh.RenderObject, layer=100):
         Date: 21-12-2021
         """
 
-        IP = socket.gethostbyname(socket.gethostname())
+        IP = socket.getfqdn()
 
         # Empty labels
         label = ''
@@ -1011,7 +1011,7 @@ class Traffic(glh.RenderObject, layer=100):
         Date: 21-12-2021
         """
 
-        IP = socket.gethostbyname(socket.gethostname())
+        IP = socket.getfqdn()
 
         # Empty labels
         label = ''

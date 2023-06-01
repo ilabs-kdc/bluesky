@@ -63,7 +63,7 @@ class TIDGui(QDialog):
         self.setWindowModality(Qt.WindowModal)
 
         # PC specific settings
-        host = socket.gethostbyname(socket.gethostname())
+        host = socket.getfqdn()
         if self.name == 'Function-TID' and host in ['192.168.0.6', '192.168.0.8']:
             self.setGeometry(500, 200, 300, 250)
             self.move(2500, 2500)
@@ -416,7 +416,7 @@ class TIDCmds:
         # Check if an aircraft is selected
         if id_select:
             idx = misc.get_indices(actdata.acdata.id, id_select)[0]
-            IPaddr = socket.gethostbyname(socket.gethostname())[-11:]
+            IPaddr = socket.getfqdn()[-11:]
 
             # Check if selected aircraft is UCO
             if actdata.acdata.uco[idx] == IPaddr or 'UCO' in self.cmdslst:
@@ -487,7 +487,7 @@ class TIDCmds:
         if id_select:
             # Check for UCO
             if cmd.upper() == 'UCO':
-                IPaddr = socket.gethostbyname(socket.gethostname())[-11:]
+                IPaddr = socket.getfqdn()[-11:]
                 cmdline = 'UCO ' + id_select + ' ' + IPaddr
             else:
                 cmdline = id_select + ' ' + cmd + ' ' + arg

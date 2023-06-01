@@ -120,7 +120,7 @@ class GuiClient(Client):
 
         actdata = bs.net.get_nodedata()
         id_select = console.Console._instance.id_select
-        IPaddr = socket.gethostbyname(socket.gethostname())
+        IPaddr = socket.getfqdn()
 
         # Check if an aircraft is selected
         if id_select:
@@ -416,7 +416,7 @@ class GuiClient(Client):
             if data['flag'] == 'ATCMODE':
                 data_changed.append('ATCMODE')
                 # Get IP-address
-                IP = socket.gethostbyname(socket.gethostname())
+                IP = socket.getfqdn()
                 # Connect the IP-address to the ATC mode
                 bs.stack.stack("ATCIP "+data['args']+" "+IP[-11:])
 
