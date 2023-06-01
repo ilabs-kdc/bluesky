@@ -59,9 +59,9 @@ class LVNLVariables(Entity):
             self.flighttype = []                           # Flight type
             self.rwy        = []                           # Runway
             self.sid        = []                           # SID
-            self.ssr        = np.array([], dtype=np.int)   # SSR code
-            self.uco        = np.array([], dtype=np.str)   # Under Control
-            self.symbol     = np.array([], dtype=np.str)   # UCO symbol to draw
+            self.ssr        = np.array([], dtype=int)   # SSR code
+            self.uco        = np.array([], dtype=str)   # Under Control
+            self.symbol     = np.array([], dtype=str)   # UCO symbol to draw
             self.wtc        = []                           # Wake Turbulence Category
 
     def create(self, n=1):
@@ -276,7 +276,7 @@ class LVNLVariables(Entity):
         Created by: Bob van Dillen
         Date: 21-12-2021
         """
-        # IP = socket.gethostbyname(socket.gethostname())
+        # IP = socket.getfqdn()
         self.arr[idx] = arr.upper()
         # self.uco[idx] = IP[-11:]
 
@@ -299,7 +299,7 @@ class LVNLVariables(Entity):
         Created by: Mitchell de Keijzer
         Date: 12-5-2022
         """
-        # IP = socket.gethostbyname(socket.gethostname())
+        # IP = socket.getfqdn()
         acid = bs.traf.id[idx]
         # self.uco[idx] = IP[-11:]
         cmd = 'PCALL LVNL/Routes/' + route.upper() + ' ' + acid

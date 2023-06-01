@@ -147,10 +147,10 @@ class Traffic(Entity):
             self.selhdg = np.array([])  # selected heading [deg]
 
             # Whether to perform LNAV and VNAV
-            self.swlnav    = np.array([], dtype=np.bool)
-            self.swvnav    = np.array([], dtype=np.bool)
-            self.swvnavspd = np.array([], dtype=np.bool)
-            self.manual = np.array([], dtype=np.bool)
+            self.swlnav    = np.array([], dtype=bool)
+            self.swvnav    = np.array([], dtype=bool)
+            self.swvnavspd = np.array([], dtype=bool)
+            self.manual = np.array([], dtype=bool)
 
             # Flight Models
             self.cd       = ConflictDetection()
@@ -167,10 +167,10 @@ class Traffic(Entity):
             self.groups = TrafficGroups()
 
             # Traffic autopilot data
-            self.swhdgsel = np.array([], dtype=np.bool)  # determines whether aircraft is turning
+            self.swhdgsel = np.array([], dtype=bool)  # determines whether aircraft is turning
 
             # Traffic autothrottle settings
-            self.swats    = np.array([], dtype=np.bool)  # Switch indicating whether autothrottle system is on/off
+            self.swats    = np.array([], dtype=bool)  # Switch indicating whether autothrottle system is on/off
             self.thr      = np.array([])        # Thottle seeting (0.0-1.0), negative = non-valid/auto
 
             # Display information on label

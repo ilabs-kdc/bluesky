@@ -71,7 +71,7 @@ class OpenSkyListener(Entity):
 
         with self.settrafarrays():
             self.upd_time = np.array([])
-            self.my_ac = np.array([], dtype=np.bool)
+            self.my_ac = np.array([], dtype=bool)
 
     def create(self, n=1):
         super().create(n)

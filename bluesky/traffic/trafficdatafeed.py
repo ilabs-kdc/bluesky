@@ -49,7 +49,7 @@ class TrafficDataFeed(Entity):
         self.datafeedids = []
 
         with self.settrafarrays():
-            self.datafeed = np.array([], dtype=np.bool)
+            self.datafeed = np.array([], dtype=bool)
             self.source = []
             self.lastupdate = np.array([])  # Time since the last update
 

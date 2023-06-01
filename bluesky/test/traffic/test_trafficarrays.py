@@ -35,8 +35,8 @@ def t_a(pytestconfig):
             super().__init__()
 
             with self.settrafarrays():
-                self.np_array_bool = np.array([], dtype=np.bool)
-                self.np_array_int = np.array([], dtype=np.int)
+                self.np_array_bool = np.array([], dtype=bool)
+                self.np_array_int = np.array([], dtype=int)
 
     class TestRoot(TrafficArrays):
         """

@@ -40,7 +40,7 @@ class HistorySymbols(Entity):
             self.maxdeltat = bs.settings.screendt
 
         with self.settrafarrays():
-            self.swhistory = np.array([], dtype=np.bool)
+            self.swhistory = np.array([], dtype=bool)
 
             self.lat1 = np.array([])
             self.lon1 = np.array([])

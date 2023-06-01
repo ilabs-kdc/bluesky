@@ -57,7 +57,7 @@ class Metrics(Entity):
         # List of sets of aircraft in each sector
         self.acinside = list()
         # Static Density metric
-        self.sectorsd = np.array([], dtype=np.int)
+        self.sectorsd = np.array([], dtype=int)
         # Summed pairwise convergence metric
         self.sectorconv = np.array([], dtype=np.float)
         # Route efficiency metric

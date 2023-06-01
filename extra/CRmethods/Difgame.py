@@ -75,7 +75,7 @@ def resolve(dbconf, traf):
     # Third, create control matrix and find controls
     # Also, aircraft in DGconflict should follow ASAS
     dbconf.asasactive.fill(False)
-    controls=np.zeros((traf.ntraf,3),dtype=np.int)
+    controls=np.zeros((traf.ntraf,3),dtype=int)
 
     for i in range(dgnconf):
         id1=dgiown[i]
